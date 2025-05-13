@@ -1,0 +1,27 @@
+# Node modules
+node_modules/
+.trae/
+# Prisma generated client (if output is not in src/)
+cvdekh-backend/generated/
+
+# Environment variables
+.env
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Build output
+dist/
+build/
+
+# TypeScript cache
+*.tsbuildinfo
+
+# VSCode settings (optional)
+.vscode/
