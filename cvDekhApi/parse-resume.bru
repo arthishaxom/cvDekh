@@ -1,0 +1,17 @@
+meta {
+  name: parse-resume
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{BASE_URL}}/api/resume/parse-resume
+  body: multipartForm
+  auth: inherit
+}
+
+body:multipart-form {
+  resume: @file(C:\Users\KIIT\Downloads\AnuragPrasoon Resume.pdf)
+  ~resume: @file(C:\Users\KIIT\Downloads\Ashish-Pothal-Resume-1.pdf)
+  ~resume: @file(C:\Users\KIIT\Downloads\Kartikeya_CV.pdf)
+}
