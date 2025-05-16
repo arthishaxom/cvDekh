@@ -23,18 +23,15 @@ router.post("/parse-resume", upload.single("resume"), async (req, res) => {
       return;
     }
 
-    console.time("pdf-parse");
     const pdfData = req.file.buffer;
     const pdf = await pdfParse(pdfData);
     const pdfText = pdf.text;
-    console.timeEnd("pdf-parse");
 
-    console.time("gemini-request");
     const response = await ai.models.generateContent({
       model: "gemini-2.0-flash",
       contents: pdfText,
       config: {
-        temperature: 0.2,
+        temperature: 0.1,
         topK: 1,
         topP: 1,
         maxOutputTokens: 2048,
@@ -137,8 +134,6 @@ router.post("/parse-resume", upload.single("resume"), async (req, res) => {
         },
       },
     });
-    console.timeEnd("gemini-request");
-    // console.log(response.text);
     res.json(JSON.parse(response.text!)); // Send the parsed text as a response
   } catch (error) {
     console.error(error);
