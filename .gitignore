@@ -4,6 +4,8 @@ node_modules/
 # Prisma generated client (if output is not in src/)
 cvdekh-backend/generated/
 
+android/
+
 # Environment variables
 .env
 
@@ -25,3 +27,4 @@ build/
 
 # VSCode settings (optional)
 .vscode/
+cvdekh/build-1747411368627.apk

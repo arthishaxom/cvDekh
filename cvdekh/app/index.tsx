@@ -1,15 +1,11 @@
-import { Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 
 export default function Index() {
   return (
-    <View
-      style={{
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-      }}
-    >
-      <Text>Edit app/index.tsx to edit this screen.</Text>
+    <View className="flex-1 items-center justify-center bg-black p-4">
+      <Pressable>
+        <Text className="text-white text-2xl font-bold">Login</Text>
+      </Pressable>
     </View>
   );
 }
