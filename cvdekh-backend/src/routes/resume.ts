@@ -3,8 +3,24 @@ import express from "express";
 import pdfParse from "pdf-parse";
 import { GoogleGenAI, Type } from "@google/genai";
 import systemInstructions from "../utils/prompts";
-import dotenv from "dotenv";
-dotenv.config();
+import "dotenv/config";
+import pdfPrinter from "pdfmake";
+import type { TDocumentDefinitions } from "pdfmake/interfaces"; // Or try 'pdfmake' if this path doesn't work
+import { generateResumePdf } from "../utils/pdfResumeGenerator";
+import { auth } from "../auth";
+import { fromNodeHeaders } from "better-auth/node";
+
+var fonts = {
+  Roboto: {
+    normal: "fonts/cmun-Regular.ttf",
+    bold: "fonts/cmun-Medium.ttf",
+    italics: "fonts/cmun-Italic.ttf",
+    bolditalics: "fonts/cmun-MediumItalic.ttf",
+  },
+};
+
+// Initialize pdfMake with fonts
+var pdfMake = new pdfPrinter(fonts);
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -13,7 +29,7 @@ const upload = multer({
 const router = express.Router();
 
 const ai = new GoogleGenAI({
-  apiKey: "AIzaSyCNI8k_I7b2uwistQz5_pwGojogTlmvW64",
+  apiKey: process.env.GEMINI_API_KEY!,
 });
 
 router.post("/parse-resume", upload.single("resume"), async (req, res) => {
@@ -138,6 +154,26 @@ router.post("/parse-resume", upload.single("resume"), async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+router.post("/generate-resume", express.json(), async (req, res) => {
+  try {
+    const resumeData = req.body;
+
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename=${resumeData.name.replace(/\s+/g, "")}_Resume.pdf`,
+    );
+
+    // Use the utility function
+    const pdfDoc = generateResumePdf(resumeData);
+    pdfDoc.pipe(res);
+    pdfDoc.end();
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error generating resume" });
   }
 });
 

@@ -2,6 +2,7 @@ import express from "express";
 import { toNodeHandler } from "better-auth/node";
 import { auth } from "./auth";
 import resumeRouter from "./routes/resume";
+import dotenv from "dotenv/config";
 
 const app = express();
 const port = 80;

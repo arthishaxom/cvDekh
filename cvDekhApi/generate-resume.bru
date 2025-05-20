@@ -1,0 +1,148 @@
+meta {
+  name: generate-resume
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{BASE_URL}}/api/resume/generate-resume
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "name": "AnuragPrasoon",
+    "summary": "A passionate developer focused on building projects to solve real-world problems. With experience working with startups, I have developed effective solutions and contributed to various teams. I enjoy tackling challenges and continuously learning new technologies to improve my skills.",
+    "contactInfo": {
+      "linkedin": "linkedin.com/in/anuragprasoon",
+      "github": "github.com/anuragprasoon",
+      "gmail": "anuragprasoon23@gmail.com",
+      "phone": "1234567890"
+    },
+    "skills": {
+      "languages": [
+        "Python",
+        "JavaScript",
+        "Java",
+        "C",
+        "Solidity"
+      ],
+      "frameworks": [
+        "ReactJS",
+        "Flask",
+        "Web3.js"
+      ],
+      "others": [
+        "MongoDB",
+        "CSS",
+        "MySQL",
+        "Blockchain",
+        "AI/ML",
+        "GIT"
+      ]
+    },
+    "education": [
+      {
+        "institution": "KIITUNIVERSITY",
+        "field": "Computer Science and Engineering",
+        "startDate": "2022",
+        "endDate": "2026",
+        "cgpa": "8.53"
+      },
+      {
+        "institution": "CHINMAYAVIDYALAYA",
+        "field": "Computer Science and Engineering",
+        "startDate": "2008",
+        "endDate": "2022",
+        "cgpa": "null"
+      }
+    ],
+    "projects": [
+      {
+        "title": "KONTENTAI- An AI-powered content creation tool",
+        "techStack": [
+          "Python",
+          "Streamlit",
+          "Webscrapping",
+          "BeautifulSoup",
+          "Gemini AI"
+        ],
+        "details": [
+          "Developed a web application that generates Twitter and LinkedIn content in just a few clicks, reducing content creation time by 50%.",
+          "Integrated AI models to automate content generation and improve user productivity."
+        ],
+        "startDate": "null",
+        "endDate": "null"
+      },
+      {
+        "title": "KIITFACULTYSUBSTITUTESYSTEM",
+        "techStack": [
+          "Python",
+          "Flask",
+          "Firebase DB(NoSQL DB)",
+          "HTML",
+          "CSS",
+          "GIT"
+        ],
+        "details": [
+          "Designed and implemented a college faculty substitute system to streamline class and faculty management."
+        ]
+      },
+      {
+        "title": "LINK2BIO- (Linktree Alternative)",
+        
+        "techStack": [
+          "Python",
+          "Flask",
+          "PostgresSQL",
+          "HTML",
+          "CSS",
+          "GIT",
+          "Cloudinary"
+        ],
+        "details": [
+          "Built a tool for social media influencers and brands to manage and promote multiple links using a single URL.",
+          "Enhanced user experience by integrating a responsive design."
+        ]
+      }
+    ],
+    "experience": [
+      {
+        "jobTitle": "SDE Intern",
+        "company": "HTRACTION",
+        "startDate": "Jan 2025",
+        "endDate": "Present",
+        "details": [
+          "Developed and enhanced features for Htraction’s web and mobile platform, a startup ecosystem tool for founders, investors, and incubators.",
+          "Optimized user experience by implementing intuitive design elements and improving the functionality of the platform."
+        ]
+      },
+      {
+        "jobTitle": "Web Dev Intern",
+        "company": "MEDIAL.APP",
+        "startDate": "Apr 2024",
+        "endDate": "Dec 2024",
+        "details": [
+          "Contributed to the development and enhancement of Medial, India’s fastest-growing professional social media network, which grew from 500 to 150,000 users in a year."
+        ]
+      },
+      {
+        "jobTitle": "UI/UX Design Intern",
+        "company": "MEDIAL.APP",
+        "startDate": "Oct 2023",
+        "endDate": "Mar 2024",
+        "details": [
+          "Contributed to Medial’s growth from 500 to 150,000 users by designing the User Interface of the platform to enhance user experience and engagement.",
+          "Created engaging social media content and branding materials to boost user engagement."
+        ]
+      }
+    ]
+  }
+}
+
+body:multipart-form {
+  resume: @file(C:\Users\KIIT\Downloads\AnuragPrasoon Resume.pdf)
+  ~resume: @file(C:\Users\KIIT\Downloads\Kartikeya_CV.pdf)
+  ~resume: @file(C:\Users\KIIT\Downloads\Ashish-Pothal-Resume-1.pdf)
+}
