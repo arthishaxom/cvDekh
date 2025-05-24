@@ -12,35 +12,123 @@ import {
   ModalHeader,
 } from "@/components/ui/modal";
 import { Text } from "@/components/ui/text";
-import { Upload } from "lucide-react-native";
+import { Upload, Trash2 } from "lucide-react-native";
 import { useState } from "react";
-import { Pressable } from "react-native";
+import { Alert, Pressable } from "react-native";
+import { handleBrowse } from "@/lib/browser";
+import * as DocumentPicker from "expo-document-picker";
+import { useAuthStore } from "@/store/auth";
+import axios, { isAxiosError } from "axios"; // Import axios
 
 export default function Tab() {
   const [showModal, setShowModal] = useState(false);
-  const disabled = true;
+  const [selectedFile, setSelectedFile] =
+    useState<DocumentPicker.DocumentPickerAsset | null>(null);
+  const disabled = false; // This seems to be unused, consider removing or implementing
+  const session = useAuthStore((state) => state.session);
+
+  const onClick = async () => {
+    if (!session || !session.access_token) {
+      Alert.alert(
+        "Authentication Error",
+        "You are not signed in or your session is invalid. Please sign in again.",
+      );
+      return;
+    }
+
+    // Ensure you have EXPO_PUBLIC_API_URL in your .env file for the frontend
+    // or replace with your backend's actual URL
+    const backendApiUrl =
+      process.env.EXPO_PUBLIC_API_URL || "http://localhost:3001";
+
+    try {
+      const response = await axios.get(`${backendApiUrl}/api/ok`, {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+          // 'Content-Type': 'application/json', // Not typically needed for GET requests with axios
+        },
+      });
+
+      // axios wraps the response data in a 'data' property
+      const data = response.data;
+
+      // With axios, successful responses (2xx) don't throw errors by default,
+      // so we can directly use the data.
+      // The status code is available in response.status
+      if (response.status === 200) {
+        Alert.alert(
+          "API Test Successful!",
+          `Message: ${data.message}\nUser Email: ${data.email || "N/A"}`,
+        );
+      } else {
+        // This block might not be reached if axios default error handling is used for non-2xx.
+        // Non-2xx responses will typically throw an error and be caught by the catch block.
+        Alert.alert(
+          "API Test Error",
+          `Status: ${response.status}\nMessage: ${
+            data.message || "Unknown error"
+          }`,
+        );
+      }
+    } catch (error: any) {
+      console.error("Error calling /api/ok:", error);
+      if (isAxiosError(error)) {
+        // Access error.response, error.request, error.message from AxiosError
+        const status = error.response?.status || "N/A";
+        const message =
+          error.response?.data?.message ||
+          error.message ||
+          "An unknown error occurred";
+        Alert.alert(
+          "API Request Failed",
+          `Status: ${status}\nMessage: ${message}`,
+        );
+      } else {
+        // Handle non-Axios errors
+        Alert.alert(
+          "Network Error",
+          `Failed to connect to the server: ${error.message}`,
+        );
+      }
+    }
+  };
+
+  const onBrowse = async () => {
+    const file = await handleBrowse();
+    if (file) {
+      setSelectedFile(file);
+    }
+  };
+
+  const clearFile = () => {
+    setSelectedFile(null);
+  };
+
   return (
     <Box className="flex-1 bg-background-500">
-      <Box className="flex flex-col gap-4">
+      <Box className="flex flex-col gap-4 pt-4">
         <Button
           className="bg-primary-300 mx-8 h-12"
           onPress={() => setShowModal(true)}
         >
-          <Text className="text-background-700 font-semibold">
+          <Text className="text-background-900 font-semibold">
             Extract From PDF
           </Text>
         </Button>
         <Button
           variant="outline"
-          disabled={disabled}
-          className={`mx-8 h-12 ${disabled ? "border-background-muted" : ""}`}
+          // disabled={disabled} // Consider if this 'disabled' state is still needed
+          onPress={onClick} // This now calls the /api/ok endpoint
+          className={`mx-8 h-12 ${
+            disabled ? "border-background-muted" : "border-primary-300"
+          }`} // Ensure border color is set
         >
           <Text
             className={`font-semibold ${
               disabled ? "text-background-300" : "text-primary-300"
             }`}
           >
-            Download Resume
+            Test Auth /api/ok
           </Text>
         </Button>
       </Box>
@@ -48,6 +136,7 @@ export default function Tab() {
         isOpen={showModal}
         onClose={() => {
           setShowModal(false);
+          setSelectedFile(null);
         }}
         size="md"
       >
@@ -61,47 +150,59 @@ export default function Tab() {
               <Icon
                 as={CloseIcon}
                 size="md"
-                className="stroke-background-400 group-[:hover]/modal-close-button:stroke-background-700 group-[:active]/modal-close-button:stroke-background-900 group-[:focus-visible]/modal-close-button:stroke-background-900"
+                className="stroke-background-100 group-[:hover]/modal-close-button:stroke-background-100 group-[:active]/modal-close-button:stroke-background-100 group-[:focus-visible]/modal-close-button:stroke-background-100"
               />
             </ModalCloseButton>
           </ModalHeader>
           <ModalBody>
-            <Box className="border-2 border-dashed border-background-300 rounded-lg p-6 items-center justify-center mb-4">
-              <Box className="bg-primary-500/20 p-4 rounded-full mb-4">
-                <Upload color="white" size={24} />
-              </Box>
-              <Text className="text-typography-800 text-center mb-2">
-                Drop files here
-              </Text>
-              <Text className="text-typography-500 text-center text-sm mb-4">
-                or click to browse (max 5 files)
-              </Text>
+            {!selectedFile ? (
+              <Box className="border-2 border-dashed border-background-300 rounded-lg p-6 items-center justify-center">
+                <Box className="bg-primary-500/20 p-4 rounded-full mb-4">
+                  <Upload color="white" size={24} />
+                </Box>
+                <Text className="text-typography-800 text-center mb-2">
+                  Select files here
+                </Text>
+                <Text className="text-typography-500 text-center text-sm mb-4">
+                  only pdf files are allowed
+                </Text>
 
-              <Pressable
-                className="bg-background-200 rounded-md px-4 py-2"
-                onPress={handleBrowse}
-                disabled={isProcessing}
-              >
-                <Text className="text-typography-800">Browse...</Text>
-              </Pressable>
-            </Box>
+                <Pressable
+                  className="bg-background-400 rounded-md px-4 py-2"
+                  onPress={onBrowse}
+                >
+                  <Text className="text-typography-800">Browse...</Text>
+                </Pressable>
+              </Box>
+            ) : (
+              <Box className="flex-row justify-between items-center gap-2 border border-background-300 p-2 rounded-md">
+                <Box className="flex-1">
+                  <Text
+                    numberOfLines={2}
+                    isTruncated={true}
+                    className="text-typography-800"
+                  >
+                    {selectedFile.name}
+                  </Text>
+                </Box>
+                <Box className="w-16 flex justify-center">
+                  <Pressable className="m-auto" onPress={clearFile}>
+                    <Trash2 color="#ff3333" size={20} />
+                  </Pressable>
+                </Box>
+              </Box>
+            )}
           </ModalBody>
           <ModalFooter>
             <Button
-              variant="outline"
-              action="secondary"
+              className="w-full h-12"
               onPress={() => {
                 setShowModal(false);
+                setSelectedFile(null);
               }}
+              disabled={!selectedFile}
             >
-              <ButtonText>Cancel</ButtonText>
-            </Button>
-            <Button
-              onPress={() => {
-                setShowModal(false);
-              }}
-            >
-              <ButtonText>Explore</ButtonText>
+              <ButtonText>Extract</ButtonText>
             </Button>
           </ModalFooter>
         </ModalContent>

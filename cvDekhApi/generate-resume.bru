@@ -7,7 +7,11 @@ meta {
 post {
   url: {{BASE_URL}}/api/resume/generate-resume
   body: json
-  auth: inherit
+  auth: bearer
+}
+
+auth:bearer {
+  token: eyJhbGciOiJIUzI1NiIsImtpZCI6IkltNndGRncrMHY4QWVYaHQiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL2xkbmN6d3VjcWp4YnVqa3J1cndxLnN1cGFiYXNlLmNvL2F1dGgvdjEiLCJzdWIiOiJhMTBiOTJlMy1hZTJlLTQyYjAtYTY0My1hNWI0MmEwN2RhMWEiLCJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoxNzQ4MDEzNjgxLCJpYXQiOjE3NDgwMTAwODEsImVtYWlsIjoicG90aGFsLmJ1aWxkc0BnbWFpbC5jb20iLCJwaG9uZSI6IiIsImFwcF9tZXRhZGF0YSI6eyJwcm92aWRlciI6Imdvb2dsZSIsInByb3ZpZGVycyI6WyJnb29nbGUiXX0sInVzZXJfbWV0YWRhdGEiOnsiYXZhdGFyX3VybCI6Imh0dHBzOi8vbGgzLmdvb2dsZXVzZXJjb250ZW50LmNvbS9hL0FDZzhvY0xVS2pETWx3ZmhZRU9aazgtZjBwYUk1cHZQYUd2MnVESTRqSzdZSm9McU92NWJBNDQ9czk2LWMiLCJlbWFpbCI6InBvdGhhbC5idWlsZHNAZ21haWwuY29tIiwiZW1haWxfdmVyaWZpZWQiOnRydWUsImZ1bGxfbmFtZSI6IkFzaGlzaCBQb3RoYWwiLCJpc3MiOiJodHRwczovL2FjY291bnRzLmdvb2dsZS5jb20iLCJuYW1lIjoiQXNoaXNoIFBvdGhhbCIsInBob25lX3ZlcmlmaWVkIjpmYWxzZSwicGljdHVyZSI6Imh0dHBzOi8vbGgzLmdvb2dsZXVzZXJjb250ZW50LmNvbS9hL0FDZzhvY0xVS2pETWx3ZmhZRU9aazgtZjBwYUk1cHZQYUd2MnVESTRqSzdZSm9McU92NWJBNDQ9czk2LWMiLCJwcm92aWRlcl9pZCI6IjExNjM1MDc3NDU2MDE2MDEzODUyNSIsInN1YiI6IjExNjM1MDc3NDU2MDE2MDEzODUyNSJ9LCJyb2xlIjoiYXV0aGVudGljYXRlZCIsImFhbCI6ImFhbDEiLCJhbXIiOlt7Im1ldGhvZCI6Im9hdXRoIiwidGltZXN0YW1wIjoxNzQ3OTk5NTM0fV0sInNlc3Npb25faWQiOiIzNzhiOWIzZS0wZDRjLTRhMjUtYTZmMS0xMjI0YmRmNWRmMGYiLCJpc19hbm9ueW1vdXMiOmZhbHNlfQ.LVwuMnnQmOK1dQm8Y-NwAb3W4r603R_93YmnzI80zUQ
 }
 
 body:json {
@@ -17,8 +21,7 @@ body:json {
     "contactInfo": {
       "linkedin": "linkedin.com/in/anuragprasoon",
       "github": "github.com/anuragprasoon",
-      "gmail": "anuragprasoon23@gmail.com",
-      "phone": "1234567890"
+      "gmail": "anuragprasoon23@gmail.com"
     },
     "skills": {
       "languages": [
@@ -26,20 +29,29 @@ body:json {
         "JavaScript",
         "Java",
         "C",
-        "Solidity"
+        "HTML",
+        "CSS",
+        "SQL"
       ],
       "frameworks": [
         "ReactJS",
         "Flask",
-        "Web3.js"
+        "Web3.js",
+        "Streamlit"
       ],
       "others": [
         "MongoDB",
-        "CSS",
         "MySQL",
+        "Solidity",
         "Blockchain",
         "AI/ML",
-        "GIT"
+        "Firebase DB",
+        "GIT",
+        "PostgresSQL",
+        "Cloudinary",
+        "Webscrapping",
+        "BeautifulSoup",
+        "Gemini AI"
       ]
     },
     "education": [
@@ -71,9 +83,7 @@ body:json {
         "details": [
           "Developed a web application that generates Twitter and LinkedIn content in just a few clicks, reducing content creation time by 50%.",
           "Integrated AI models to automate content generation and improve user productivity."
-        ],
-        "startDate": "null",
-        "endDate": "null"
+        ]
       },
       {
         "title": "KIITFACULTYSUBSTITUTESYSTEM",
@@ -91,7 +101,6 @@ body:json {
       },
       {
         "title": "LINK2BIO- (Linktree Alternative)",
-        
         "techStack": [
           "Python",
           "Flask",

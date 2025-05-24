@@ -1,8 +1,6 @@
 # Node modules
 node_modules/
 .trae/
-# Prisma generated client (if output is not in src/)
-cvdekh-backend/generated/
 
 android/
 
