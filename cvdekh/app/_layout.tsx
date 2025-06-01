@@ -18,7 +18,7 @@ export default function RootLayout() {
   const refreshSession = useAuthStore((state) => state.refreshSession);
   const isLoading = useAuthStore((state) => state.isLoading);
   useEffect(() => {
-    console.log("ROOT_LAYOUT: useEffect triggered, calling refreshSession.");
+    // console.log("ROOT_LAYOUT: useEffect triggered, calling refreshSession.");
     refreshSession(); // Fetch session on app start
   }, [refreshSession]);
   useEffect(() => {

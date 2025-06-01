@@ -10,41 +10,26 @@ export default function ProtectedLayout() {
   // const refreshSession = useAuthStore((state) => state.refreshSession); // Removed
 
   // Log current state for debugging
-  console.log(
-    "PROTECTED_LAYOUT: Render. Session:",
-    session ? "Exists" : "Null",
-    "isLoading:",
-    isLoading,
-  );
-
-  // useEffect(() => {
-  // This call is redundant. The root _layout.tsx handles the initial session load,
-  // and onAuthStateChange in store/auth.ts handles subsequent updates.
   // console.log(
-  //   "PROTECTED_LAYOUT: useEffect triggered, calling refreshSession.",
+  //   "PROTECTED_LAYOUT: Render. Session:",
+  //   session ? "Exists" : "Null",
+  //   "isLoading:",
+  //   isLoading,
   // );
-  // refreshSession();
-  // }, [refreshSession]); // Ensure refreshSession is stable or memoized if it causes re-renders
 
-  // If the session is still loading, don't do anything yet.
-  // Render null or a loading indicator.
   if (isLoading) {
-    console.log("PROTECTED_LAYOUT: Session is loading. Rendering null.");
+    // console.log("PROTECTED_LAYOUT: Session is loading. Rendering null.");
     return null;
   }
 
   // If not loading and there's no session, then redirect.
   if (!session) {
-    console.log(
-      "PROTECTED_LAYOUT: No session (and not loading). Redirecting to /signin.",
-    );
+    // console.log(
+    //   "PROTECTED_LAYOUT: No session (and not loading). Redirecting to /signin.",
+    // );
     return <Redirect href="/signin" />;
   }
 
-  // If a session exists and not loading, render the protected content.
-  console.log(
-    "PROTECTED_LAYOUT: Session exists. Rendering protected content (Stack).",
-  );
   return (
     <Stack
       screenOptions={{
@@ -57,6 +42,7 @@ export default function ProtectedLayout() {
         }}
         name="(tabs)" // This is what makes it navigate to your tabs layout
       />
+      <Stack.Screen name="forms" />
     </Stack>
   );
 }

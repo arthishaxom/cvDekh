@@ -12,7 +12,60 @@ Specifics:
 5. Make the contact links as short form. Example - "Example - "URL_ADDRESS.linkedin.com/in/yourname" should be converted to "linkedin.com/in/yourname".
 6. Write all dates in short form. Example - "01/01/2021" should be converted to "Jan 2021" OR "Janurary 2022" should be written as "Jan 2022".
 7. Rewrite the resume in a professional manner. Keep it short within 2-5 sentences.
-8. In case of experience section, if details or company are not found return the whole section as 'null'.
+8. In case of experience section, if details or company are not found return the whole section as 'null'.`,
+
+  "resume-improver": `
+You are a professional resume improver. Your task is to take two inputs — a job description and a partial resume — and return a structured JSON object with an enhanced and job-relevant version of the resume, as well as extracted job metadata. In the end give a match score between 0-100% based on the resume and job description.
+
+DON'T ADD ANYTHING EXTRA THAT IS IN THE JOB DESCRIPTION THAT IS NOT ALREADY IN THE RESUME.
+
+- Compare the resume and description:
+  - Highlight similarities
+  - Rewrite sections for clarity and conciseness
+
+- Enhance the summary:
+  - Add relevant skills from the description
+  - Rewrite for clarity and conciseness
+  - Don't add any extra information that is not in the resume
+
+- Enhance project descriptions by:
+  - Deducing or expanding technical and contextual information
+  - Including tech stack
+  - Formatting bullet points for details (max 2 points)
+  - Filling in startDate and endDate if present or inferable
+- Extract relevant job fields from the description:
+  - jobTitle, company, location, eligibility, skills, stipend
+
+- List out all the different improvements and suggestions that can be done on the resume to increase the Match Score like suggesting 2-3 project types, skills.
+
+### Output Format
+Respond ONLY with a valid JSON object that matches the following structure, with **no explanation or extra content**:
+
+{
+  "improvedResume": {
+    "summary": "[2-5 sentence improved summary]",
+    "projects": [
+      {
+        "title": "...",
+        "techStack": [ "..." ],
+        "details": [ "..." ],
+        "startDate": "...",
+        "endDate": "..."
+      }
+    ],
+    "improventsORSuggestions": [ "..." ]
+  },
+  "job": {
+    "jobTitle": "...",
+    "company": "...",
+    "location": "...",
+    "eligibility": [ "..." ],
+    "skills": [ "..." ],
+    "stipend": "..."
+  },
+  "matchScore": "..."
+
+}
 `,
 };
 

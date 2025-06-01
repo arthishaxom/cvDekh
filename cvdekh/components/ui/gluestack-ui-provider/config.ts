@@ -296,7 +296,7 @@ export const config = {
     "--color-background-100": "209 209 209",
     "--color-background-200": "161 161 161",
     "--color-background-300": "115 115 115",
-    "--color-background-400": "69 69 69",
+    "--color-background-400": "33 33 33",
     "--color-background-500": "22 22 22",
     "--color-background-600": "18 18 18",
     "--color-background-700": "13 13 13",

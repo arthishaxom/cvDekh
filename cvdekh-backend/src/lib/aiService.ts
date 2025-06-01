@@ -1,5 +1,9 @@
 export interface AIService {
   parseResume(resumeText: string): Promise<ParsedResumeData>;
+  improveResume(
+    resumeData: ParsedResumeData,
+    jobDescription: string,
+  ): Promise<ImprovedResumeResponse>;
 }
 
 export interface ParsedResumeData {
@@ -37,4 +41,30 @@ export interface ParsedResumeData {
     endDate: string;
     details: string[];
   }>;
+}
+
+export interface ImprovedResumeResponse {
+  improvedResume: {
+    // summary: string;
+    skills: {
+      languages: string[];
+      frameworks: string[];
+      others: string[];
+    };
+    projects: Array<{
+      title: string;
+      techStack: string[];
+      details: string[];
+      startDate: string;
+      endDate: string;
+    }>;
+  };
+  job: {
+    jobTitle: string;
+    company: string;
+    location: string;
+    eligibility: string[];
+    skills: string[];
+    stipend: string;
+  };
 }

@@ -24,12 +24,6 @@ AppState.addEventListener("change", (state) => {
 export default function Signin() {
   const navigation = useNavigation();
 
-  GoogleSignin.configure({
-    webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
-    // Add iosClientId if you have a specific one for iOS and are targeting it:
-    // iosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
-  });
-
   const handleLogin = async () => {
     try {
       // Check if Play Services are available
@@ -51,12 +45,8 @@ export default function Signin() {
           alert(`Error signing in with Google: ${error.message}`);
           return;
         }
-
-        // Successful sign-in.
-        // Your onAuthStateChange listener in useAuthStore should handle session updates
-        // and trigger navigation to the protected routes automatically.
         console.log("Google sign-in successful, Supabase session data:", data);
-        router.replace("./(protected)"); // This should be handled by your root layout logic based on session state
+        router.replace("./(protected)");
       } else {
         throw new Error("Google Sign In failed: No ID token received.");
       }

@@ -1,8 +1,15 @@
 import { Box } from "@/components/ui/box";
 import { WithLocalSvg } from "react-native-svg/css";
 import { Text } from "@/components/ui/text";
+import { useEffect } from "react";
+import { useResumeStore } from "@/store/resumeStore";
+import { useAuthStore } from "@/store/auth";
 
 export default function Tab() {
+  useEffect(() => {
+    useResumeStore.getState().fetchResumeData(useAuthStore.getState().session);
+  }, []);
+
   return (
     <Box className="flex-1 bg-background-500 items-center justify-center">
       {/* <Text>Hello</Text> */}

@@ -1,9 +1,11 @@
 import { Request, Response, NextFunction } from "express";
-import { supabase } from "../lib/supabaseClient"; // Adjust path if your lib folder is elsewhere
+import { supabase as globalSupabase } from "../lib/supabaseClient"; // Rename to avoid confusion
+import { User, SupabaseClient, createClient } from "@supabase/supabase-js"; // Import SupabaseClient and createClient
 
 // Define an interface for requests that have been authenticated
 export interface AuthenticatedRequest extends Request {
-  user?: any; // You can replace 'any' with a more specific Supabase User type if available
+  user?: User;
+  supabaseClient?: SupabaseClient; // Add this line
 }
 
 export const authMiddleware = async (
@@ -30,12 +32,14 @@ export const authMiddleware = async (
   try {
     const {
       data: { user },
-      error,
-    } = await supabase.auth.getUser(token);
+      error: getUserError,
+    } = await globalSupabase.auth.getUser(token);
 
-    if (error) {
-      console.error("Supabase auth.getUser error:", error.message);
-      res.status(401).json({ message: `Unauthorized: ${error.message}` });
+    if (getUserError) {
+      console.error("Supabase auth.getUser error:", getUserError.message);
+      res
+        .status(401)
+        .json({ message: `Unauthorized: ${getUserError.message}` });
       return;
     }
 
@@ -47,6 +51,24 @@ export const authMiddleware = async (
     }
 
     req.user = user; // Attach user object to the request
+
+    // Create a new Supabase client instance scoped to this user's request
+    // Ensure SUPABASE_URL and SUPABASE_ANON_KEY are available in your environment
+    const supabaseUrl = process.env.SUPABASE_URL;
+    const supabaseAnonKey = process.env.SUPABASE_ANON;
+
+    if (!supabaseUrl || !supabaseAnonKey) {
+      console.error(
+        "Supabase URL or Anon Key is not defined in environment variables.",
+      );
+      res.status(500).json({ message: "Server configuration error." });
+      return;
+    }
+
+    req.supabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: `Bearer ${token}` } },
+    });
+
     next();
   } catch (err: any) {
     console.error("Auth middleware internal error:", err.message);
