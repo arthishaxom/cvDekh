@@ -34,7 +34,15 @@ DON'T ADD ANYTHING EXTRA THAT IS IN THE JOB DESCRIPTION THAT IS NOT ALREADY IN T
   - Formatting bullet points for details (max 2 points)
   - Filling in startDate and endDate if present or inferable
 - Extract relevant job fields from the description:
-  - jobTitle, company, location, eligibility, skills, stipend
+  - jobTitle, company, location, type (internship/full-time), skills, stipend
+
+- Calculate a match score between 0-100 based on the resume and description:
+  - Match score should be in range of 0-100 and should a number without any decimal points or signs like %.
+  - Match score should be based on how much the resume matches the job description.
+  - Match score should be based on the following factors:
+    - Skills Match : How many skills from the resume match the job description
+    - Project Match - Project hightlights in the skills mentioned in the resume.
+    - Summary Match - How much the summary matches the job description.
 
 - List out all the different improvements and suggestions that can be done on the resume to increase the Match Score like suggesting 2-3 project types, skills.
 
@@ -53,17 +61,17 @@ Respond ONLY with a valid JSON object that matches the following structure, with
         "endDate": "..."
       }
     ],
-    "improventsORSuggestions": [ "..." ]
+    },
+    "job": {
+      "jobTitle": "...",
+      "company": "...",
+      "location": "...",
+      "type": "...",
+      "skills": [ "..." ],
+      "stipend": "..."
+      "matchScore": "..."
+      "improvementsORSuggestions": [ "..." ]
   },
-  "job": {
-    "jobTitle": "...",
-    "company": "...",
-    "location": "...",
-    "eligibility": [ "..." ],
-    "skills": [ "..." ],
-    "stipend": "..."
-  },
-  "matchScore": "..."
 
 }
 `,

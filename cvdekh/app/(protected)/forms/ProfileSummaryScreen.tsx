@@ -10,7 +10,7 @@ import { Box } from "@/components/ui/box";
 import { Text } from "@/components/ui/text";
 import { Button, ButtonText } from "@/components/ui/button";
 import { useDebouncedCallback } from "use-debounce";
-import { useResumeStore } from "../../../store/resumeStore";
+import { useResumeStore } from "../../../store/resume/resumeStore";
 import { Textarea, TextareaInput } from "@/components/ui/textarea";
 
 export default function ProfileSummaryScreen() {

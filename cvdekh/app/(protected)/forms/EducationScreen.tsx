@@ -1,5 +1,8 @@
 import React, { useState, useCallback, useEffect } from "react";
-import { EducationEntry, useResumeStore } from "../../../store/resumeStore";
+import {
+  EducationEntry,
+  useResumeStore,
+} from "../../../store/resume/resumeStore";
 import { useRouter } from "expo-router";
 import {
   FormControl,
@@ -137,10 +140,7 @@ export default function EducationScreen() {
       <ScrollView showsVerticalScrollIndicator={false}>
         <VStack className="mb-4">
           {localEducation.map((education, index) => (
-            <Box
-              key={education.id || index}
-              className="mb-6 p-4 border border-gray-200 rounded-lg"
-            >
+            <Box key={education.id || index} className="mb-2">
               <HStack className="justify-between items-center mb-3">
                 <Text className="text-lg font-semibold">
                   Education {index + 1}

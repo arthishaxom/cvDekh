@@ -43,6 +43,7 @@ export default function ProtectedLayout() {
         name="(tabs)" // This is what makes it navigate to your tabs layout
       />
       <Stack.Screen name="forms" />
+      <Stack.Screen name="resume-details/[id]" />
     </Stack>
   );
 }

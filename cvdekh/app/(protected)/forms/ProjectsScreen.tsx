@@ -1,5 +1,8 @@
 import React, { useState, useCallback } from "react";
-import { ProjectEntry, useResumeStore } from "../../../store/resumeStore";
+import {
+  ProjectEntry,
+  useResumeStore,
+} from "../../../store/resume/resumeStore";
 import { useRouter } from "expo-router";
 import {
   FormControl,
@@ -41,22 +44,27 @@ export default function ProjectsScreen() {
       });
 
       projectsList.forEach((item) => {
-        if (item.title || item.techStack?.length || item.details?.length) {
+        // Create a new item with details filtered
+        const cleanedItem = {
+          ...item,
+          details: item.details?.filter((s) => s.trim()) || [],
+        };
+
+        if (
+          cleanedItem.title ||
+          cleanedItem.techStack?.length ||
+          cleanedItem.details?.length
+        ) {
           const existingItem = currentProjects.find(
-            (existing) => item.id === existing.id,
+            (existing) => cleanedItem.id === existing.id,
           );
           if (existingItem) {
-            updateListItem("projects", item.id!, item);
+            updateListItem("projects", cleanedItem.id!, cleanedItem);
           } else {
-            addListItem("projects", item);
+            addListItem("projects", cleanedItem);
           }
         }
       });
-
-      console.log(
-        "Updated Projects Store",
-        useResumeStore.getState().formData.projects,
-      );
       setIsSaving(false);
     },
     1000,
@@ -75,7 +83,7 @@ export default function ProjectsScreen() {
         if (field === "techStack" && typeof value === "string") {
           draft[index][field] = value.split(",").filter((s) => s.trim());
         } else if (field === "details" && typeof value === "string") {
-          draft[index][field] = value.split("\n").filter((s) => s.trim());
+          draft[index][field] = value.split("\n");
         } else {
           draft[index][field] = value as any;
         }
@@ -126,10 +134,7 @@ export default function ProjectsScreen() {
       <ScrollView showsVerticalScrollIndicator={false}>
         <VStack className="mb-4">
           {localProjects.map((project, index) => (
-            <Box
-              key={project.id || index}
-              className="mb-6 p-4 border border-gray-200 rounded-lg"
-            >
+            <Box key={project.id || index} className="mb-2">
               <HStack className="justify-between items-center mb-3">
                 <Text className="text-lg font-semibold">
                   Project {index + 1}
@@ -229,7 +234,7 @@ export default function ProjectsScreen() {
                     }
                     placeholder="• Developed a web application\n• Implemented user authentication\n• Deployed on AWS"
                     multiline={true}
-                    style={{ minHeight: 100, maxHeight: 200 }}
+                    style={{ textAlignVertical: "top" }}
                   />
                 </Textarea>
               </FormControl>

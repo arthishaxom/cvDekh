@@ -77,11 +77,33 @@ export async function getUserResumes(
 > {
   const { data, error } = await supabase
     .from("resume")
-    .select("id, data, created_at, updated_at")
+    .select("id, data, job_desc, created_at, updated_at")
     .eq("user_id", userId)
     .eq("is_original", false)
     .order("created_at", { ascending: false }); // Most recent first
 
   if (error) throw error;
   return data || [];
+}
+
+export async function insertImprovedResume(
+  supabase: SupabaseClient,
+  userId: string,
+  improvedData: ParsedResumeData,
+  jobDesc: any, // Changed from string to any to match frontend
+): Promise<any> {
+  // Consider defining a more specific return type
+  const { data: insertData, error: insertError } = await supabase
+    .from("resume")
+    .insert({
+      user_id: userId,
+      data: improvedData,
+      is_original: false,
+      job_desc: jobDesc, // Add job_desc here
+    })
+    .select("*") // Select all columns to return the full new row
+    .single();
+
+  if (insertError) throw insertError;
+  return insertData;
 }

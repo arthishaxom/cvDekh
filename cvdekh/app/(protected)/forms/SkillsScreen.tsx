@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from "react";
-import { SkillsData, useResumeStore } from "../../../store/resumeStore";
+import { SkillsData, useResumeStore } from "../../../store/resume/resumeStore";
 import { useRouter } from "expo-router";
 import {
   FormControl,

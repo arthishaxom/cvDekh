@@ -1,5 +1,8 @@
 import React, { useState, useCallback } from "react";
-import { ExperienceEntry, useResumeStore } from "../../../store/resumeStore";
+import {
+  ExperienceEntry,
+  useResumeStore,
+} from "../../../store/resume/resumeStore";
 import { useRouter } from "expo-router";
 import {
   FormControl,
@@ -44,15 +47,25 @@ export default function ExperienceScreen() {
       });
 
       experienceList.forEach((item) => {
-        if (item.jobTitle || item.company || item.details?.length) {
+        // Create a new item with details filtered
+        const cleanedItem = {
+          ...item,
+          details: item.details?.filter((s) => s.trim()) || [],
+        };
+
+        if (
+          cleanedItem.jobTitle ||
+          cleanedItem.company ||
+          cleanedItem.details?.length
+        ) {
           const existingItem = currentExperience.find(
-            (existing) => item.id === existing.id,
+            (existing) => cleanedItem.id === existing.id,
           );
 
           if (existingItem) {
-            updateListItem("experience", item.id!, item);
+            updateListItem("experience", cleanedItem.id!, cleanedItem);
           } else {
-            addListItem("experience", item);
+            addListItem("experience", cleanedItem);
           }
         }
       });
@@ -73,7 +86,7 @@ export default function ExperienceScreen() {
           draft[index] = { id: Crypto.randomUUID(), details: [] };
         }
         if (field === "details" && typeof value === "string") {
-          draft[index][field] = value.split("\n").filter((s) => s.trim());
+          draft[index][field] = value.split("\n");
         } else {
           draft[index][field] = value as any;
         }
@@ -127,10 +140,7 @@ export default function ExperienceScreen() {
       <ScrollView showsVerticalScrollIndicator={false}>
         <VStack className="mb-4">
           {localExperience.map((experience, index) => (
-            <Box
-              key={experience.id || index}
-              className="mb-6 p-4 border border-gray-200 rounded-lg"
-            >
+            <Box key={experience.id || index} className="mb-2">
               <HStack className="justify-between items-center mb-3">
                 <Text className="text-lg font-semibold">
                   Experience {index + 1}
@@ -230,7 +240,11 @@ export default function ExperienceScreen() {
                     }
                     placeholder="• Developed and maintained web applications\n• Collaborated with cross-functional teams\n• Improved system performance by 30%"
                     multiline={true}
-                    style={{ minHeight: 100, maxHeight: 200 }}
+                    style={{
+                      textAlignVertical: "top",
+                      minHeight: 100,
+                      maxHeight: 200,
+                    }}
                   />
                 </Textarea>
               </FormControl>

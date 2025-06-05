@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from "react";
 
-import { ContactInfo, useResumeStore } from "../../../store/resumeStore";
+import { ContactInfo, useResumeStore } from "../../../store/resume/resumeStore";
 import { useRouter } from "expo-router";
 import {
   FormControl,
