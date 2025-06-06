@@ -49,10 +49,11 @@ export default function Tab() {
   const [showModal, setShowModal] = useState(false);
   const [selectedFile, setSelectedFile] =
     useState<DocumentPicker.DocumentPickerAsset | null>(null);
-  const disabled = false; // This seems to be unused, consider removing or implementing
   const session = useAuthStore((state) => state.session);
-  const setData = useResumeStore((state) => state.setData); // Get action from resume store
-  const [isLoading, setIsLoading] = useState(false);
+  const isLoading = useResumeStore((state) => state.isLoading);
+  const parseResumeFromPDF = useResumeStore(
+    (state) => state.parseResumeFromPDF,
+  );
   const downloadPdf = useResumeStore((state) => state.downloadGeneratedResume);
   const resume = useResumeStore((state) => state.formData); // Get resume data from store
   const isInitialDataFetched = useResumeStore(
@@ -70,7 +71,7 @@ export default function Tab() {
   }, [isInitialDataFetched]);
 
   const handleDownload = async () => {
-    console.log("Downloading resume...");
+    // console.log("Downloading resume...");
     if (session) {
       await downloadPdf(null, session);
     } else {
@@ -91,77 +92,25 @@ export default function Tab() {
 
   const handleExtractAndParse = async () => {
     if (!selectedFile) {
-      Alert.alert("No File Selected", "Please select a PDF file to extract.");
-      return;
-    }
-    if (!session || !session.access_token) {
-      Alert.alert(
-        "Authentication Error",
-        "You are not signed in or your session is invalid. Please sign in again.",
-      );
-      return;
+      return; // The store will handle the alert
     }
 
-    const backendApiUrl =
-      process.env.EXPO_PUBLIC_API_URL || "http://localhost:3001";
-    const formData = new FormData();
-    // The backend expects the file under the field name 'resume'
-    formData.append("resume", {
-      uri: selectedFile.uri,
-      name: selectedFile.name,
-      type: selectedFile.mimeType || "application/pdf", // Ensure a fallback MIME type
-    } as any);
+    if (!session) {
+      return; // The store will handle the alert
+    }
 
-    setIsLoading(true);
+    // Call the store action and get the result
+    const result = await parseResumeFromPDF(selectedFile, session);
 
-    try {
-      const response = await axios.post(
-        `${backendApiUrl}/api/resume/parse-resume`,
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${session.access_token}`,
-            "Content-Type": "multipart/form-data",
-          },
-        },
-      );
-
-      if (response.data) {
-        setData(response.data);
-        console.log(
-          "Current store state (after update):",
-          useResumeStore.getState().formData,
-        );
-        Alert.alert(
-          "Extraction Successful",
-          `Resume data has been parsed and loaded into the form.`,
-        );
-      } else {
-        Alert.alert("Extraction Failed", "No data received from server.");
-      }
-    } catch (error) {
-      console.error("Error parsing resume:", error);
-      if (isAxiosError(error)) {
-        const status = error.response?.status || "N/A";
-        const message =
-          error.response?.data?.message ||
-          error.message ||
-          "An unknown error occurred during parsing.";
-        Alert.alert(
-          "Parsing Request Failed",
-          `Status: ${status}\nMessage: ${message}`,
-        );
-      } else {
-        Alert.alert(
-          "Parsing Error",
-          `Failed to parse the resume: ${(error as Error).message}`,
-        );
-      }
-    } finally {
-      setIsLoading(false);
+    // Handle UI updates based on success/failure
+    if (result.success) {
+      // Close modal and reset file selection on success
       setShowModal(false);
       setSelectedFile(null);
     }
+
+    // The store already handles loading states and alerts
+    // No need for local loading state management
   };
 
   const paddingBottom = useSharedValue(70); // Initial value when FAB is hidden
@@ -188,12 +137,18 @@ export default function Tab() {
           size="md"
           placement="bottom right"
           isHovered={false}
-          isDisabled={false}
+          isDisabled={isLoading}
           isPressed={false}
           className="rounded-lg bg-background-400/30 backdrop-blur-lg border border-white/15 shadow-none"
-          onPress={() => submitFullResume(session)} // Open modal on press
+          onPress={() => {
+            submitFullResume(session);
+          }} // Open modal on press
         >
-          <Save color={"#9DFF41"} size={20} />
+          {isLoading ? (
+            <Spinner color="white" accessibilityLabel="Loading indicator" />
+          ) : (
+            <Save color={"#9DFF41"} size={20} />
+          )}
         </Fab>
       )}
       <Box className="flex flex-col gap-4 pt-4">
@@ -205,22 +160,26 @@ export default function Tab() {
             <HStack className="gap-4">
               <Button
                 variant="outline"
+                isDisabled={isLoading}
                 onPress={handleDownload}
                 className={`rounded-lg flex-1 h-16 ${
-                  disabled ? "border-background-muted" : "border-white/15 "
+                  isLoading ? "border-background-muted" : "border-white/15 "
                 }`}
               >
                 <Download color="#6cd100" size={18} />
                 <Text
                   className={`font-semibold ${
-                    disabled ? "text-background-300" : "text-primary-300"
+                    isLoading ? "text-background-300" : "text-primary-300"
                   }`}
                 >
                   Download
                 </Text>
               </Button>
               <Button
-                className="rounded-lg bg-primary-400/90 h-16 flex-1"
+                isDisabled={isLoading}
+                className={`rounded-lg bg-primary-400/90 h-16 flex-1 ${
+                  isLoading ? "opacity-50" : "opacity-100"
+                }`}
                 onPress={() => setShowModal(true)}
               >
                 <FileOutput color="black" size={18} />

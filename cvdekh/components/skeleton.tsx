@@ -37,7 +37,7 @@ export const SkeletonLoader = ({
   className = "rounded-lg",
   backgroundColor = "#DDEAF5",
   direction = ANIMATION_DIRECTION.leftToRight,
-  animationType = ANIMATION_TYPE.shiver,
+  animationType = ANIMATION_TYPE.pulse,
 }: SkeletonLoaderProps) => {
   //to create pulse animation by increasing and decreasing opacity of parent
   const opacity = useSharedValue(1);

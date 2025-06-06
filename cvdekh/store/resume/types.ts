@@ -114,4 +114,8 @@ export interface ResumeStoreState {
     resumeId: string | null, // Pass null to download the original resume
     session: Session,
   ) => Promise<void>;
+  parseResumeFromPDF: (
+    selectedFile: any,
+    session: Session,
+  ) => Promise<{ success: boolean }>;
 }

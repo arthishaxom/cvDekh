@@ -1,10 +1,11 @@
 import { create } from "zustand";
 import { immer } from "zustand/middleware/immer"; // For easier immutable updates
-import axios from "axios"; // Or your preferred HTTP client
+import axios, { isAxiosError } from "axios"; // Or your preferred HTTP client
 import { Session } from "@supabase/supabase-js";
 import * as Crypto from "expo-crypto";
 import { JobDetails, ResumeFormData, ResumeStoreState } from "./types";
 import { downloadPDFToDevice, ensureListItemsHaveIds } from "./utils";
+import { Alert } from "react-native";
 
 const initialFormData: ResumeFormData = {
   id: "",
@@ -383,6 +384,92 @@ export const useResumeStore = create<ResumeStoreState>()(
             error.message ||
             "Failed to generate or download PDF",
         });
+      }
+    },
+
+    parseResumeFromPDF: async (selectedFile: any, session: Session) => {
+      if (!selectedFile) {
+        Alert.alert("No File Selected", "Please select a PDF file to extract.");
+        return { success: false };
+      }
+
+      if (!session || !session.access_token) {
+        Alert.alert(
+          "Authentication Error",
+          "You are not signed in or your session is invalid. Please sign in again.",
+        );
+        return { success: false };
+      }
+
+      set({ isLoading: true, error: null });
+
+      try {
+        const backendApiUrl =
+          process.env.EXPO_PUBLIC_API_URL || "http://localhost:3001";
+
+        const formData = new FormData();
+        // The backend expects the file under the field name 'resume'
+        formData.append("resume", {
+          uri: selectedFile.uri,
+          name: selectedFile.name,
+          type: selectedFile.mimeType || "application/pdf", // Ensure a fallback MIME type
+        } as any);
+
+        const response = await axios.post(
+          `${backendApiUrl}/api/resume/parse-resume`,
+          formData,
+          {
+            headers: {
+              Authorization: `Bearer ${session.access_token}`,
+              "Content-Type": "multipart/form-data",
+            },
+          },
+        );
+
+        if (response.data) {
+          // Use the existing setData method to update the store
+          get().setData(response.data);
+
+          console.log("Current store state (after update):", get().formData);
+
+          Alert.alert(
+            "Extraction Successful",
+            "Resume data has been parsed and loaded into the form.",
+          );
+
+          set({ isLoading: false });
+          return { success: true };
+        } else {
+          Alert.alert("Extraction Failed", "No data received from server.");
+          set({ isLoading: false, error: "No data received from server." });
+          return { success: false };
+        }
+      } catch (error) {
+        console.error("Error parsing resume:", error);
+
+        let errorMessage = "An unknown error occurred during parsing.";
+        let statusMessage = "";
+
+        if (isAxiosError(error)) {
+          const status = error.response?.status || "N/A";
+          statusMessage = `Status: ${status}\n`;
+          errorMessage =
+            error.response?.data?.message || error.message || errorMessage;
+        } else {
+          errorMessage = (error as Error).message;
+        }
+
+        Alert.alert(
+          "Parsing Request Failed",
+          `${statusMessage}Message: ${errorMessage}`,
+        );
+
+        set({
+          isLoading: false,
+          error: `Failed to parse resume: ${errorMessage}`,
+        });
+
+        return { success: false };
       }
     },
   })),
