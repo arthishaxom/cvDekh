@@ -233,11 +233,10 @@ export const useResumeStore = create<ResumeStoreState>()(
         );
 
         if (response.data) {
-          // Use your existing setData method
           get().setData(response.data);
           console.log("Successfully fetched and set resume data");
-          set({ isInitialDataFetched: true }); // Set this flag after successful fetch
         }
+        set({ isInitialDataFetched: true, isLoading: false });
       } catch (error) {
         console.error("Failed to fetch resume data:", error);
         set({

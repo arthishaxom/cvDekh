@@ -11,7 +11,8 @@ import {
   getResumeById,
   getUserResumes,
   upsertOriginalResume,
-  insertImprovedResume, // Add this import
+  insertImprovedResume,
+  cleanupUserResumes, // Add this import
 } from "../utils/resumeUtils";
 import { resumeImproverService } from "../utils/resumeImproverService"; // Import the new service
 import { ParsedResumeData } from "../lib/aiService"; // Import ParsedResumeData if not already
@@ -92,6 +93,8 @@ router.post(
         res.status(404).json({ message: "No resume data found" });
         return;
       }
+
+      await cleanupUserResumes(req.supabaseClient, userId, "generated-resumes");
 
       // Generate PDF (assuming generateResumePdf returns a stream that can be converted to buffer)
       const pdfBuffer = await new Promise<Buffer>((resolve, reject) => {

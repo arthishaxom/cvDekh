@@ -1,10 +1,11 @@
 import express from "express";
 import resumeRouter from "./routes/resume";
-import dotenv from "dotenv/config";
+import "dotenv/config";
 import {
   authMiddleware,
   AuthenticatedRequest,
 } from "./middleware/authMiddleware";
+import { closeRedis, initializeRedis } from "./lib/redisClient";
 
 const app = express();
 const port = process.env.PORT || 80;
@@ -37,6 +38,49 @@ app.use(
   },
 );
 
-app.listen(port, () => {
-  console.log(`Better Auth app listening on port ${port}`);
-});
+const startServer = async () => {
+  try {
+    console.log("🚀 Starting cvDekh Server...");
+
+    // Initialize Redis connection
+    console.log("📡 Connecting to Redis...");
+    await initializeRedis();
+
+    // Start the Express server
+    const server = app.listen(port, () => {
+      console.log(`✅ cvDekh Server listening on port ${port}`);
+      console.log(`🌐 Health check: http://localhost:${port}/api/ok`);
+    });
+
+    // Graceful shutdown handling
+    const gracefulShutdown = async (signal: string) => {
+      console.log(`\n${signal} received, shutting down gracefully...`);
+
+      // Close Redis connection
+      console.log("📡 Closing Redis connection...");
+      await closeRedis();
+
+      // Close Express server
+      server.close(() => {
+        console.log("✅ Server closed successfully");
+        process.exit(0);
+      });
+
+      // Force close after 10 seconds
+      setTimeout(() => {
+        console.error("❌ Forced shutdown after timeout");
+        process.exit(1);
+      }, 10000);
+    };
+
+    // Listen for termination signals
+    process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
+    process.on("SIGINT", () => gracefulShutdown("SIGINT"));
+  } catch (error) {
+    console.error("❌ Failed to start server:", error);
+    process.exit(1);
+  }
+};
+
+// Start the server
+startServer();

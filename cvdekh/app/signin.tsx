@@ -1,17 +1,15 @@
-import React, { useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { router, useNavigation } from "expo-router";
 import { Box } from "@/components/ui/box";
 import { Text } from "@/components/ui/text";
 import { Input, InputField, InputSlot } from "@/components/ui/input";
-import { Eye, Lock, Mail } from "lucide-react-native";
+import { Eye, EyeOff, Lock, Mail } from "lucide-react-native";
 import { Button } from "@/components/ui/button";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import { supabase } from "@/lib/api"; // Added for Supabase client
-import {
-  GoogleSignin,
-  statusCodes,
-} from "@react-native-google-signin/google-signin"; // Added for Google Sign-In
-import { AppState } from "react-native";
+import { useAuthStore } from "@/store/auth";
+import { Alert, TouchableOpacity, AppState } from "react-native";
+import { VStack } from "@/components/ui/vstack";
 
 AppState.addEventListener("change", (state) => {
   if (state === "active") {
@@ -24,52 +22,61 @@ AppState.addEventListener("change", (state) => {
 export default function Signin() {
   const navigation = useNavigation();
 
-  const handleLogin = async () => {
-    try {
-      // Check if Play Services are available
-      await GoogleSignin.hasPlayServices({
-        showPlayServicesUpdateDialog: true,
-      });
-      // Prompts the user to select a Google account
-      const userInfo = await GoogleSignin.signIn();
+  // Form state
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(false); // Toggle between sign in and sign up
 
-      if (userInfo.data?.idToken) {
-        // Sign in to Supabase with the Google ID token
-        const { data, error } = await supabase.auth.signInWithIdToken({
-          provider: "google",
-          token: userInfo.data.idToken,
-        });
+  // Auth store
+  const {
+    signInWithEmail,
+    signUpWithEmail,
+    signInWithGoogle,
+    isLoading,
+    error,
+    session,
+  } = useAuthStore();
 
-        if (error) {
-          console.error("Supabase Google sign-in error:", error.message);
-          alert(`Error signing in with Google: ${error.message}`);
-          return;
-        }
-        console.log("Google sign-in successful, Supabase session data:", data);
-        router.replace("./(protected)");
-      } else {
-        throw new Error("Google Sign In failed: No ID token received.");
-      }
-    } catch (error: any) {
-      if (error.code === statusCodes.SIGN_IN_CANCELLED) {
-        console.log("User cancelled the Google login flow");
-      } else if (error.code === statusCodes.IN_PROGRESS) {
-        console.log("Google sign in is in progress already");
-      } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
-        console.log("Google Play services not available or outdated");
-        alert("Google Play Services not available or outdated. Please update.");
-      } else {
-        // Some other error happened
-        console.error("Google sign-in error:", error);
-        alert(
-          `Google Sign-In Error: ${
-            error.message || "An unknown error occurred"
-          }`,
-        );
-      }
+  // Handle email/password authentication
+  const handleEmailAuth = async () => {
+    if (!email.trim() || !password.trim()) {
+      Alert.alert("Error", "Please fill in all fields");
+      return;
     }
+
+    const success = isSignUp
+      ? await signUpWithEmail(email, password)
+      : await signInWithEmail(email, password);
+
+    // if (success) {
+    //   router.replace("./(protected)");
+    // }
   };
 
+  // Handle Google sign-in
+  const handleGoogleSignIn = async () => {
+    const success = await signInWithGoogle();
+    // if (success) {
+    //   router.replace("./(protected)");
+    // }
+  };
+
+  // Show error if there is one
+  useEffect(() => {
+    if (error) {
+      Alert.alert("Authentication Error", error);
+    }
+  }, [error]);
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (session) {
+      router.replace("./(protected)");
+    }
+  }, [session]);
+
+  // Configure navigation header
   useEffect(() => {
     navigation.setOptions({
       headerShown: false,
@@ -78,54 +85,113 @@ export default function Signin() {
         backgroundColor: "#161616",
       },
       headerShadowVisible: false,
-      headerTitleStyle: {},
     });
   }, [navigation]);
 
   return (
-    <Box className="flex-1 bg-background-500 p-12 justify-center">
-      <Box className="gap-4">
-        <Text className="font-extrabold text-5xl">Hello,</Text>
-        <Text className="font-extrabold text-5xl">Welcome</Text>
-        <Text className="font-extrabold text-5xl">Back</Text>
-        <Input className="p-5 h-min rounded-lg mt-4">
-          <InputSlot>
-            <Mail color={"grey"} size={20} />
-          </InputSlot>
-          <InputField placeholder="Email" />
-        </Input>
-        <Input className="p-5 h-min rounded-lg mt-1">
-          <InputSlot>
-            <Lock color={"grey"} size={20} />
-          </InputSlot>
-          <InputField placeholder="Password" />
-          <InputSlot>
-            <Eye color={"grey"} />
-          </InputSlot>
-        </Input>
-        <Text className="font-bold text-right">Forgot Password?</Text>
-        <Button
-          onPress={() => {}}
-          className="bg-primary-300 p-5 rounded-lg h-min"
-        >
-          <Text className="text-background-800 font-bold tracking-widest text-lg">
-            Login
-          </Text>
-        </Button>
-        <Text className="text-background-300 text-center">
-          or continue with
+    <VStack className="flex-1 bg-background-500 px-6 justify-center">
+      <Box className="mb-6">
+        <Text className="text-white text-5xl font-bold mb-2">
+          {isSignUp ? "Create" : "Hello,"}
         </Text>
-        <Button
-          variant="outline"
-          className="p-5 rounded-lg h-min"
-          onPress={handleLogin} // This button will now trigger Google Sign-In
-        >
-          <AntDesign name="google" size={20} color="white" />
-          <Text className="text-white font-bold tracking-widest text-lg">
-            Google
-          </Text>
-        </Button>
+        <Text className="text-white text-5xl font-bold">
+          {isSignUp ? "Account" : "Welcome Back"}
+        </Text>
       </Box>
-    </Box>
+
+      <Box className="mb-4">
+        <Input className="mb-4 rounded-lg h-16 bg-background-400/30 border-zinc-700">
+          <InputSlot className="pl-4">
+            <Mail color="white" size={20} />
+          </InputSlot>
+          <InputField
+            placeholder="Email"
+            placeholderTextColor="#9CA3AF"
+            className="text-white ml-1"
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            autoComplete="email"
+          />
+        </Input>
+
+        <Input className="mb-4 rounded-lg h-16 bg-background-400/30 border-zinc-700">
+          <InputSlot className="pl-4">
+            <Lock color="white" size={20} />
+          </InputSlot>
+          <InputField
+            placeholder="Password"
+            placeholderTextColor="#9CA3AF"
+            className="text-white ml-1 flex-1"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry={!showPassword}
+            autoComplete="password"
+          />
+          <InputSlot className="pr-4">
+            <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+              {showPassword ? (
+                <EyeOff color="white" size={20} />
+              ) : (
+                <Eye color="white" size={20} />
+              )}
+            </TouchableOpacity>
+          </InputSlot>
+        </Input>
+
+        {!isSignUp && (
+          <TouchableOpacity>
+            <Text className="text-primary-300 text-right">
+              Forgot Password?
+            </Text>
+          </TouchableOpacity>
+        )}
+      </Box>
+
+      <Button
+        onPress={handleEmailAuth}
+        disabled={isLoading}
+        size="lg"
+        className="bg-primary-300 p-2 rounded-lg mb-4 h-min py-4"
+      >
+        <Text className="text-black font-semibold text-lg">
+          {isLoading
+            ? isSignUp
+              ? "Creating Account..."
+              : "Signing In..."
+            : isSignUp
+            ? "Create Account"
+            : "Login"}
+        </Text>
+      </Button>
+
+      <Box className="flex-row items-center justify-center mb-4">
+        <Text className="text-gray-400">
+          {isSignUp ? "Already have an account? " : "Don't have an account? "}
+        </Text>
+        <TouchableOpacity onPress={() => setIsSignUp(!isSignUp)}>
+          <Text className="text-primary-300 font-semibold">
+            {isSignUp ? "Sign In" : "Sign Up"}
+          </Text>
+        </TouchableOpacity>
+      </Box>
+
+      <Box className="flex-row items-center justify-center mb-4">
+        <Box className="flex-1 h-px bg-gray-600" />
+        <Text className="text-gray-400 mx-4">or continue with</Text>
+        <Box className="flex-1 h-px bg-gray-600" />
+      </Box>
+
+      <Button
+        onPress={handleGoogleSignIn}
+        disabled={isLoading}
+        size="lg"
+        className="bg-white p-2 h-min rounded-lg flex-row items-center justify-center gap-1 py-4"
+      >
+        <AntDesign name="google" size={20} color="black" className="" />
+        <Text className="text-black font-semibold">Google</Text>
+      </Button>
+    </VStack>
   );
 }

@@ -7,6 +7,7 @@ export interface AIService {
 }
 
 export interface ParsedResumeData {
+  id?: string;
   name: string;
   summary: string;
   contactInfo: {

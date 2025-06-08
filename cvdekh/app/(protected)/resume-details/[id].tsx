@@ -1,6 +1,6 @@
 import { ScrollView } from "react-native";
 import { useLocalSearchParams, Stack } from "expo-router";
-import { useResumeStore, ResumeFormData } from "@/store/resume/resumeStore"; // Adjust path as needed
+import { useResumeStore } from "@/store/resume/resumeStore"; // Adjust path as needed
 import { Box } from "@/components/ui/box";
 import { Text } from "@/components/ui/text";
 import { Heading } from "@/components/ui/heading";
@@ -11,6 +11,7 @@ import { Download, MapPin } from "lucide-react-native";
 import { Badge, BadgeText } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/store/auth";
+import { ProjectEntry } from "@/store/resume/types";
 // Import other components you might need for displaying details
 
 export default function ResumeDetailScreen() {
@@ -62,14 +63,14 @@ export default function ResumeDetailScreen() {
     );
   };
 
-  const renderProjectDetails = (projects: ResumeFormData["projects"]) => {
+  const renderProjectDetails = (projects: ProjectEntry[]) => {
     if (!projects || projects.length === 0) return null;
     return (
       <VStack className="mb-3">
         <Heading size="md" className="mb-2 text-white">
           Projects
         </Heading>
-        {projects.map((project) => (
+        {projects.map((project: ProjectEntry) => (
           <Box
             key={project.id}
             className="mb-2 p-2 border border-white/20 rounded"

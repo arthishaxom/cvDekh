@@ -1,6 +1,10 @@
 import { create } from "zustand";
 import { supabase } from "@/lib/api";
-import { GoogleSignin } from "@react-native-google-signin/google-signin";
+import {
+  GoogleSignin,
+  statusCodes,
+} from "@react-native-google-signin/google-signin";
+import { Session } from "@supabase/supabase-js";
 
 // Configure Google Sign-In globally when this module is loaded
 GoogleSignin.configure({
@@ -28,15 +32,20 @@ supabase.auth.onAuthStateChange((event, session) => {
 });
 
 type AuthState = {
-  session: any | null;
+  session: Session | null;
   isLoading: boolean;
+  error: string | null;
   refreshSession: () => Promise<void>;
+  signInWithEmail: (email: string, password: string) => Promise<boolean>;
+  signUpWithEmail: (email: string, password: string) => Promise<boolean>;
+  signInWithGoogle: () => Promise<boolean>;
   signOut: () => Promise<void>;
 };
 
 export const useAuthStore = create<AuthState>((set, get) => ({
   session: null,
   isLoading: true, // Start with isLoading: true
+  error: null,
   refreshSession: async () => {
     // Only set isLoading to true if it's not already true to avoid redundant updates
     if (!get().isLoading) {
@@ -61,10 +70,121 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       set({ session, isLoading: false });
     }
   },
+
+  signInWithEmail: async (email: string, password: string) => {
+    set({ isLoading: true, error: null });
+
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) {
+        set({ error: error.message, isLoading: false });
+        return false;
+      }
+
+      // Session will be set automatically by onAuthStateChange
+      return true;
+    } catch (error: any) {
+      set({
+        error: error.message || "An unexpected error occurred",
+        isLoading: false,
+      });
+      return false;
+    }
+  },
+
+  signUpWithEmail: async (email: string, password: string) => {
+    set({ isLoading: true, error: null });
+
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+      });
+
+      if (error) {
+        set({ error: error.message, isLoading: false });
+        return false;
+      }
+
+      // Check if email confirmation is required
+      if (data.user && !data.session) {
+        set({
+          error: "Please check your email to confirm your account",
+          isLoading: false,
+        });
+        return false;
+      }
+
+      // Session will be set automatically by onAuthStateChange
+      return true;
+    } catch (error: any) {
+      set({
+        error: error.message || "An unexpected error occurred",
+        isLoading: false,
+      });
+      return false;
+    }
+  },
+
+  signInWithGoogle: async () => {
+    set({ isLoading: true, error: null });
+
+    try {
+      // Check if Play Services are available
+      await GoogleSignin.hasPlayServices({
+        showPlayServicesUpdateDialog: true,
+      });
+
+      // Get user info from Google
+      const userInfo = await GoogleSignin.signIn();
+
+      if (!userInfo.data?.idToken) {
+        throw new Error("No ID token received from Google");
+      }
+
+      // Sign in to Supabase with Google ID token
+      const { data, error } = await supabase.auth.signInWithIdToken({
+        provider: "google",
+        token: userInfo.data.idToken,
+      });
+
+      if (error) {
+        set({ error: error.message, isLoading: false });
+        return false;
+      }
+
+      // Session will be set automatically by onAuthStateChange
+      return true;
+    } catch (error: any) {
+      let errorMessage = "An unexpected error occurred";
+
+      // Handle specific Google Sign-In errors
+      if (error.code === statusCodes.SIGN_IN_CANCELLED) {
+        errorMessage = "Sign in was cancelled";
+      } else if (error.code === statusCodes.IN_PROGRESS) {
+        errorMessage = "Sign in already in progress";
+      } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
+        errorMessage = "Google Play Services not available";
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+
+      set({ error: errorMessage, isLoading: false });
+      return false;
+    }
+  },
+
   signOut: async () => {
     try {
-      await GoogleSignin.revokeAccess();
-      await GoogleSignin.signOut();
+      const provider = get().session?.user.app_metadata.provider;
+      if (provider === "google") {
+        await GoogleSignin.revokeAccess();
+        await GoogleSignin.signOut();
+      }
       const { error } = await supabase.auth.signOut();
       if (error) {
         console.error("Error signing out:", error.message);
@@ -75,5 +195,3 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
   },
 }));
-
-// Set up auth state change listener
