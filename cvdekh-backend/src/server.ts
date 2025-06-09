@@ -6,10 +6,16 @@ import {
   AuthenticatedRequest,
 } from "./middleware/authMiddleware";
 import { closeRedis, initializeRedis } from "./lib/redisClient";
+import cors from "cors";
 
 const app = express();
 const port = process.env.PORT || 80;
 
+app.use(
+  cors({
+    origin: "http://localhost:8081",
+  }),
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

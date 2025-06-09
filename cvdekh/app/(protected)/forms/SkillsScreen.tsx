@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from "react";
-import { SkillsData, useResumeStore } from "../../../store/resume/resumeStore";
+import { useResumeStore } from "../../../store/resume/resumeStore";
 import { useRouter } from "expo-router";
 import {
   FormControl,
@@ -16,6 +16,7 @@ import { Badge, BadgeText } from "@/components/ui/badge";
 import { useDebouncedCallback } from "use-debounce";
 import { produce } from "immer";
 import { ScrollView, TouchableOpacity } from "react-native";
+import { SkillsData } from "@/store/resume/types";
 
 // Predefined skill suggestions
 const SKILL_SUGGESTIONS = {

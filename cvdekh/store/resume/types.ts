@@ -103,7 +103,6 @@ export interface ResumeStoreState {
     section: K,
     itemId: string,
   ) => void;
-  saveFormData: () => Promise<void>; // This will be debounced in the component
   fetchResumeData: (session: Session) => Promise<void>; // Fetches initial data
   submitFullResume: (session: Session) => Promise<void>; // Submits all data
   improveResumeWithJobDescription: (
@@ -118,4 +117,5 @@ export interface ResumeStoreState {
     selectedFile: any,
     session: Session,
   ) => Promise<{ success: boolean }>;
+  resetStore: () => void;
 }

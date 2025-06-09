@@ -1,7 +1,7 @@
 import { Box } from "@/components/ui/box";
 import { WithLocalSvg } from "react-native-svg/css";
 import { Text } from "@/components/ui/text";
-import { useEffect, useState, useRef } from "react"; // Added useRef
+import { useState, useRef, useEffect } from "react"; // Added useRef
 import { useResumeStore } from "@/store/resume/resumeStore";
 import { useAuthStore } from "@/store/auth";
 import { FlatList, Pressable } from "react-native"; // Import Pressable
@@ -22,7 +22,7 @@ import {
 import { Icon, CloseIcon } from "@/components/ui/icon";
 import { Heading } from "@/components/ui/heading";
 import { Textarea, TextareaInput } from "@/components/ui/textarea"; // Import Textarea
-import { Link } from "expo-router";
+import { Link, router } from "expo-router";
 import {
   ANIMATION_DIRECTION,
   ANIMATION_TYPE,
@@ -38,9 +38,26 @@ export default function Tab() {
   const isLoading = useResumeStore((state) => state.isLoading);
   const session = useAuthStore((state) => state.session);
 
+  // useFocusEffect(
+  //   useCallback(() => {
+  //   if (!session) {
+  //     // Handle unauthenticated state appropriately
+  //     router.replace("/");
+  //     return;
+  //   }
+  //   useResumeStore.getState().fetchAllResume(session);
+  // }, [session]), // Dependency on session means this runs when session changes
+  //   // This handles the case where user logs out and logs back in with different account
+  // );
+
   useEffect(() => {
-    useResumeStore.getState().fetchAllResume(useAuthStore.getState().session!);
-  }, []);
+    if (!session) {
+      // Handle unauthenticated state appropriately
+      router.replace("/");
+      return;
+    }
+    useResumeStore.getState().fetchAllResume(session);
+  }, [session]);
 
   const [showImproveModal, setShowImproveModal] = useState(false);
   const [jobDescriptionInput, setJobDescriptionInput] = useState("");

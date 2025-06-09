@@ -26,8 +26,8 @@ import {
   Menu,
   CircleUserRound,
 } from "lucide-react-native";
-import { useEffect, useState } from "react";
-import { Pressable, ScrollView } from "react-native";
+import { useCallback, useState } from "react";
+import { Pressable, RefreshControl, ScrollView } from "react-native";
 import { handleBrowse } from "@/lib/browser";
 import * as DocumentPicker from "expo-document-picker";
 import { useAuthStore } from "@/store/auth";
@@ -37,7 +37,7 @@ import { VStack } from "@/components/ui/vstack";
 import { HStack } from "@/components/ui/hstack";
 import { Divider } from "@/components/ui/divider";
 import { Badge, BadgeText } from "@/components/ui/badge";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import { SkeletonLoader } from "@/components/skeleton";
 import { Fab } from "@/components/ui/fab";
 import Animated, {
@@ -60,14 +60,19 @@ export default function Tab() {
   const resume = useResumeStore((state) => state.formData); // Get resume data from store
   const submitFullResume = useResumeStore((state) => state.submitFullResume);
   const hasChanges = useResumeStore((state) => state.hasChanges);
+  const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
-    if (!useResumeStore.getState().isInitialDataFetched) {
-      useResumeStore
-        .getState()
-        .fetchResumeData(useAuthStore.getState().session!);
-    }
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      if (!session) {
+        // Handle unauthenticated state appropriately
+        router.replace("/");
+        return;
+      }
+
+      useResumeStore.getState().fetchResumeData(session);
+    }, [session]),
+  );
 
   const handleDownload = async () => {
     // console.log("Downloading resume...");
@@ -152,14 +157,33 @@ export default function Tab() {
       )}
       <Box className="flex-1 justify-between">
         <HStack className="items-center justify-between px-4 py-2">
-          <Menu color={"black"} size={20} />
+          <Menu color={"white"} size={20} />
           <Heading className="text-2xl">Resume</Heading>
           <Pressable onPress={() => router.push("/settings")}>
             <CircleUserRound color={"white"} size={20} />
           </Pressable>
         </HStack>
         <Box className="flex flex-col gap-4 pt-4">
-          <ScrollView className="w-full ">
+          <ScrollView
+            className="w-full "
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={() => {
+                  setRefreshing(true);
+                  useResumeStore.setState({ isInitialDataFetched: false });
+                  if (!session) {
+                    // Handle unauthenticated state appropriately
+                    router.replace("/");
+                    return;
+                  }
+
+                  useResumeStore.getState().fetchResumeData(session);
+                  setRefreshing(false);
+                }}
+              />
+            }
+          >
             <Animated.View
               style={animatedPaddingStyle}
               className=" flex flex-col gap-4 items-start px-4"
@@ -246,7 +270,9 @@ export default function Tab() {
                         color={"white"}
                         size={16}
                       />
-                      <Text>{resume?.name || "--"}</Text>
+                      <Text>
+                        {resume?.name === "null" ? "--" : resume?.name || "--"}
+                      </Text>
                     </HStack>
                     <HStack className="opacity-90 items-center gap-1">
                       <Feather
@@ -256,7 +282,11 @@ export default function Tab() {
                         size={16}
                         color="white"
                       />
-                      <Text>{resume?.contactInfo?.linkedin || "--"}</Text>
+                      <Text>
+                        {resume?.contactInfo?.linkedin === "null"
+                          ? "--"
+                          : resume?.contactInfo?.linkedin || "--"}
+                      </Text>
                     </HStack>
                     <HStack className="opacity-90 items-center gap-1">
                       <Feather
@@ -266,7 +296,11 @@ export default function Tab() {
                         size={16}
                         color="white"
                       />
-                      <Text>{resume?.contactInfo?.github || "--"}</Text>
+                      <Text>
+                        {resume?.contactInfo?.github === "null"
+                          ? "--"
+                          : resume?.contactInfo?.github || "--"}
+                      </Text>
                     </HStack>
                     <HStack className="opacity-90 items-center gap-1">
                       <Mail
@@ -288,7 +322,11 @@ export default function Tab() {
                         size={16}
                         color="white"
                       />
-                      <Text>{resume?.contactInfo?.phone || "--"}</Text>
+                      <Text>
+                        {resume?.contactInfo?.phone === "null"
+                          ? "--"
+                          : resume?.contactInfo?.phone || "--"}
+                      </Text>
                     </HStack>
                   </VStack>
                 </Pressable>

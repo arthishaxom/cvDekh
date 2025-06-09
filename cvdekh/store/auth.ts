@@ -5,6 +5,7 @@ import {
   statusCodes,
 } from "@react-native-google-signin/google-signin";
 import { Session } from "@supabase/supabase-js";
+import { useResumeStore } from "./resume/resumeStore";
 
 // Configure Google Sign-In globally when this module is loaded
 GoogleSignin.configure({
@@ -75,7 +76,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     set({ isLoading: true, error: null });
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
@@ -190,6 +191,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         console.error("Error signing out:", error.message);
       }
       set({ session: null });
+      useResumeStore.getState().resetStore();
     } catch (error) {
       console.error("Error revoking Google access:", error);
     }

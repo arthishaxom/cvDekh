@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from "react";
 
-import { ContactInfo, useResumeStore } from "../../../store/resume/resumeStore";
+import { useResumeStore } from "../../../store/resume/resumeStore";
 import { useRouter } from "expo-router";
 import {
   FormControl,
@@ -14,6 +14,7 @@ import { Text } from "@/components/ui/text";
 import { Button, ButtonText } from "@/components/ui/button";
 import { useDebouncedCallback } from "use-debounce";
 import { produce } from "immer";
+import { ContactInfo } from "@/store/resume/types";
 
 export default function GeneralInfoScreen() {
   const router = useRouter();

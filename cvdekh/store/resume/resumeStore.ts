@@ -106,6 +106,10 @@ export const useResumeStore = create<ResumeStoreState>()(
           {
             headers: {
               Authorization: `Bearer ${session.access_token}`,
+              // Add this header to bypass ngrok browser warning
+              "ngrok-skip-browser-warning": "true",
+              // Also add user-agent to make it look like a proper API request
+              "User-Agent": "MyApp/1.0",
             },
           },
         );
@@ -198,22 +202,17 @@ export const useResumeStore = create<ResumeStoreState>()(
       });
     },
 
-    saveFormData: async () => {
-      set({ isSaving: true, error: null });
-      console.log("Simulating auto-save with current data:", get().formData);
-      // Replace with actual API call to save draft if needed
-      // For example: await axios.post('/api/resume/save-draft', get().formData);
-      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate network delay
-      set({ isSaving: false });
-      // Handle success/error from API call here
-    },
-
     fetchResumeData: async (session: Session) => {
       // Critical: Check if already fetched or currently loading
-      const { isInitialDataFetched, isLoading } = get();
-      if (isLoading || isInitialDataFetched) {
-        console.log("Data already fetched or currently loading, skipping...");
-        return; // Exit early - this prevents multiple API calls
+      const { isInitialDataFetched } = get();
+      // if (isLoading) {
+      //   console.log("Data is currently loading, skipping...");
+      //   return;
+      // }
+
+      if (isInitialDataFetched) {
+        console.log("Data has already been fetched, skipping...");
+        return;
       }
 
       set({ isLoading: true, error: null });
@@ -227,16 +226,20 @@ export const useResumeStore = create<ResumeStoreState>()(
           {
             headers: {
               Authorization: `Bearer ${session.access_token}`,
-              "Content-Type": "multipart/form-data",
+              "Content-Type": "application/json",
+              // Add this header to bypass ngrok browser warning
+              "ngrok-skip-browser-warning": "true",
+              // Also add user-agent to make it look like a proper API request
+              "User-Agent": "MyApp/1.0",
             },
           },
         );
 
         if (response.data) {
           get().setData(response.data);
+          set({ isInitialDataFetched: true, isLoading: false });
           console.log("Successfully fetched and set resume data");
         }
-        set({ isInitialDataFetched: true, isLoading: false });
       } catch (error) {
         console.error("Failed to fetch resume data:", error);
         set({
@@ -268,6 +271,10 @@ export const useResumeStore = create<ResumeStoreState>()(
             headers: {
               Authorization: `Bearer ${session.access_token}`,
               "Content-Type": "application/json",
+              // Add this header to bypass ngrok browser warning
+              "ngrok-skip-browser-warning": "true",
+              // Also add user-agent to make it look like a proper API request
+              "User-Agent": "MyApp/1.0",
             },
           },
         );
@@ -293,6 +300,10 @@ export const useResumeStore = create<ResumeStoreState>()(
           {
             headers: {
               Authorization: `Bearer ${session.access_token}`,
+              // Add this header to bypass ngrok browser warning
+              "ngrok-skip-browser-warning": "true",
+              // Also add user-agent to make it look like a proper API request
+              "User-Agent": "MyApp/1.0",
             },
           },
         );
@@ -354,11 +365,13 @@ export const useResumeStore = create<ResumeStoreState>()(
           {
             headers: {
               Authorization: `Bearer ${session.access_token}`,
+              // Add this header to bypass ngrok browser warning
+              "ngrok-skip-browser-warning": "true",
+              // Also add user-agent to make it look like a proper API request
+              "User-Agent": "MyApp/1.0",
             },
           },
         );
-
-        console.log("Response from /generate-resume endpoint:", response.data);
 
         if (response.data && response.data.pdfUrl) {
           const pdfUrl = response.data.pdfUrl;
@@ -421,6 +434,10 @@ export const useResumeStore = create<ResumeStoreState>()(
             headers: {
               Authorization: `Bearer ${session.access_token}`,
               "Content-Type": "multipart/form-data",
+              // Add this header to bypass ngrok browser warning
+              "ngrok-skip-browser-warning": "true",
+              // Also add user-agent to make it look like a proper API request
+              "User-Agent": "MyApp/1.0",
             },
           },
         );
@@ -470,6 +487,18 @@ export const useResumeStore = create<ResumeStoreState>()(
 
         return { success: false };
       }
+    },
+
+    resetStore: () => {
+      set({
+        formData: initialFormData,
+        allResumes: [], // Initialize with an empty array
+        isLoading: false,
+        isSaving: false,
+        hasChanges: false,
+        isInitialDataFetched: false,
+        error: null,
+      });
     },
   })),
 );

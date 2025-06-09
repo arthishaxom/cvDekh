@@ -1,8 +1,5 @@
 import React, { useState, useCallback } from "react";
-import {
-  ProjectEntry,
-  useResumeStore,
-} from "../../../store/resume/resumeStore";
+import { useResumeStore } from "../../../store/resume/resumeStore";
 import { useRouter } from "expo-router";
 import {
   FormControl,
@@ -19,6 +16,7 @@ import { Button, ButtonText } from "@/components/ui/button";
 import { useDebouncedCallback } from "use-debounce";
 import { produce } from "immer";
 import { ScrollView } from "react-native";
+import { ProjectEntry } from "@/store/resume/types";
 
 export default function ProjectsScreen() {
   const router = useRouter();

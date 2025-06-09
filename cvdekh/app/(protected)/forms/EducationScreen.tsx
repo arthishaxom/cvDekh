@@ -1,8 +1,5 @@
 import React, { useState, useCallback, useEffect } from "react";
-import {
-  EducationEntry,
-  useResumeStore,
-} from "../../../store/resume/resumeStore";
+import { useResumeStore } from "../../../store/resume/resumeStore";
 import { useRouter } from "expo-router";
 import {
   FormControl,
@@ -19,6 +16,7 @@ import { useDebouncedCallback } from "use-debounce";
 import { produce } from "immer";
 import { ScrollView } from "react-native";
 import * as Crypto from "expo-crypto";
+import { EducationEntry } from "@/store/resume/types";
 
 export default function EducationScreen() {
   const router = useRouter();
