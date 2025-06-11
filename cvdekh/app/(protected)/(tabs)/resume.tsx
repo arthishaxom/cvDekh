@@ -46,6 +46,8 @@ import Animated, {
   withSpring,
 } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { Progress, ProgressFilledTrack } from "@/components/ui/progress";
+import Toast from "react-native-toast-message";
 
 export default function Tab() {
   const [showModal, setShowModal] = useState(false);
@@ -58,9 +60,10 @@ export default function Tab() {
   );
   const downloadPdf = useResumeStore((state) => state.downloadGeneratedResume);
   const resume = useResumeStore((state) => state.formData); // Get resume data from store
-  const submitFullResume = useResumeStore((state) => state.submitFullResume);
+  const saveResume = useResumeStore((state) => state.saveResume);
   const hasChanges = useResumeStore((state) => state.hasChanges);
   const [refreshing, setRefreshing] = useState(false);
+  const progress = useResumeStore((state) => state.progress);
 
   useFocusEffect(
     useCallback(() => {
@@ -109,8 +112,8 @@ export default function Tab() {
     // Handle UI updates based on success/failure
     if (result.success) {
       // Close modal and reset file selection on success
-      setShowModal(false);
-      setSelectedFile(null);
+      // setShowModal(false);
+      // setSelectedFile(null);
     }
 
     // The store already handles loading states and alerts
@@ -145,7 +148,7 @@ export default function Tab() {
           isPressed={false}
           className="rounded-lg bg-background-400/30 backdrop-blur-lg border border-white/15 shadow-none"
           onPress={() => {
-            submitFullResume(session!);
+            saveResume(session!, null);
           }} // Open modal on press
         >
           {isLoading ? (
@@ -157,7 +160,17 @@ export default function Tab() {
       )}
       <Box className="flex-1 justify-between">
         <HStack className="items-center justify-between px-4 py-2">
-          <Menu color={"white"} size={20} />
+          <Menu
+            color={"white"}
+            size={20}
+            onPress={() => {
+              Toast.show({
+                type: "sToast",
+                text1: "Success",
+                text2: "Resume Saved Successfully!",
+              });
+            }}
+          />
           <Heading className="text-2xl">Resume</Heading>
           <Pressable onPress={() => router.push("/settings")}>
             <CircleUserRound color={"white"} size={20} />
@@ -190,19 +203,15 @@ export default function Tab() {
             >
               <HStack className="gap-4">
                 <Button
-                  variant="outline"
+                  action="secondary"
                   isDisabled={isLoading}
                   onPress={handleDownload}
-                  className={`rounded-lg flex-1 h-16 ${
-                    isLoading ? "border-background-muted" : "border-white/15 "
+                  className={`border border-white/15 bg-background-400/30 rounded-lg flex-1 h-16 ${
+                    isLoading ? "opacity-50" : ""
                   }`}
                 >
-                  <Download color="#6cd100" size={18} />
-                  <Text
-                    className={`font-semibold ${
-                      isLoading ? "text-background-300" : "text-primary-300"
-                    }`}
-                  >
+                  <Download color="#D9D9D9" size={18} />
+                  <Text className={`font-semibold text-typography-white/90`}>
                     Download
                   </Text>
                 </Button>
@@ -527,12 +536,14 @@ export default function Tab() {
                         className="opacity-90 items-start gap-1"
                       >
                         <Text className="font-semibold">
-                          {exp.jobTitle || "N/A"}
+                          {exp.jobTitle || "--"}
                         </Text>
                         <Text className="italic">{exp.company || "N/A"}</Text>
-                        <Text>
-                          {exp.startDate + " - " + exp.endDate || "N/A"}
-                        </Text>
+                        {exp.startDate && exp.endDate && (
+                          <Text>
+                            {exp.startDate + " - " + exp.endDate || "N/A"}
+                          </Text>
+                        )}
                         {index < (resume?.experience?.length || 0) - 1 && (
                           <Divider className="my-2" />
                         )}
@@ -610,9 +621,11 @@ export default function Tab() {
                         <Text className="italic">
                           {pro.techStack?.join(", ") || "N/A"}
                         </Text>
-                        <Text>
-                          {pro.startDate + " - " + pro.endDate || "N/A"}
-                        </Text>
+                        {pro.startDate && pro.endDate && (
+                          <Text>
+                            {pro.startDate + " - " + pro.endDate || "N/A"}
+                          </Text>
+                        )}
                         {index < (resume?.projects?.length || 0) - 1 && (
                           <Divider className="my-2" />
                         )}
@@ -850,20 +863,33 @@ export default function Tab() {
               )}
             </ModalBody>
             <ModalFooter>
-              <Button
-                className={`w-full h-12 ${isLoading ? "opacity-50" : ""}`}
-                onPress={handleExtractAndParse} // Updated onPress handler
-                disabled={!selectedFile || isLoading}
-              >
-                {isLoading ? (
-                  <Box className="flex flex-row gap-2">
-                    <Spinner size="small" color={"white"} />
-                    <ButtonText>Extracting...</ButtonText>
+              <VStack className="w-full">
+                {isLoading && (
+                  <Box className="w-full">
+                    <Progress
+                      value={progress}
+                      size="md"
+                      orientation="horizontal"
+                    >
+                      <ProgressFilledTrack />
+                    </Progress>
                   </Box>
-                ) : (
-                  <ButtonText>Extract</ButtonText>
                 )}
-              </Button>
+                <Button
+                  className={`w-full h-12 ${isLoading ? "opacity-50" : ""}`}
+                  onPress={handleExtractAndParse} // Updated onPress handler
+                  disabled={!selectedFile || isLoading}
+                >
+                  {isLoading ? (
+                    <Box className="flex flex-row gap-2">
+                      <Spinner size="small" color={"white"} />
+                      <ButtonText>Extracting...</ButtonText>
+                    </Box>
+                  ) : (
+                    <ButtonText>Extract</ButtonText>
+                  )}
+                </Button>
+              </VStack>
             </ModalFooter>
           </ModalContent>
         </Modal>

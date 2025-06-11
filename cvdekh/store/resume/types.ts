@@ -66,12 +66,14 @@ export interface ResumeFormData {
 
 export interface ResumeStoreState {
   formData: ResumeFormData;
+  originalData: ResumeFormData | null;
   allResumes: ResumeFormData[]; // To hold all resumes fetched from the backend
   isLoading: boolean; // For initial data fetch
   isSaving: boolean; // For auto-save indicator
   isInitialDataFetched: boolean; // For initial data fetch
   hasChanges: boolean; // For auto-save indicator
   error: string | null;
+  progress: number;
 
   // Actions
   setData: (data: ResumeFormData) => void;
@@ -104,7 +106,11 @@ export interface ResumeStoreState {
     itemId: string,
   ) => void;
   fetchResumeData: (session: Session) => Promise<void>; // Fetches initial data
-  submitFullResume: (session: Session) => Promise<void>; // Submits all data
+  saveResume: (session: Session, resumeId: string | null) => Promise<void>; // Submits all data
+  deleteResume: (
+    resumeId: string,
+    session: Session,
+  ) => Promise<{ success: boolean }>; // Deletes the resume
   improveResumeWithJobDescription: (
     jobDescription: string,
     session: Session,

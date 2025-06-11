@@ -5,12 +5,19 @@ import {
   authMiddleware,
   AuthenticatedRequest,
 } from "./middleware/authMiddleware";
-import { closeRedis, initializeRedis } from "./lib/redisClient";
+import { closeRedis, initializeRedis } from "./config/redisClient"; // This is for your general app Redis, if different
 import cors from "cors";
+
+// NEW: Import BullMQ queue and worker utilities
+import { closeResumeQueue } from "./config/bullmq-config";
+import {
+  resumeWorker,
+  closeResumeWorker,
+} from "./workers/resume-parser-worker"; // Start the worker
 
 const app = express();
 const port = process.env.PORT || 80;
-
+app.set("trust proxy", 1 /* number of proxies between user and server */);
 app.use(
   cors({
     origin: "http://localhost:8081",
@@ -48,9 +55,14 @@ const startServer = async () => {
   try {
     console.log("🚀 Starting cvDekh Server...");
 
-    // Initialize Redis connection
-    console.log("📡 Connecting to Redis...");
+    // Initialize general Redis connection (if used by other parts of your app)
+    console.log("📡 Connecting to general Redis...");
     await initializeRedis();
+
+    // BullMQ worker is started when resume-parser-worker.ts is imported.
+    // You can add a log here to confirm:
+    console.log("⚙️ BullMQ Resume Worker initialized.");
+    console.log("⚙️ BullMQ Resume Queue initialized (from bullmq-config.ts).");
 
     // Start the Express server
     const server = app.listen(port, () => {
@@ -62,8 +74,14 @@ const startServer = async () => {
     const gracefulShutdown = async (signal: string) => {
       console.log(`\n${signal} received, shutting down gracefully...`);
 
-      // Close Redis connection
-      console.log("📡 Closing Redis connection...");
+      // NEW: Close BullMQ worker and queue
+      console.log("⚙️ Closing BullMQ Worker...");
+      await closeResumeWorker();
+      console.log("⚙️ Closing BullMQ Queue...");
+      await closeResumeQueue();
+
+      // Close general Redis connection (if used)
+      console.log("📡 Closing general Redis connection...");
       await closeRedis();
 
       // Close Express server

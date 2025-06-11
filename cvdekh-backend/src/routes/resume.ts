@@ -1,6 +1,7 @@
 import multer from "multer";
 import express from "express";
-import { resumeParserService } from "../utils/resumeParserService";
+// Remove resumeParserService if it's no longer used directly in this file
+// import { resumeParserService } from "../utils/resumeParserService";
 import { generateResumePdf } from "../utils/pdfResumeGenerator";
 import pdfPrinter from "pdfmake";
 import type { TDocumentDefinitions } from "pdfmake/interfaces";
@@ -10,12 +11,19 @@ import {
   getOriginalResume,
   getResumeById,
   getUserResumes,
-  upsertOriginalResume,
   insertImprovedResume,
-  cleanupUserResumes, // Add this import
+  cleanupUserResumes,
+  upsertResume,
+  deleteResume,
 } from "../utils/resumeUtils";
-import { resumeImproverService } from "../utils/resumeImproverService"; // Import the new service
-import { ParsedResumeData } from "../lib/aiService"; // Import ParsedResumeData if not already
+import { resumeImproverService } from "../utils/resumeImproverService";
+import { ParsedResumeData } from "../lib/aiService";
+
+// NEW: Import BullMQ queue and rate limiter
+import rateLimit from "express-rate-limit";
+import { resumeQueue } from "../config/bullmq-config"; // Adjusted path
+import fs from "fs/promises"; // For creating temp-uploads directory
+import path from "path"; // For path operations
 
 var fonts = {
   Roboto: {
@@ -26,14 +34,56 @@ var fonts = {
   },
 };
 
+// OLD multer setup (memoryStorage)
+// const upload = multer({
+//   storage: multer.memoryStorage(),
+// });
+
+// NEW: Configure multer for temporary file storage
+const tempUploadsDir = path.join(__dirname, "..", "..", "temp-uploads"); // Adjusted path to be relative to src
+
+// Ensure temp-uploads directory exists
+(async () => {
+  try {
+    await fs.mkdir(tempUploadsDir, { recursive: true });
+    console.log(`Temporary upload directory ensured at: ${tempUploadsDir}`);
+  } catch (error) {
+    console.error("Failed to create temp-uploads directory:", error);
+  }
+})();
+
 const upload = multer({
-  storage: multer.memoryStorage(),
+  dest: tempUploadsDir,
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB limit
+  },
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype === "application/pdf") {
+      cb(null, true);
+    } else {
+      // Pass an error to cb to reject the file
+      cb(new Error("Only PDF files are allowed") as any, false);
+    }
+  },
 });
 
 const router = express.Router();
 
+// NEW: Rate limiter for parse-resume
+const parseResumeRateLimit = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 10, // limit each IP to 10 requests per windowMs (adjust as needed)
+  message: {
+    error: "Too many resume parsing requests, please try again later.",
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+//! Endpoint to parse resume
 router.post(
   "/parse-resume",
+  parseResumeRateLimit, // Apply rate limiting
   upload.single("resume"),
   async (req: AuthenticatedRequest, res) => {
     try {
@@ -41,30 +91,89 @@ router.post(
         res.status(400).json({ message: "No file uploaded" });
         return;
       }
+
       if (!req.user || !req.supabaseClient) {
-        // Check if user and supabaseClient are populated
-        res
-          .status(401)
-          .json({ message: "Authentication error or client not initialized." });
+        res.status(401).json({
+          message: "Authentication error or client not initialized.",
+        });
         return;
       }
 
-      const parsedData = await resumeParserService.parseResumeFromBuffer(
-        req.file.buffer,
-      );
+      // Instead of processing immediately, add job to queue
+      const job = await resumeQueue.add("parse-resume", {
+        userId: req.user.id,
+        filePath: req.file.path, // File path instead of buffer
+        originalName: req.file.originalname,
+        // Pass the JWT token for the worker to create its own Supabase client
+        userToken: req.headers.authorization?.split(" ")[1],
+      });
 
-      await upsertOriginalResume(req.supabaseClient, req.user!.id, parsedData);
-      res.json(parsedData);
-    } catch (error) {
-      console.error("Resume parsing error:", error);
+      // Return job ID immediately - don't wait for processing
+      res.status(202).json({
+        // 202 Accepted is more appropriate here
+        message: "Resume parsing job accepted",
+        jobId: job.id,
+      });
+    } catch (error: any) {
+      console.error("Error in /parse-resume route:", error);
+      // If multer error (e.g., file type)
+      if (error.message === "Only PDF files are allowed") {
+        res.status(400).json({ message: error.message });
+        return;
+      }
       res.status(500).json({
-        message: "Internal server error",
+        message: "Internal server error while adding job to queue",
         error: error instanceof Error ? error.message : "Unknown error",
       });
     }
   },
 );
 
+//! Endpoint to check job status
+router.get("/parse-resume/:jobId", async (req: AuthenticatedRequest, res) => {
+  try {
+    const { jobId } = req.params;
+    const job = await resumeQueue.getJob(jobId);
+
+    if (!job) {
+      res.status(404).json({ message: "Job not found" });
+      return;
+    }
+
+    const state = await job.getState();
+    const progress = job.progress;
+    const returnValue = job.returnvalue;
+    const failedReason = job.failedReason;
+
+    if (state === "completed") {
+      console.log("Working Completed");
+      res.json({
+        status: "completed",
+        data: returnValue, // This will contain the parsedData from the worker
+        progress: typeof progress === "number" ? progress : 100, // Ensure progress is a number
+      });
+    } else if (state === "failed") {
+      console.log("Working Failed");
+      res.status(500).json({
+        // Send a 500 for failed jobs
+        status: "failed",
+        error: failedReason,
+        progress: typeof progress === "number" ? progress : 0, // Ensure progress is a number
+      });
+    } else {
+      console.log("Working Else", progress);
+      res.json({
+        status: state, // 'waiting', 'active', 'delayed', etc.
+        progress: typeof progress === "number" ? progress : 0, // Ensure progress is a number
+      });
+    }
+  } catch (error) {
+    console.error("Error checking job status:", error);
+    res.status(500).json({ message: "Error checking job status" });
+  }
+});
+
+//! Endpoint to generate PDF of resume
 router.post(
   "/generate-resume",
   express.json(),
@@ -180,6 +289,7 @@ router.post(
   },
 );
 
+//! Endpoint to get a resume
 router.get("/get-resume", async (req: AuthenticatedRequest, res) => {
   try {
     if (!req.user || !req.supabaseClient) {
@@ -201,6 +311,7 @@ router.get("/get-resume", async (req: AuthenticatedRequest, res) => {
   }
 });
 
+//! Endpoint to improve a resume
 router.post("/improve-resume", async (req: AuthenticatedRequest, res) => {
   try {
     if (!req.user || !req.supabaseClient) {
@@ -276,11 +387,11 @@ router.post("/improve-resume", async (req: AuthenticatedRequest, res) => {
   }
 });
 
+//! Endpoint to save a resume
 router.post(
   "/save-resume",
   express.json(),
   async (req: AuthenticatedRequest, res) => {
-    // req.user will be available here if needed, populated by authMiddleware
     try {
       if (!req.user || !req.supabaseClient) {
         res
@@ -289,7 +400,7 @@ router.post(
         return;
       }
 
-      const resumeData = req.body;
+      const { resumeData, resumeId, isOriginal = true } = req.body;
 
       // Validate that we have resume data
       if (!resumeData || Object.keys(resumeData).length === 0) {
@@ -297,11 +408,12 @@ router.post(
         return;
       }
 
-      // Use the upsert function to save/update the resume
-      const result = await upsertOriginalResume(
+      // Use the enhanced upsert function
+      const result = await upsertResume(
         req.supabaseClient,
         req.user!.id,
         resumeData,
+        { resumeId, isOriginal },
       );
 
       // Return success response with operation details
@@ -312,11 +424,22 @@ router.post(
           : "Resume created successfully",
         id: result.id,
         operation: result.updated ? "updated" : "created",
+        isOriginal: result.isOriginal,
       });
     } catch (error) {
       console.error("Error saving resume:", error);
 
-      // Handle specific database errors if needed
+      // Handle specific errors
+      if (
+        error instanceof Error &&
+        error.message === "Resume not found or access denied"
+      ) {
+        res.status(404).json({
+          message: "Resume not found or you don't have permission to edit it",
+        });
+        return;
+      }
+
       const errorMessage =
         error instanceof Error ? error.message : "Unknown error occurred";
       res.status(500).json({
@@ -328,6 +451,7 @@ router.post(
   },
 );
 
+//! Endpoint to get all resumes
 router.get("/get-resumes", async (req: AuthenticatedRequest, res) => {
   if (!req.user || !req.supabaseClient) {
     // Check if user and supabaseClient are populated
@@ -361,5 +485,44 @@ router.get("/get-resumes", async (req: AuthenticatedRequest, res) => {
     });
   }
 });
+
+//! Endpoint to delete a resume
+router.delete(
+  "/delete-resume/:resumeId",
+  async (req: AuthenticatedRequest, res) => {
+    if (!req.user || !req.supabaseClient) {
+      // Check if user and supabaseClient are populated
+      res
+        .status(401)
+        .json({ message: "Authentication error or client not initialized." });
+      return;
+    }
+    const { resumeId } = req.params;
+
+    // req.user will be available here if needed, populated by authMiddleware
+    try {
+      // Delete the resume
+      await deleteResume(req.supabaseClient, req.user!.id, resumeId);
+
+      // Return success response
+      res.status(200).json({
+        success: true,
+        message: "Resume deleted successfully",
+      });
+    } catch (error: unknown) {
+      console.error("Error deleting resume:", error);
+
+      // Extract error message safely
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error occurred";
+
+      res.status(500).json({
+        message: "Error deleting resume",
+        error:
+          process.env.NODE_ENV === "development" ? errorMessage : undefined,
+      });
+    }
+  },
+);
 
 export default router;

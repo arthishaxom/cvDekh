@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@expo/html-elements": "^0.4.2",
+    "@expo/metro-runtime": "~5.0.4",
     "@expo/vector-icons": "^14.1.0",
     "@gluestack-ui/button": "^1.0.14",
     "@gluestack-ui/divider": "^0.1.10",
@@ -22,6 +23,7 @@
     "@gluestack-ui/modal": "^0.1.41",
     "@gluestack-ui/nativewind-utils": "^1.0.26",
     "@gluestack-ui/overlay": "^0.1.22",
+    "@gluestack-ui/progress": "^0.1.18",
     "@gluestack-ui/spinner": "^0.1.15",
     "@gluestack-ui/textarea": "^0.1.25",
     "@gluestack-ui/toast": "^1.0.9",
@@ -71,12 +73,12 @@
     "react-native-safe-area-context": "^5.4.0",
     "react-native-screens": "~4.10.0",
     "react-native-svg": "15.11.2",
+    "react-native-toast-message": "^2.3.0",
     "react-native-web": "^0.20.0",
     "react-native-webview": "13.13.5",
     "tailwindcss": "^3.4.17",
     "use-debounce": "^10.0.4",
-    "zustand": "^5.0.4",
-    "@expo/metro-runtime": "~5.0.4"
+    "zustand": "^5.0.4"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

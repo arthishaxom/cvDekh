@@ -27,7 +27,13 @@ export class GeminiService implements AIService {
       },
     });
 
-    return JSON.parse(response.text!);
+    return JSON.parse(response.text!, (key, value) => {
+      if (value === "null") {
+        console.log(key, value);
+        return null;
+      }
+      return value;
+    });
   }
 
   async improveResume(resumeData: ParsedResumeData, jobDescription: string) {
@@ -52,7 +58,13 @@ Job Description: ${jobDescription}
 
     console.log(response.text);
 
-    return JSON.parse(response.text!);
+    return JSON.parse(response.text!, (key, value) => {
+      if (value === "null") {
+        console.log(key, value);
+        return null;
+      }
+      return value;
+    });
   }
 
   private getResumeSchema() {

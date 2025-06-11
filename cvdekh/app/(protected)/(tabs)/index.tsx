@@ -283,7 +283,7 @@ export default function Tab() {
         isHovered={false}
         isDisabled={false}
         isPressed={false}
-        className="rounded-lg bg-background-400/30 border border-white/15 shadow-none"
+        className="hover:bg-background-600 focus:bg-background-600 rounded-lg bg-background-400/30 border border-white/15 shadow-none"
         onPress={() => setShowImproveModal(true)} // Open modal on press
       >
         <Plus color={"#9DFF41"} size={20} />
@@ -300,7 +300,16 @@ export default function Tab() {
                 data={allResumes}
                 renderItem={({ item }) => {
                   return (
-                    <Link href={`../resume-details/${item.id}`} asChild>
+                    <Link
+                      onPress={() => {
+                        useResumeStore.setState({
+                          formData: item,
+                          isInitialDataFetched: false,
+                        });
+                      }}
+                      href={`../resume-details/${item.id}`}
+                      asChild
+                    >
                       <Pressable>
                         <Box className="p-4 bg-background-400/30 border border-white/15 rounded-lg w-full mb-3">
                           {item.job_desc && (

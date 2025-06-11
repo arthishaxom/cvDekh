@@ -17,6 +17,9 @@ import { useDebouncedCallback } from "use-debounce";
 import { produce } from "immer";
 import { ScrollView } from "react-native";
 import { ProjectEntry } from "@/store/resume/types";
+import { Trash2 } from "lucide-react-native";
+import * as Crypto from "expo-crypto";
+// import { Divider } from "@/components/ui/divider";
 
 export default function ProjectsScreen() {
   const router = useRouter();
@@ -28,6 +31,15 @@ export default function ProjectsScreen() {
   const [isSaving, setIsSaving] = useState(false);
   const [localProjects, setLocalProjects] = useState<ProjectEntry[]>(
     formData.projects || [],
+  );
+
+  // Separate state for tech stack display values
+  const [techStackDisplayValues, setTechStackDisplayValues] = useState<
+    string[]
+  >(
+    (formData.projects || []).map(
+      (project) => project.techStack?.join(", ") || "",
+    ),
   );
 
   const debouncedUpdateStore = useDebouncedCallback(
@@ -73,13 +85,24 @@ export default function ProjectsScreen() {
       const updatedProjects = produce(localProjects, (draft) => {
         if (!draft[index]) {
           draft[index] = {
-            id: crypto.randomUUID(),
+            id: Crypto.randomUUID(),
             techStack: [],
             details: [],
           };
         }
         if (field === "techStack" && typeof value === "string") {
-          draft[index][field] = value.split(",").filter((s) => s.trim());
+          // Update display value immediately
+          setTechStackDisplayValues((prev) => {
+            const newValues = [...prev];
+            newValues[index] = value;
+            return newValues;
+          });
+
+          // Only process to array when there's a complete comma-separated list
+          draft[index][field] = value
+            .split(",")
+            .map((s) => s.trim())
+            .filter((s) => s);
         } else if (field === "details" && typeof value === "string") {
           draft[index][field] = value.split("\n");
         } else {
@@ -88,14 +111,14 @@ export default function ProjectsScreen() {
       });
       setLocalProjects(updatedProjects);
       setIsSaving(true);
-      debouncedUpdateStore(localProjects);
+      debouncedUpdateStore(updatedProjects);
     },
     [localProjects, debouncedUpdateStore],
   );
 
   const addProjectEntry = () => {
     const newEntry: ProjectEntry = {
-      id: crypto.randomUUID(),
+      id: Crypto.randomUUID(),
       title: "",
       techStack: [],
       details: [],
@@ -103,13 +126,18 @@ export default function ProjectsScreen() {
       endDate: "",
     };
     setLocalProjects([...localProjects, newEntry]);
+    setTechStackDisplayValues([...techStackDisplayValues, ""]);
   };
 
   const removeProjectEntry = (index: number) => {
     const itemToRemove = localProjects[index];
     const updatedProjects = localProjects.filter((_, i) => i !== index);
+    const updatedDisplayValues = techStackDisplayValues.filter(
+      (_, i) => i !== index,
+    );
 
     setLocalProjects(updatedProjects);
+    setTechStackDisplayValues(updatedDisplayValues);
 
     // Immediately remove from store if it exists there
     if (itemToRemove.id) {
@@ -130,25 +158,29 @@ export default function ProjectsScreen() {
   return (
     <VStack className="pb-4 pt-2 px-5 flex-1 bg-background-500 justify-between">
       <ScrollView showsVerticalScrollIndicator={false}>
-        <VStack className="mb-4">
+        <VStack className="mb-4 gap-2">
           {localProjects.map((project, index) => (
-            <Box key={project.id || index} className="mb-2">
+            <Box
+              key={project.id || index}
+              className="border border-background-300/30 rounded-lg mb-2 pb-0 bg-background-600/50 p-2"
+            >
               <HStack className="justify-between items-center mb-3">
-                <Text className="text-lg font-semibold">
-                  Project {index + 1}
-                </Text>
+                <Box className="border border-background-300/30 rounded-full px-4 py-2">
+                  <Text className="text-lg font-semibold">{index + 1}</Text>
+                </Box>
                 {localProjects.length > 1 && (
                   <Button
+                    className="w-min flex-row"
                     size="sm"
-                    variant="outline"
+                    variant="link"
                     onPress={() => removeProjectEntry(index)}
                   >
-                    <ButtonText>Remove</ButtonText>
+                    <Trash2 size={20} color={"#E42A33"} />
                   </Button>
                 )}
               </HStack>
 
-              <FormControl className="mb-4">
+              <FormControl className="mb-2">
                 <FormControlLabel>
                   <FormControlLabelText className="text-typography-500 font-semibold">
                     Project Title
@@ -165,7 +197,7 @@ export default function ProjectsScreen() {
                 </Input>
               </FormControl>
 
-              <FormControl className="mb-4">
+              <FormControl className="mb-2">
                 <FormControlLabel>
                   <FormControlLabelText className="text-typography-500 font-semibold">
                     Tech Stack (comma-separated)
@@ -173,7 +205,7 @@ export default function ProjectsScreen() {
                 </FormControlLabel>
                 <Input className="h-12" size="lg">
                   <InputField
-                    value={project.techStack?.join(", ") || ""}
+                    value={techStackDisplayValues[index] || ""}
                     onChangeText={(text) =>
                       handleProjectChange(index, "techStack", text)
                     }
@@ -182,7 +214,7 @@ export default function ProjectsScreen() {
                 </Input>
               </FormControl>
 
-              <HStack className="justify-between mb-4">
+              <HStack className="justify-between mb-2">
                 <FormControl className="flex-1 mr-2">
                   <FormControlLabel>
                     <FormControlLabelText className="text-typography-500 font-semibold">
@@ -218,7 +250,7 @@ export default function ProjectsScreen() {
                 </FormControl>
               </HStack>
 
-              <FormControl className="mb-4">
+              <FormControl className="mb-1">
                 <FormControlLabel>
                   <FormControlLabelText className="text-typography-500 font-semibold">
                     Project Details (one per line)
@@ -239,7 +271,11 @@ export default function ProjectsScreen() {
             </Box>
           ))}
 
-          <Button variant="outline" onPress={addProjectEntry} className="mb-4">
+          <Button
+            action="secondary"
+            onPress={addProjectEntry}
+            className="mb-4 flex-1 rounded-lg h-12 border border-white/30 bg-background-400/30"
+          >
             <ButtonText>Add Project</ButtonText>
           </Button>
         </VStack>

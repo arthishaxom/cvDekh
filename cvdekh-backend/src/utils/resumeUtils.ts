@@ -1,58 +1,176 @@
 import { SupabaseClient } from "@supabase/supabase-js"; // Import SupabaseClient
 import { ParsedResumeData } from "../lib/aiService";
 import { deleteCachedData, getCachedData, setCachedData } from "./cacheHelpers";
+import { error } from "console";
 
 const CACHE_TTL = 900;
 
-export async function upsertOriginalResume(
-  supabase: SupabaseClient, // Change type from 'any' to 'SupabaseClient'
+// export async function upsertOriginalResume(
+//   supabase: SupabaseClient, // Change type from 'any' to 'SupabaseClient'
+//   userId: string,
+//   parsedData: any,
+// ) {
+//   const { data: existingOriginal, error: fetchError } = await supabase
+//     .from("resume")
+//     .select("id")
+//     .eq("user_id", userId)
+//     .eq("is_original", true)
+//     .maybeSingle();
+
+//   if (fetchError) throw fetchError;
+
+//   let resumeId: string;
+//   let wasUpdated: boolean;
+
+//   if (existingOriginal) {
+//     const { error: updateError } = await supabase
+//       .from("resume")
+//       .update({ data: parsedData })
+//       .eq("id", existingOriginal.id);
+//     if (updateError) throw updateError;
+//     resumeId = existingOriginal.id;
+//     wasUpdated = true;
+//   } else {
+//     const { data: insertData, error: insertError } = await supabase
+//       .from("resume")
+//       .insert({
+//         user_id: userId,
+//         data: parsedData,
+//         is_original: true,
+//       })
+//       .select("id")
+//       .single();
+//     if (insertError) throw insertError;
+//     resumeId = insertData.id;
+//     wasUpdated = false;
+//   }
+//   // IMPORTANT: Invalidate cache after database update
+//   const cacheKey = `user:${userId}:original_resume`;
+//   await deleteCachedData(cacheKey); // Added cache invalidation
+//   console.log("✅ Cache invalidated for original resume");
+
+//   return { id: resumeId, updated: wasUpdated };
+// }
+
+export async function upsertResume(
+  supabase: SupabaseClient,
   userId: string,
   parsedData: any,
+  options: {
+    resumeId?: string | null; // If provided, upsert this specific resume
+    isOriginal?: boolean; // If true and no resumeId, upsert the original resume
+  } = {},
 ) {
-  const { data: existingOriginal, error: fetchError } = await supabase
-    .from("resume")
-    .select("id")
-    .eq("user_id", userId)
-    .eq("is_original", true)
-    .maybeSingle();
+  const { resumeId, isOriginal = true } = options;
 
-  if (fetchError) throw fetchError;
-
-  let resumeId: string;
+  let targetResumeId: string;
   let wasUpdated: boolean;
+  let cacheKey: string;
 
-  if (existingOriginal) {
-    const { error: updateError } = await supabase
+  if (resumeId) {
+    // Case 1: Updating/creating a specific resume by ID
+    const { data: existingResume, error: fetchError } = await supabase
       .from("resume")
-      .update({ data: parsedData })
-      .eq("id", existingOriginal.id);
-    if (updateError) throw updateError;
-    resumeId = existingOriginal.id;
-    wasUpdated = true;
+      .select("id, user_id")
+      .eq("id", resumeId)
+      .eq("user_id", userId) // Ensure user owns this resume
+      .maybeSingle();
+
+    if (fetchError) {
+      console.log("Error here");
+      throw fetchError;
+    }
+
+    if (existingResume) {
+      // Update existing resume
+      const { error: updateError } = await supabase
+        .from("resume")
+        .update({ data: parsedData })
+        .eq("id", resumeId);
+
+      if (updateError) throw updateError;
+      targetResumeId = resumeId;
+      wasUpdated = true;
+    } else {
+      // Resume ID doesn't exist or doesn't belong to user
+      throw new Error("Resume not found or access denied");
+    }
+
+    cacheKey = `user:${userId}:resume:${resumeId}`;
+  } else if (isOriginal) {
+    // Case 2: Upsert original resume (existing logic)
+    const { data: existingOriginal, error: fetchError } = await supabase
+      .from("resume")
+      .select("id")
+      .eq("user_id", userId)
+      .eq("is_original", true)
+      .maybeSingle();
+
+    if (fetchError) throw fetchError;
+
+    if (existingOriginal) {
+      // Update existing original
+      const { error: updateError } = await supabase
+        .from("resume")
+        .update({ data: parsedData })
+        .eq("id", existingOriginal.id);
+
+      if (updateError) throw updateError;
+      targetResumeId = existingOriginal.id;
+      wasUpdated = true;
+    } else {
+      // Create new original
+      const { data: insertData, error: insertError } = await supabase
+        .from("resume")
+        .insert({
+          user_id: userId,
+          data: parsedData,
+          is_original: true,
+        })
+        .select("id")
+        .single();
+
+      if (insertError) throw insertError;
+      targetResumeId = insertData.id;
+      wasUpdated = false;
+    }
+
+    cacheKey = `user:${userId}:original_resume`;
   } else {
+    // Case 3: Create new non-original resume
     const { data: insertData, error: insertError } = await supabase
       .from("resume")
       .insert({
         user_id: userId,
         data: parsedData,
-        is_original: true,
+        is_original: false,
       })
       .select("id")
       .single();
-    if (insertError) throw insertError;
-    resumeId = insertData.id;
-    wasUpdated = false;
-  }
-  // IMPORTANT: Invalidate cache after database update
-  const cacheKey = `user:${userId}:original_resume`;
-  await deleteCachedData(cacheKey); // Added cache invalidation
-  console.log("✅ Cache invalidated for original resume");
 
-  return { id: resumeId, updated: wasUpdated };
+    if (insertError) throw insertError;
+    targetResumeId = insertData.id;
+    wasUpdated = false;
+    cacheKey = `user:${userId}:resume:${targetResumeId}`;
+  }
+
+  // Invalidate relevant caches
+  await deleteCachedData(cacheKey);
+
+  // Also invalidate user's resume list cache
+  await deleteCachedData(`user:${userId}:resumes`);
+
+  console.log("✅ Cache invalidated for resume:", cacheKey);
+
+  return {
+    id: targetResumeId,
+    updated: wasUpdated,
+    isOriginal: resumeId ? false : isOriginal, // Return whether this is the original resume
+  };
 }
 
 export async function getOriginalResume(
-  supabase: SupabaseClient, // Change type from 'any' to 'SupabaseClient'
+  supabase: SupabaseClient,
   userId: string,
 ): Promise<ParsedResumeData> {
   const cacheKey = `user:${userId}:original_resume`;
@@ -214,4 +332,17 @@ export async function cleanupUserResumes(
     console.error("Error in cleanup function:", error);
     // Don't throw - cleanup failures shouldn't stop the main process
   }
+}
+
+export async function deleteResume(
+  supabase: SupabaseClient,
+  userId: string,
+  resumeId: string,
+): Promise<any> {
+  const response = await supabase
+    .from("resume")
+    .delete()
+    .eq("user_id", userId)
+    .eq("id", resumeId)
+    .eq("is_original", false);
 }

@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { supabase as globalSupabase } from "../lib/supabaseClient"; // Rename to avoid confusion
+import { supabase as globalSupabase } from "../config/supabaseClient"; // Rename to avoid confusion
 import { User, SupabaseClient, createClient } from "@supabase/supabase-js"; // Import SupabaseClient and createClient
 
 // Define an interface for requests that have been authenticated

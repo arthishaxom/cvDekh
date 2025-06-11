@@ -18,6 +18,8 @@ import { produce } from "immer";
 import { ScrollView } from "react-native";
 import * as Crypto from "expo-crypto";
 import { ExperienceEntry } from "@/store/resume/types";
+import { Trash2 } from "lucide-react-native";
+// import { Divider } from "@/components/ui/divider";
 
 export default function ExperienceScreen() {
   const router = useRouter();
@@ -136,25 +138,29 @@ export default function ExperienceScreen() {
   return (
     <VStack className="pb-4 pt-2 px-5 flex-1 bg-background-500 justify-between">
       <ScrollView showsVerticalScrollIndicator={false}>
-        <VStack className="mb-4">
+        <VStack className="mb-4 gap-2">
           {localExperience.map((experience, index) => (
-            <Box key={experience.id || index} className="mb-2">
-              <HStack className="justify-between items-center mb-3">
-                <Text className="text-lg font-semibold">
-                  Experience {index + 1}
-                </Text>
+            <Box
+              key={experience.id || index}
+              className="border border-background-300/30 rounded-lg mb-2 pb-0 bg-background-600/50 p-2"
+            >
+              <HStack className="justify-between items-center mb-2">
+                <Box className="border border-background-300/30 rounded-full px-4 py-2">
+                  <Text className="text-lg font-semibold">{index + 1}</Text>
+                </Box>
                 {localExperience.length > 0 && (
                   <Button
+                    className="w-min flex-row"
                     size="sm"
-                    variant="outline"
+                    variant="link"
                     onPress={() => removeExperienceEntry(index)}
                   >
-                    <ButtonText>Remove</ButtonText>
+                    <Trash2 size={20} color={"#E42A33"} />
                   </Button>
                 )}
               </HStack>
 
-              <FormControl className="mb-4">
+              <FormControl className="mb-2">
                 <FormControlLabel>
                   <FormControlLabelText className="text-typography-500 font-semibold">
                     Job Title
@@ -171,7 +177,7 @@ export default function ExperienceScreen() {
                 </Input>
               </FormControl>
 
-              <FormControl className="mb-4">
+              <FormControl className="mb-2">
                 <FormControlLabel>
                   <FormControlLabelText className="text-typography-500 font-semibold">
                     Company
@@ -188,7 +194,7 @@ export default function ExperienceScreen() {
                 </Input>
               </FormControl>
 
-              <HStack className="justify-between mb-4">
+              <HStack className="justify-between mb-2">
                 <FormControl className="flex-1 mr-2">
                   <FormControlLabel>
                     <FormControlLabelText className="text-typography-500 font-semibold">
@@ -224,7 +230,7 @@ export default function ExperienceScreen() {
                 </FormControl>
               </HStack>
 
-              <FormControl className="mb-4">
+              <FormControl className="mb-1">
                 <FormControlLabel>
                   <FormControlLabelText className="text-typography-500 font-semibold">
                     Job Responsibilities (one per line)
@@ -236,7 +242,7 @@ export default function ExperienceScreen() {
                     onChangeText={(text) =>
                       handleExperienceChange(index, "details", text)
                     }
-                    placeholder="• Developed and maintained web applications\n• Collaborated with cross-functional teams\n• Improved system performance by 30%"
+                    placeholder={`• Developed and maintained web applications\n• Collaborated with cross-functional teams\n• Improved system performance by 30%`}
                     multiline={true}
                     style={{
                       textAlignVertical: "top",
@@ -250,9 +256,9 @@ export default function ExperienceScreen() {
           ))}
 
           <Button
-            variant="outline"
+            action="secondary"
             onPress={addExperienceEntry}
-            className="mb-4"
+            className="mb-4 flex-1 rounded-lg h-12 border border-white/30 bg-background-400/30"
           >
             <ButtonText>Add Experience</ButtonText>
           </Button>

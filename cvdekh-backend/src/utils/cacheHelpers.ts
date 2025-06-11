@@ -1,5 +1,5 @@
 // src/utils/cacheHelpers.ts
-import redisClient from "../lib/redisClient";
+import redisClient from "../config/redisClient";
 
 // Cache statistics for monitoring
 

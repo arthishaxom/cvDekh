@@ -6,6 +6,7 @@ import * as Crypto from "expo-crypto";
 import { JobDetails, ResumeFormData, ResumeStoreState } from "./types";
 import { downloadPDFToDevice, ensureListItemsHaveIds } from "./utils";
 import { Alert } from "react-native";
+import Toast from "react-native-toast-message";
 
 const initialFormData: ResumeFormData = {
   id: "",
@@ -71,12 +72,14 @@ const initialFormData: ResumeFormData = {
 export const useResumeStore = create<ResumeStoreState>()(
   immer((set, get) => ({
     formData: initialFormData,
+    originalData: null,
     allResumes: [], // Initialize with an empty array
     isLoading: false,
     isSaving: false,
     hasChanges: false,
     isInitialDataFetched: false,
     error: null,
+    progress: 0,
 
     setData: (data) => {
       set((state) => {
@@ -204,11 +207,7 @@ export const useResumeStore = create<ResumeStoreState>()(
 
     fetchResumeData: async (session: Session) => {
       // Critical: Check if already fetched or currently loading
-      const { isInitialDataFetched } = get();
-      // if (isLoading) {
-      //   console.log("Data is currently loading, skipping...");
-      //   return;
-      // }
+      const { isInitialDataFetched, originalData } = get();
 
       if (isInitialDataFetched) {
         console.log("Data has already been fetched, skipping...");
@@ -216,6 +215,13 @@ export const useResumeStore = create<ResumeStoreState>()(
       }
 
       set({ isLoading: true, error: null });
+
+      if (originalData) {
+        // If originalData is available, use it as the initial state
+        get().setData(originalData);
+        set({ isInitialDataFetched: true, isLoading: false });
+        return;
+      }
 
       try {
         // Replace this with your actual API call
@@ -237,9 +243,13 @@ export const useResumeStore = create<ResumeStoreState>()(
 
         if (response.data) {
           get().setData(response.data);
+          set((state) => {
+            state.originalData = state.formData;
+          });
           set({ isInitialDataFetched: true, isLoading: false });
           console.log("Successfully fetched and set resume data");
         }
+        set({ isLoading: false });
       } catch (error) {
         console.error("Failed to fetch resume data:", error);
         set({
@@ -251,11 +261,17 @@ export const useResumeStore = create<ResumeStoreState>()(
       }
     },
 
-    submitFullResume: async (session: Session) => {
+    saveResume: async (session: Session, resumeId: string | null) => {
       set({ isLoading: true, error: null }); // Can use isLoading or a new 'isSubmitting' state
       try {
         const currentFormData = get().formData;
         console.log("Submitting full resume:", currentFormData);
+        const isOriginal = resumeId === null;
+        const requestBody = {
+          resumeData: currentFormData,
+          resumeId,
+          isOriginal,
+        };
 
         const backendApiUrl =
           process.env.EXPO_PUBLIC_API_URL || "http://localhost:3001";
@@ -266,7 +282,7 @@ export const useResumeStore = create<ResumeStoreState>()(
 
         const response = await axios.post(
           `${backendApiUrl}/api/resume/save-resume`,
-          currentFormData,
+          requestBody,
           {
             headers: {
               Authorization: `Bearer ${session.access_token}`,
@@ -282,6 +298,10 @@ export const useResumeStore = create<ResumeStoreState>()(
         console.log("Resume submitted successfully:", response.data);
         set({ isLoading: false, hasChanges: false });
         alert("Resume submitted successfully!");
+        Toast.show({
+          type: "success",
+          text1: "Resume Saved Successfully",
+        });
       } catch (err) {
         console.error("Failed to submit resume:", err);
         set({ isLoading: false, error: "Failed to submit resume." });
@@ -443,18 +463,112 @@ export const useResumeStore = create<ResumeStoreState>()(
         );
 
         if (response.data) {
+          const { jobId } = response.data;
           // Use the existing setData method to update the store
-          get().setData(response.data);
+          // get().setData(response.data);
+          if (!jobId) {
+            Alert.alert(
+              "Submission Failed",
+              "Could not initiate resume parsing job.",
+            );
+            set({ isLoading: false, error: "Could not initiate job." });
+            return { success: false, jobId: null };
+          }
 
-          console.log("Current store state (after update):", get().formData);
+          // console.log("Current store state (after update):", get().formData);
 
-          Alert.alert(
-            "Extraction Successful",
-            "Resume data has been parsed and loaded into the form.",
-          );
+          // Alert.alert(
+          //   "Extraction Successful",
+          //   "Resume data has been parsed and loaded into the form.",
+          // );
+          set({ progress: 5 });
 
+          const pollJobStatus = async (currentJobId: string) => {
+            try {
+              const statusResponse = await axios.get(
+                `${backendApiUrl}/api/resume/parse-resume/${currentJobId}`,
+                {
+                  headers: {
+                    Authorization: `Bearer ${session.access_token}`,
+                    "ngrok-skip-browser-warning": "true",
+                    "User-Agent": "MyApp/1.0",
+                  },
+                },
+              );
+
+              const {
+                status,
+                data,
+                progress,
+                error: jobError,
+              } = statusResponse.data;
+
+              set({ progress: progress || get().progress });
+
+              if (status === "completed") {
+                get().setData(data);
+                set((state) => {
+                  state.originalData = state.formData;
+                });
+                Alert.alert(
+                  "Extraction Successful",
+                  "Resume data has been parsed and loaded into the form.",
+                );
+                set({ isLoading: false, progress: 100 });
+                return { success: true, jobId: currentJobId };
+              } else if (status === "failed") {
+                Alert.alert(
+                  "Extraction Failed",
+                  jobError || "The parsing job failed.",
+                );
+                set({
+                  isLoading: false,
+                  error: jobError || "The parsing job failed.",
+                  progress: 0,
+                });
+                return { success: false, jobId: currentJobId };
+              } else if (
+                status === "active" ||
+                status === "waiting" ||
+                status === "delayed"
+              ) {
+                // Continue polling
+                setTimeout(() => pollJobStatus(currentJobId), 2000); // Poll every 2 seconds
+              } else {
+                // Unknown status
+                Alert.alert("Parsing Error", `Unknown job status: ${status}`);
+                set({
+                  isLoading: false,
+                  error: `Unknown job status: ${status}`,
+                  progress: 0,
+                });
+                return { success: false, jobId: currentJobId };
+              }
+            } catch (pollError) {
+              console.error("Error polling job status:", pollError);
+              let errorMessage =
+                "An error occurred while checking parsing status.";
+              if (isAxiosError(pollError)) {
+                errorMessage =
+                  pollError.response?.data?.message ||
+                  pollError.message ||
+                  errorMessage;
+              }
+              Alert.alert("Polling Error", errorMessage);
+              set({
+                isLoading: false,
+                error: `Polling failed: ${errorMessage}`,
+                progress: 0,
+              });
+              return { success: false, jobId: currentJobId };
+            }
+          };
+
+          pollJobStatus(jobId); // Start polling
+          // The function will now return immediately after submitting the job.
+          // The UI will update based on polling results.
           set({ isLoading: false });
-          return { success: true };
+          return { success: true, jobId }; // Indicate
         } else {
           Alert.alert("Extraction Failed", "No data received from server.");
           set({ isLoading: false, error: "No data received from server." });
@@ -499,6 +613,60 @@ export const useResumeStore = create<ResumeStoreState>()(
         isInitialDataFetched: false,
         error: null,
       });
+    },
+
+    deleteResume: async (
+      resumeId: string,
+      session: Session,
+    ): Promise<{ success: boolean }> => {
+      if (!session || !session.access_token) {
+        Alert.alert(
+          "Authentication Error",
+          "You are not signed in or your session is invalid. Please sign in again.",
+        );
+        return { success: false };
+      }
+
+      set({ isLoading: true, error: null });
+
+      try {
+        const backendApiUrl =
+          process.env.EXPO_PUBLIC_API_URL || "URL_ADDRESS:3001";
+
+        const response = await axios.delete(
+          `${backendApiUrl}/api/resume/delete-resume/${resumeId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${session.access_token}`,
+              "ngrok-skip-browser-warning": "true",
+              "User-Agent": "MyApp/1.0",
+            },
+          },
+        );
+        if (response.status === 200) {
+          // Remove the deleted resume from the allResumes array
+          set((state) => ({
+            allResumes: state.allResumes.filter(
+              (resume) => resume.id !== resumeId,
+            ),
+            isLoading: false,
+          }));
+          Alert.alert("Resume Deleted", "The resume has been deleted.");
+          return { success: true };
+        }
+        return { success: false };
+      } catch (error) {
+        console.error("Error deleting resume:", error);
+        Alert.alert(
+          "Deletion Failed",
+          "An error occurred while deleting the resume.",
+        );
+        set({
+          isLoading: false,
+          error: "Failed to delete resume.",
+        });
+        return { success: false };
+      }
     },
   })),
 );

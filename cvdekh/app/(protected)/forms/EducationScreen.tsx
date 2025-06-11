@@ -17,6 +17,8 @@ import { produce } from "immer";
 import { ScrollView } from "react-native";
 import * as Crypto from "expo-crypto";
 import { EducationEntry } from "@/store/resume/types";
+import { Trash2 } from "lucide-react-native";
+// import { Divider } from "@/components/ui/divider";
 
 export default function EducationScreen() {
   const router = useRouter();
@@ -136,25 +138,29 @@ export default function EducationScreen() {
   return (
     <VStack className="pb-4 pt-2 px-5 flex-1 bg-background-500 justify-between">
       <ScrollView showsVerticalScrollIndicator={false}>
-        <VStack className="mb-4">
+        <VStack className="mb-4 gap-2">
           {localEducation.map((education, index) => (
-            <Box key={education.id || index} className="mb-2">
-              <HStack className="justify-between items-center mb-3">
-                <Text className="text-lg font-semibold">
-                  Education {index + 1}
-                </Text>
+            <Box
+              key={education.id || index}
+              className="border border-background-300/30 rounded-lg mb-2 pb-0 bg-background-600/50 p-2"
+            >
+              <HStack className="justify-between items-center mb-1">
+                <Box className="border border-background-300/30 rounded-full px-4 py-2">
+                  <Text className="text-lg font-semibold">{index + 1}</Text>
+                </Box>
                 {localEducation.length > 1 && (
                   <Button
+                    className="w-min flex-row"
                     size="sm"
-                    variant="outline"
+                    variant="link"
                     onPress={() => removeEducationEntry(index)}
                   >
-                    <ButtonText>Remove</ButtonText>
+                    <Trash2 size={20} color={"#E42A33"} />
                   </Button>
                 )}
               </HStack>
 
-              <FormControl className="mb-4">
+              <FormControl className="mb-2">
                 <FormControlLabel>
                   <FormControlLabelText className="text-typography-500 font-semibold">
                     Institution/University
@@ -171,7 +177,7 @@ export default function EducationScreen() {
                 </Input>
               </FormControl>
 
-              <FormControl className="mb-4">
+              <FormControl className="mb-2">
                 <FormControlLabel>
                   <FormControlLabelText className="text-typography-500 font-semibold">
                     Field of Study
@@ -188,7 +194,7 @@ export default function EducationScreen() {
                 </Input>
               </FormControl>
 
-              <HStack className="justify-between mb-4">
+              <HStack className="justify-between mb-2">
                 <FormControl className="flex-1 mr-2">
                   <FormControlLabel>
                     <FormControlLabelText className="text-typography-500 font-semibold">
@@ -224,7 +230,7 @@ export default function EducationScreen() {
                 </FormControl>
               </HStack>
 
-              <FormControl className="mb-4">
+              <FormControl className="mb-1">
                 <FormControlLabel>
                   <FormControlLabelText className="text-typography-500 font-semibold">
                     CGPA/Grade
@@ -241,13 +247,16 @@ export default function EducationScreen() {
                   />
                 </Input>
               </FormControl>
+              {/* {index < (localEducation?.length || 0) - 1 && (
+                <Divider className="my-2" />
+              )} */}
             </Box>
           ))}
 
           <Button
-            variant="outline"
+            action="secondary"
             onPress={addEducationEntry}
-            className="mb-4"
+            className="mb-4 flex-1 rounded-lg h-12 border border-white/30 bg-background-400/30"
           >
             <ButtonText>Add Education</ButtonText>
           </Button>
