@@ -54,17 +54,25 @@ export default function Signin() {
       ? await signUpWithEmail(email, password)
       : await signInWithEmail(email, password);
 
-    // if (success) {
-    //   router.replace("./(protected)");
-    // }
+    if (success) {
+      Toast.show({
+        type: "sToast",
+        text1: "Success",
+        text2: `Signed ${isSignUp ? "up" : "in"} successfully`,
+      });
+    }
   };
 
   // Handle Google sign-in
   const handleGoogleSignIn = async () => {
     const success = await signInWithGoogle();
-    // if (success) {
-    //   router.replace("./(protected)");
-    // }
+    if (success) {
+      Toast.show({
+        type: "sToast",
+        text1: "Success",
+        text2: `Signed ${isSignUp ? "up" : "in"} successfully`,
+      });
+    }
   };
 
   // Show error if there is one

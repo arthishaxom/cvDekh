@@ -7,6 +7,7 @@ const redisConnection = new IORedis({
   host: process.env.REDIS_HOST || "localhost",
   password: process.env.REDIS_PASSWORD,
   port: parseInt(process.env.REDIS_PORT || "6379"),
+  username: process.env.REDIS_USERNAME || "default",
   maxRetriesPerRequest: 3, // BullMQ recommends not setting this too high
   // It's good practice to enable lazyConnect for BullMQ
   // so it doesn't connect until a queue/worker needs it.
