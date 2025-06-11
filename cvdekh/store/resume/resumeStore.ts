@@ -5,7 +5,6 @@ import { Session } from "@supabase/supabase-js";
 import * as Crypto from "expo-crypto";
 import { JobDetails, ResumeFormData, ResumeStoreState } from "./types";
 import { downloadPDFToDevice, ensureListItemsHaveIds } from "./utils";
-import { Alert } from "react-native";
 import Toast from "react-native-toast-message";
 
 const initialFormData: ResumeFormData = {
@@ -297,7 +296,6 @@ export const useResumeStore = create<ResumeStoreState>()(
 
         console.log("Resume submitted successfully:", response.data);
         set({ isLoading: false, hasChanges: false });
-        alert("Resume submitted successfully!");
         Toast.show({
           type: "success",
           text1: "Resume Saved Successfully",
@@ -305,7 +303,12 @@ export const useResumeStore = create<ResumeStoreState>()(
       } catch (err) {
         console.error("Failed to submit resume:", err);
         set({ isLoading: false, error: "Failed to submit resume." });
-        alert("Error submitting resume. Please try again.");
+        Toast.show({
+          type: "eToast",
+          text1: "Resume Submission Failed",
+          text2:
+            "An error occurred while submitting your resume. Please try again.",
+        });
       }
     },
 
@@ -360,9 +363,11 @@ export const useResumeStore = create<ResumeStoreState>()(
         console.error("Failed to improve resume:", error);
         set({ isLoading: false, error: "Failed to improve resume." });
         // Consider how to inform the user, perhaps via a toast notification
-        alert(
-          "Failed to improve resume. Please check the console for details.",
-        );
+        Toast.show({
+          type: "eToast",
+          text1: "Resume Improvement Failed",
+          text2: "Unable to improve resume with AI. Please try again later.",
+        });
       }
     },
 
@@ -421,15 +426,21 @@ export const useResumeStore = create<ResumeStoreState>()(
 
     parseResumeFromPDF: async (selectedFile: any, session: Session) => {
       if (!selectedFile) {
-        Alert.alert("No File Selected", "Please select a PDF file to extract.");
+        Toast.show({
+          type: "iToast",
+          text1: "No File Selected",
+          text2: "Please select a PDF file to extract.",
+        });
         return { success: false };
       }
 
       if (!session || !session.access_token) {
-        Alert.alert(
-          "Authentication Error",
-          "You are not signed in or your session is invalid. Please sign in again.",
-        );
+        Toast.show({
+          type: "eToast",
+          text1: "Auth Error",
+          text2:
+            "You are not signed in or your session is invalid. Please sign in again.",
+        });
         return { success: false };
       }
 
@@ -467,10 +478,11 @@ export const useResumeStore = create<ResumeStoreState>()(
           // Use the existing setData method to update the store
           // get().setData(response.data);
           if (!jobId) {
-            Alert.alert(
-              "Submission Failed",
-              "Could not initiate resume parsing job.",
-            );
+            Toast.show({
+              type: "eToast",
+              text1: "Submission Failed",
+              text2: "Could not initiate resume parsing job.",
+            });
             set({ isLoading: false, error: "Could not initiate job." });
             return { success: false, jobId: null };
           }
@@ -510,17 +522,20 @@ export const useResumeStore = create<ResumeStoreState>()(
                 set((state) => {
                   state.originalData = state.formData;
                 });
-                Alert.alert(
-                  "Extraction Successful",
-                  "Resume data has been parsed and loaded into the form.",
-                );
+                Toast.show({
+                  type: "sToast",
+                  text1: "Extraction Successful",
+                  text2:
+                    "Resume data has been parsed and loaded into the form.",
+                });
                 set({ isLoading: false, progress: 100 });
                 return { success: true, jobId: currentJobId };
               } else if (status === "failed") {
-                Alert.alert(
-                  "Extraction Failed",
-                  jobError || "The parsing job failed.",
-                );
+                Toast.show({
+                  type: "eToast",
+                  text1: "Extraction Failed",
+                  text2: jobError || "The parsing job failed.",
+                });
                 set({
                   isLoading: false,
                   error: jobError || "The parsing job failed.",
@@ -536,7 +551,11 @@ export const useResumeStore = create<ResumeStoreState>()(
                 setTimeout(() => pollJobStatus(currentJobId), 2000); // Poll every 2 seconds
               } else {
                 // Unknown status
-                Alert.alert("Parsing Error", `Unknown job status: ${status}`);
+                Toast.show({
+                  type: "eToast",
+                  text1: "Parsing Error",
+                  text2: `Unknown job status: ${status}`,
+                });
                 set({
                   isLoading: false,
                   error: `Unknown job status: ${status}`,
@@ -554,7 +573,11 @@ export const useResumeStore = create<ResumeStoreState>()(
                   pollError.message ||
                   errorMessage;
               }
-              Alert.alert("Polling Error", errorMessage);
+              Toast.show({
+                type: "eToast",
+                text1: "Polling Error",
+                text2: errorMessage,
+              });
               set({
                 isLoading: false,
                 error: `Polling failed: ${errorMessage}`,
@@ -570,7 +593,11 @@ export const useResumeStore = create<ResumeStoreState>()(
           set({ isLoading: false });
           return { success: true, jobId }; // Indicate
         } else {
-          Alert.alert("Extraction Failed", "No data received from server.");
+          Toast.show({
+            type: "eToast",
+            text1: "Extraction Failed",
+            text2: "No data received from server.",
+          });
           set({ isLoading: false, error: "No data received from server." });
           return { success: false };
         }
@@ -589,10 +616,11 @@ export const useResumeStore = create<ResumeStoreState>()(
           errorMessage = (error as Error).message;
         }
 
-        Alert.alert(
-          "Parsing Request Failed",
-          `${statusMessage}Message: ${errorMessage}`,
-        );
+        Toast.show({
+          type: "eToast",
+          text1: "Parsing Request Failed",
+          text2: `${statusMessage}Message: ${errorMessage}`,
+        });
 
         set({
           isLoading: false,
@@ -620,10 +648,12 @@ export const useResumeStore = create<ResumeStoreState>()(
       session: Session,
     ): Promise<{ success: boolean }> => {
       if (!session || !session.access_token) {
-        Alert.alert(
-          "Authentication Error",
-          "You are not signed in or your session is invalid. Please sign in again.",
-        );
+        Toast.show({
+          type: "eToast",
+          text1: "Authentication Error",
+          text2:
+            "You are not signed in or your session is invalid. Please sign in again.",
+        });
         return { success: false };
       }
 
@@ -651,16 +681,21 @@ export const useResumeStore = create<ResumeStoreState>()(
             ),
             isLoading: false,
           }));
-          Alert.alert("Resume Deleted", "The resume has been deleted.");
+          Toast.show({
+            type: "sToast",
+            text1: "Success",
+            text2: "The resume has been deleted successfully",
+          });
           return { success: true };
         }
         return { success: false };
       } catch (error) {
         console.error("Error deleting resume:", error);
-        Alert.alert(
-          "Deletion Failed",
-          "An error occurred while deleting the resume.",
-        );
+        Toast.show({
+          type: "eToast",
+          text1: "Delete Failed",
+          text2: "An error occurred while deleting the resume.",
+        });
         set({
           isLoading: false,
           error: "Failed to delete resume.",

@@ -21,6 +21,7 @@ import { SkeletonLoader } from "@/components/skeleton";
 import { Divider } from "@/components/ui/divider";
 import { Spinner } from "@/components/ui/spinner";
 import { Fab } from "@/components/ui/fab";
+import Toast from "react-native-toast-message";
 // Import other components you might need for displaying details
 
 export default function ResumeDetailScreen() {
@@ -39,7 +40,11 @@ export default function ResumeDetailScreen() {
     if (session) {
       await downloadPdf(id, session);
     } else {
-      alert("Session not found. Please log in.");
+      Toast.show({
+        type: "eToast",
+        text1: "Authentication Error",
+        text2: "Please log in to continue",
+      });
     }
   };
 
@@ -196,7 +201,7 @@ export default function ResumeDetailScreen() {
             )}
           </VStack>
         </Box>
-        <HStack className="w-full gap-2">
+        <HStack className="w-full gap-2 pb-2">
           <Button
             action="secondary"
             onPress={handleDownload}
@@ -218,7 +223,11 @@ export default function ResumeDetailScreen() {
                   router.back();
                 }
               } else {
-                alert("Session not found. Please log in.");
+                Toast.show({
+                  type: "eToast",
+                  text1: "Authentication Error",
+                  text2: "Session not found. Please log in to continue",
+                });
               }
             }}
             className={` flex-1 rounded-lg h-16 border-white/15 bg-error-500 ${
@@ -231,7 +240,7 @@ export default function ResumeDetailScreen() {
             </Text>
           </Button>
         </HStack>
-        <VStack className="pb-20 gap-2 pt-2">
+        <VStack className="pb-20 gap-4 pt-2">
           {/* Summary Section - Apply similar skeleton logic here */}
           {isLoading ? (
             <VStack className="gap-2 p-4 bg-background-400/40 border border-white/30 rounded-lg w-full">

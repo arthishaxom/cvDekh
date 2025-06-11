@@ -74,7 +74,7 @@ const toastConfig = {
   iToast: (props: JSX.IntrinsicAttributes & BaseToastProps) => (
     <Box className="bg-background-400 border border-background-300/30  rounded-lg p-3 w-[95%]">
       <HStack className="items-center gap-3">
-        <CircleAlert color={"#262626"} size={20} />
+        <CircleAlert color={"#4287f5"} size={20} />
         <VStack>
           <Box>
             <Text className="font-bold text-white text-lg">{props.text1}</Text>

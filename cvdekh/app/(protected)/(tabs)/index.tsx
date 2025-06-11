@@ -29,6 +29,7 @@ import {
   SkeletonLoader,
 } from "@/components/skeleton";
 import { SafeAreaView } from "react-native-safe-area-context";
+import Toast from "react-native-toast-message";
 
 export default function Tab() {
   const allResumes = useResumeStore((state) => state.allResumes);
@@ -65,7 +66,11 @@ export default function Tab() {
 
   const handleImproveResume = async () => {
     if (!jobDescriptionInput.trim()) {
-      alert("Please enter a job description.");
+      Toast.show({
+        type: "iToast",
+        text1: "Missing Information",
+        text2: "Please enter a job description.",
+      });
       return;
     }
     if (session) {
@@ -73,7 +78,11 @@ export default function Tab() {
       setShowImproveModal(false); // Close modal on success
       setJobDescriptionInput(""); // Clear input
     } else {
-      alert("Session not found. Please log in again.");
+      Toast.show({
+        type: "eToast",
+        text1: "Authentication Error",
+        text2: "Session expired. Please log in again.",
+      });
     }
   };
 

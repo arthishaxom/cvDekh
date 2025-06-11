@@ -1,6 +1,7 @@
 import * as FileSystem from "expo-file-system";
-import { Alert, Platform } from "react-native";
+import { Platform } from "react-native";
 import * as Crypto from "expo-crypto";
+import Toast from "react-native-toast-message";
 
 export const downloadPDFToDevice = async (
   pdfUrl: string,
@@ -14,10 +15,11 @@ export const downloadPDFToDevice = async (
         await FileSystem.StorageAccessFramework.requestDirectoryPermissionsAsync();
 
       if (!permissions.granted) {
-        Alert.alert(
-          "Permission needed",
-          "Storage permission is required to save the PDF.",
-        );
+        Toast.show({
+          type: "iToast",
+          text1: "Permission Required",
+          text2: "Storage permission is required to save the PDF.",
+        });
         return;
       }
 
@@ -45,7 +47,11 @@ export const downloadPDFToDevice = async (
             await FileSystem.writeAsStringAsync(uri, fileContent, {
               encoding: FileSystem.EncodingType.Base64,
             });
-            Alert.alert("Success", "PDF saved successfully!");
+            Toast.show({
+              type: "sToast",
+              text1: "Success",
+              text2: "PDF saved successfully!",
+            });
           })
           .catch((error) => {
             throw new Error(`Failed to create file: ${error.message}`);
@@ -61,10 +67,11 @@ export const downloadPDFToDevice = async (
       const downloadResult = await FileSystem.downloadAsync(pdfUrl, fileUri);
 
       if (downloadResult.status === 200) {
-        Alert.alert(
-          "Download Complete",
-          `File saved to: ${downloadResult.uri}`,
-        );
+        Toast.show({
+          type: "sToast",
+          text1: "Success",
+          text2: `PDF saved to: ${downloadResult.uri}`,
+        });
       } else {
         throw new Error(
           `Download failed with status: ${downloadResult.status}`,
@@ -73,10 +80,11 @@ export const downloadPDFToDevice = async (
     }
   } catch (error: any) {
     console.error("Error during PDF download or saving process:", error);
-    Alert.alert(
-      "Error",
-      `An error occurred while saving the PDF: ${error.message}`,
-    );
+    Toast.show({
+      type: "eToast",
+      text1: "Error",
+      text2: `An error occurred while saving the PDF: ${error.message}`,
+    });
   }
 };
 

@@ -8,8 +8,9 @@ import { Button } from "@/components/ui/button";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import { supabase } from "@/lib/api"; // Added for Supabase client
 import { useAuthStore } from "@/store/auth";
-import { Alert, TouchableOpacity, AppState } from "react-native";
+import { TouchableOpacity, AppState } from "react-native";
 import { VStack } from "@/components/ui/vstack";
+import Toast from "react-native-toast-message";
 
 AppState.addEventListener("change", (state) => {
   if (state === "active") {
@@ -41,7 +42,11 @@ export default function Signin() {
   // Handle email/password authentication
   const handleEmailAuth = async () => {
     if (!email.trim() || !password.trim()) {
-      Alert.alert("Error", "Please fill in all fields");
+      Toast.show({
+        type: "eToast",
+        text1: "Error",
+        text2: "Please fill in all fields",
+      });
       return;
     }
 
@@ -65,7 +70,11 @@ export default function Signin() {
   // Show error if there is one
   useEffect(() => {
     if (error) {
-      Alert.alert("Authentication Error", error);
+      Toast.show({
+        type: "eToast",
+        text1: "Auth Error",
+        text2: error,
+      });
     }
   }, [error]);
 

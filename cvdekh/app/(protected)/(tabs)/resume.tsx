@@ -82,7 +82,11 @@ export default function Tab() {
     if (session) {
       await downloadPdf(null, session);
     } else {
-      alert("Session not found. Please log in.");
+      Toast.show({
+        type: "eToast",
+        text1: "Authentication Error",
+        text2: "Session expired. Please log in again.",
+      });
     }
   };
 
