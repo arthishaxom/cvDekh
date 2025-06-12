@@ -36,7 +36,6 @@ export default function ResumeDetailScreen() {
   const deleteResume = useResumeStore((state) => state.deleteResume);
 
   const handleDownload = async () => {
-    console.log("Downloading resume...");
     if (session) {
       await downloadPdf(id, session);
     } else {
@@ -61,7 +60,7 @@ export default function ResumeDetailScreen() {
   const renderDetailList = (title: string, items: string[] | undefined) => {
     if (!items || items.length === 0) return null;
     return (
-      <VStack className="mb-1">
+      <VStack className="mb-1 w-full">
         <Heading className="mb-2 text-lg text-white/80 font-bold">
           {title}
         </Heading>
@@ -152,7 +151,7 @@ export default function ResumeDetailScreen() {
             <Text className="text-white/80 text-lg">
               {resume.job_desc.company || "N/A"}
             </Text>
-            <Text className="text-white/80 text-2xl font-bold">
+            <Text className="text-white/80 text-center text-2xl font-bold">
               {resume.job_desc.jobTitle || "N/A"}
             </Text>
             <HStack className="items-center gap-1 mb-2">

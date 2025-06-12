@@ -34,15 +34,17 @@ DON'T ADD ANYTHING EXTRA THAT IS IN THE JOB DESCRIPTION THAT IS NOT ALREADY IN T
   - Formatting bullet points for details (max 2 points)
   - Filling in startDate and endDate if present or inferable
 - Extract relevant job fields from the description:
-  - jobTitle, company, location, type (internship/full-time), skills, stipend
+
+  - jobTitle, company, location, type (Internship/Full-Time/Part-Time), skills, stipend
+  - In case of stipend, give the exact amount mentioned OR "Paid" OR "Unpaid" OR "N/A"
 
 - Calculate a match score between 0-100 based on the resume and description:
   - Match score should be in range of 0-100 and should a number without any decimal points or signs like %.
   - Match score should be based on how much the resume matches the job description.
   - Match score should be based on the following factors:
     - Skills Match : How many skills from the resume match the job description
-    - Project Match - Project hightlights in the skills mentioned in the resume.
-    - Summary Match - How much the summary matches the job description.
+    - Project Match : Project hightlights in the skills mentioned in the resume.
+    - Summary Match : How much the summary matches the job description.
 
 - List out all the different improvements and suggestions that can be done on the resume to increase the Match Score like suggesting 2-3 project types, skills.
 

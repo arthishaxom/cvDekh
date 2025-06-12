@@ -24,6 +24,7 @@ import rateLimit from "express-rate-limit";
 import { resumeQueue } from "../config/bullmq-config"; // Adjusted path
 import fs from "fs/promises"; // For creating temp-uploads directory
 import path from "path"; // For path operations
+import { logger } from "../server";
 
 var fonts = {
   Roboto: {
@@ -34,21 +35,15 @@ var fonts = {
   },
 };
 
-// OLD multer setup (memoryStorage)
-// const upload = multer({
-//   storage: multer.memoryStorage(),
-// });
-
-// NEW: Configure multer for temporary file storage
 const tempUploadsDir = path.join(__dirname, "..", "..", "temp-uploads"); // Adjusted path to be relative to src
 
 // Ensure temp-uploads directory exists
 (async () => {
   try {
     await fs.mkdir(tempUploadsDir, { recursive: true });
-    console.log(`Temporary upload directory ensured at: ${tempUploadsDir}`);
+    logger.info(`Temporary upload directory ensured at: ${tempUploadsDir}`);
   } catch (error) {
-    console.error("Failed to create temp-uploads directory:", error);
+    logger.error("Failed to create temp-uploads directory:", error);
   }
 })();
 
@@ -115,7 +110,7 @@ router.post(
         jobId: job.id,
       });
     } catch (error: any) {
-      console.error("Error in /parse-resume route:", error);
+      logger.error("Error in /parse-resume route:", error);
       // If multer error (e.g., file type)
       if (error.message === "Only PDF files are allowed") {
         res.status(400).json({ message: error.message });
@@ -146,14 +141,12 @@ router.get("/parse-resume/:jobId", async (req: AuthenticatedRequest, res) => {
     const failedReason = job.failedReason;
 
     if (state === "completed") {
-      console.log("Working Completed");
       res.json({
         status: "completed",
         data: returnValue, // This will contain the parsedData from the worker
         progress: typeof progress === "number" ? progress : 100, // Ensure progress is a number
       });
     } else if (state === "failed") {
-      console.log("Working Failed");
       res.status(500).json({
         // Send a 500 for failed jobs
         status: "failed",
@@ -161,14 +154,13 @@ router.get("/parse-resume/:jobId", async (req: AuthenticatedRequest, res) => {
         progress: typeof progress === "number" ? progress : 0, // Ensure progress is a number
       });
     } else {
-      console.log("Working Else", progress);
       res.json({
         status: state, // 'waiting', 'active', 'delayed', etc.
         progress: typeof progress === "number" ? progress : 0, // Ensure progress is a number
       });
     }
   } catch (error) {
-    console.error("Error checking job status:", error);
+    logger.error("Error checking job status:", error);
     res.status(500).json({ message: "Error checking job status" });
   }
 });
@@ -196,8 +188,6 @@ router.post(
         resumeData = await getOriginalResume(req.supabaseClient, userId);
       }
 
-      console.log("Resume Data:", resumeData); // Log the resume data to check its structure and nul
-
       if (!resumeData) {
         res.status(404).json({ message: "No resume data found" });
         return;
@@ -220,24 +210,19 @@ router.post(
           // When the document is finished
           pdfDoc.on("end", () => {
             const finalBuffer = Buffer.concat(chunks);
-            console.log(
-              "PDF generated successfully, size:",
-              finalBuffer.length,
-              "bytes",
-            );
             resolve(finalBuffer);
           });
 
           // Handle errors
           pdfDoc.on("error", (error: Error) => {
-            console.error("PDF generation error:", error);
+            logger.error("PDF generation error:", error);
             reject(error);
           });
 
           // CRITICAL: End the document to start the generation process
           pdfDoc.end();
         } catch (error) {
-          console.error("Error setting up PDF generation:", error);
+          logger.error("Error setting up PDF generation:", error);
           reject(error);
         }
       });
@@ -264,7 +249,7 @@ router.post(
           });
 
       if (uploadError) {
-        console.error("Supabase storage upload error:", uploadError);
+        logger.error("Supabase storage upload error:", uploadError);
         throw uploadError;
       }
 
@@ -274,14 +259,14 @@ router.post(
         .getPublicUrl(fileName);
 
       if (!urlData || !urlData.publicUrl) {
-        console.error("Error getting public URL from Supabase storage");
+        logger.error("Error getting public URL from Supabase storage");
         res.status(500).json({ message: "Error retrieving PDF URL" });
         return;
       }
 
       res.status(200).json({ pdfUrl: urlData.publicUrl });
     } catch (error) {
-      console.error("Error in /generate-resume:", error);
+      logger.error("Error in /generate-resume:", error);
       res
         .status(500)
         .json({ message: "Error generating or uploading resume PDF" });
@@ -303,7 +288,7 @@ router.get("/get-resume", async (req: AuthenticatedRequest, res) => {
     const data = await getOriginalResume(req.supabaseClient, req.user!.id);
     res.json(data); // Send the data as JSON response
   } catch (error) {
-    console.error("Resume parsing error:", error);
+    logger.error("Resume parsing error:", error);
     res.status(500).json({
       message: "Internal server error",
       error: error instanceof Error ? error.message : "Unknown error",
@@ -341,8 +326,6 @@ router.post("/improve-resume", async (req: AuthenticatedRequest, res) => {
       return;
     }
 
-    // console.log("Original Resume Data:", originalResumeData);
-
     const filteredResumeData = {
       summary: originalResumeData.summary,
       projects: originalResumeData.projects,
@@ -379,7 +362,7 @@ router.post("/improve-resume", async (req: AuthenticatedRequest, res) => {
 
     res.json(newImprovedResumeEntry); // Send the newly created resume entry as JSON response
   } catch (error) {
-    console.error("Error in /improve-resume route:", error);
+    logger.error("Error in /improve-resume route:", error);
     res.status(500).json({
       message: "Internal server error",
       error: error instanceof Error ? error.message : "Unknown error",
@@ -427,7 +410,7 @@ router.post(
         isOriginal: result.isOriginal,
       });
     } catch (error) {
-      console.error("Error saving resume:", error);
+      logger.error("Error saving resume:", error);
 
       // Handle specific errors
       if (
@@ -473,7 +456,7 @@ router.get("/get-resumes", async (req: AuthenticatedRequest, res) => {
       resumes: resumes,
     });
   } catch (error: unknown) {
-    console.error("Error fetching user resumes:", error);
+    logger.error("Error fetching user resumes:", error);
 
     // Extract error message safely
     const errorMessage =
@@ -510,7 +493,7 @@ router.delete(
         message: "Resume deleted successfully",
       });
     } catch (error: unknown) {
-      console.error("Error deleting resume:", error);
+      logger.error("Error deleting resume:", error);
 
       // Extract error message safely
       const errorMessage =

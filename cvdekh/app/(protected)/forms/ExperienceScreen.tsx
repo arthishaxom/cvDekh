@@ -70,10 +70,6 @@ export default function ExperienceScreen() {
         }
       });
 
-      console.log(
-        "Updated Experience Store",
-        useResumeStore.getState().formData.experience,
-      );
       setIsSaving(false);
     },
     1000,
@@ -112,16 +108,13 @@ export default function ExperienceScreen() {
   };
 
   const removeExperienceEntry = (index: number) => {
-    console.log("Removing experience entry at index:", index);
     const itemToRemove = localExperience[index];
-    console.log("Item to remove:", itemToRemove.id);
     const updatedExperience = localExperience.filter((_, i) => i !== index);
     setLocalExperience(updatedExperience);
 
     if (itemToRemove.id) {
       const storeExperience =
         useResumeStore.getState().formData.experience || [];
-      console.log("Store Experience:", storeExperience);
       const existsInStore = storeExperience.some(
         (item) => item.id === itemToRemove.id,
       );

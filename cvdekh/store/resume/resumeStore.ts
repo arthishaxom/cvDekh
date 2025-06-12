@@ -136,7 +136,6 @@ export const useResumeStore = create<ResumeStoreState>()(
             }),
           );
           set({ allResumes: formattedResumes, isLoading: false });
-          // console.log("Successfully fetched all resumes:", formattedResumes);
         }
       } catch (error) {
         console.error("Failed to fetch resumes:", error);
@@ -209,7 +208,6 @@ export const useResumeStore = create<ResumeStoreState>()(
       const { isInitialDataFetched, originalData } = get();
 
       if (isInitialDataFetched) {
-        console.log("Data has already been fetched, skipping...");
         return;
       }
 
@@ -246,7 +244,6 @@ export const useResumeStore = create<ResumeStoreState>()(
             state.originalData = state.formData;
           });
           set({ isInitialDataFetched: true, isLoading: false });
-          console.log("Successfully fetched and set resume data");
         }
         set({ isLoading: false });
       } catch (error) {
@@ -264,7 +261,6 @@ export const useResumeStore = create<ResumeStoreState>()(
       set({ isLoading: true, error: null }); // Can use isLoading or a new 'isSubmitting' state
       try {
         const currentFormData = get().formData;
-        console.log("Submitting full resume:", currentFormData);
         const isOriginal = resumeId === null;
         const requestBody = {
           resumeData: currentFormData,
@@ -294,7 +290,6 @@ export const useResumeStore = create<ResumeStoreState>()(
           },
         );
 
-        console.log("Resume submitted successfully:", response.data);
         set({ isLoading: false, hasChanges: false });
         Toast.show({
           type: "success",
@@ -312,9 +307,14 @@ export const useResumeStore = create<ResumeStoreState>()(
       }
     },
 
-    improveResumeWithJobDescription: async (jobDescription, session) => {
+    improveResumeWithJobDescription: async (
+      jobDescription,
+      session,
+      onComplete: () => void,
+    ) => {
       set({ isLoading: true, error: null });
       try {
+        set({ progress: 5 });
         const backendApiUrl =
           process.env.EXPO_PUBLIC_API_URL || "http://localhost:3001";
         const response = await axios.post(
@@ -347,11 +347,19 @@ export const useResumeStore = create<ResumeStoreState>()(
           set((state) => ({
             allResumes: [newImprovedResume, ...state.allResumes], // Add to the beginning of the list
             isLoading: false,
+            progress: 100,
           }));
-          console.log(
-            "Successfully improved resume and added to store:",
-            newImprovedResume,
-          );
+          setTimeout(() => {
+            onComplete(); // Execute page-specific logic
+            set({ progress: 0 }); // Reset progress after callback
+          }, 1500);
+
+          // Inform user about successful improvement
+          Toast.show({
+            type: "sToast",
+            text1: "Success",
+            text2: "Resume Improved Successfully",
+          });
         } else {
           console.error(
             "Invalid response structure from improve-resume endpoint",
@@ -382,8 +390,6 @@ export const useResumeStore = create<ResumeStoreState>()(
           payload.resumeId = resumeId;
         }
 
-        console.log("Payload for /generate-resume:", payload);
-
         const response = await axios.post(
           `${backendApiUrl}/api/resume/generate-resume`,
           payload,
@@ -401,9 +407,6 @@ export const useResumeStore = create<ResumeStoreState>()(
         if (response.data && response.data.pdfUrl) {
           const pdfUrl = response.data.pdfUrl;
           const fileName = `resume-${resumeId || "original"}-${Date.now()}.pdf`;
-          console.log("PDF URL for download:", pdfUrl);
-
-          // Call the new download function instead of Linking.openURL
           await downloadPDFToDevice(pdfUrl, fileName);
 
           set({ isLoading: false });
@@ -424,7 +427,11 @@ export const useResumeStore = create<ResumeStoreState>()(
       }
     },
 
-    parseResumeFromPDF: async (selectedFile: any, session: Session) => {
+    parseResumeFromPDF: async (
+      selectedFile: any,
+      session: Session,
+      onComplete: () => void,
+    ) => {
       if (!selectedFile) {
         Toast.show({
           type: "iToast",
@@ -475,8 +482,6 @@ export const useResumeStore = create<ResumeStoreState>()(
 
         if (response.data) {
           const { jobId } = response.data;
-          // Use the existing setData method to update the store
-          // get().setData(response.data);
           if (!jobId) {
             Toast.show({
               type: "eToast",
@@ -487,12 +492,6 @@ export const useResumeStore = create<ResumeStoreState>()(
             return { success: false, jobId: null };
           }
 
-          // console.log("Current store state (after update):", get().formData);
-
-          // Alert.alert(
-          //   "Extraction Successful",
-          //   "Resume data has been parsed and loaded into the form.",
-          // );
           set({ progress: 5 });
 
           const pollJobStatus = async (currentJobId: string) => {
@@ -529,6 +528,12 @@ export const useResumeStore = create<ResumeStoreState>()(
                     "Resume data has been parsed and loaded into the form.",
                 });
                 set({ isLoading: false, progress: 100 });
+
+                setTimeout(() => {
+                  onComplete();
+                  // Handle completion based on pageType
+                  set({ progress: 0 });
+                }, 1500);
                 return { success: true, jobId: currentJobId };
               } else if (status === "failed") {
                 Toast.show({
@@ -590,7 +595,7 @@ export const useResumeStore = create<ResumeStoreState>()(
           pollJobStatus(jobId); // Start polling
           // The function will now return immediately after submitting the job.
           // The UI will update based on polling results.
-          set({ isLoading: false });
+          // set({ isLoading: false });
           return { success: true, jobId }; // Indicate
         } else {
           Toast.show({

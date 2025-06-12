@@ -74,11 +74,6 @@ export default function EducationScreen() {
           }
         }
       });
-
-      console.log(
-        "Updated Education Store",
-        useResumeStore.getState().formData.education,
-      );
       setIsSaving(false);
     },
     1000,

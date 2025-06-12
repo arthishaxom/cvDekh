@@ -13,12 +13,6 @@ GoogleSignin.configure({
 });
 
 supabase.auth.onAuthStateChange((event, session) => {
-  console.log(
-    "AUTH_STORE: onAuthStateChange event:",
-    event,
-    "session:",
-    session ? "Exists" : "Null",
-  );
   if (event === "INITIAL_SESSION") {
     // This event means getSession() has completed.
     // isLoading should be false, session might be null or have a value.
@@ -52,7 +46,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     if (!get().isLoading) {
       set({ isLoading: true });
     }
-    console.log("AUTH_STORE: refreshSession called");
     const {
       data: { session },
       error,
@@ -62,10 +55,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       // Even on error, we've finished loading
       set({ session: null, isLoading: false });
     } else {
-      console.log(
-        "AUTH_STORE: Session refreshed, session:",
-        session ? "Exists" : "Null",
-      );
       // onAuthStateChange with INITIAL_SESSION should handle this,
       // but setting it here ensures isLoading is false after refreshSession completes.
       set({ session, isLoading: false });

@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { supabase as globalSupabase } from "../config/supabaseClient"; // Rename to avoid confusion
 import { User, SupabaseClient, createClient } from "@supabase/supabase-js"; // Import SupabaseClient and createClient
+import { logger } from "../server";
 
 // Define an interface for requests that have been authenticated
 export interface AuthenticatedRequest extends Request {
@@ -36,7 +37,7 @@ export const authMiddleware = async (
     } = await globalSupabase.auth.getUser(token);
 
     if (getUserError) {
-      console.error("Supabase auth.getUser error:", getUserError.message);
+      logger.error("Supabase auth.getUser error:", getUserError.message);
       res
         .status(401)
         .json({ message: `Unauthorized: ${getUserError.message}` });
@@ -58,7 +59,7 @@ export const authMiddleware = async (
     const supabaseAnonKey = process.env.SUPABASE_ANON;
 
     if (!supabaseUrl || !supabaseAnonKey) {
-      console.error(
+      logger.error(
         "Supabase URL or Anon Key is not defined in environment variables.",
       );
       res.status(500).json({ message: "Server configuration error." });
@@ -71,7 +72,7 @@ export const authMiddleware = async (
 
     next();
   } catch (err: any) {
-    console.error("Auth middleware internal error:", err.message);
+    logger.error("Auth middleware internal error:", err.message);
     res
       .status(500)
       .json({ message: "Internal server error during authentication." });

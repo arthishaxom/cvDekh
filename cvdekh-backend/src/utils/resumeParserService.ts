@@ -1,6 +1,7 @@
 import pdfParse from "pdf-parse";
 import { AIService, ParsedResumeData } from "../lib/aiService";
 import { GeminiService } from "../lib/geminiService";
+import { logger } from "../server";
 
 export class ResumeParserService {
   private aiService: AIService;
@@ -25,7 +26,7 @@ export class ResumeParserService {
 
       return parsedData;
     } catch (error) {
-      console.error("Error parsing resume:", error);
+      logger.error("Error parsing resume:", error);
       throw new Error(
         `Failed to parse resume: ${
           error instanceof Error ? error.message : "Unknown error"

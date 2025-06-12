@@ -7,26 +7,13 @@ export default function ProtectedLayout() {
   // Expo uses file-based routing, function name is for clarity
   const session = useAuthStore((state) => state.session);
   const isLoading = useAuthStore((state) => state.isLoading);
-  // const refreshSession = useAuthStore((state) => state.refreshSession); // Removed
-
-  // Log current state for debugging
-  // console.log(
-  //   "PROTECTED_LAYOUT: Render. Session:",
-  //   session ? "Exists" : "Null",
-  //   "isLoading:",
-  //   isLoading,
-  // );
 
   if (isLoading) {
-    // console.log("PROTECTED_LAYOUT: Session is loading. Rendering null.");
     return null;
   }
 
   // If not loading and there's no session, then redirect.
   if (!session) {
-    // console.log(
-    //   "PROTECTED_LAYOUT: No session (and not loading). Redirecting to /signin.",
-    // );
     return <Redirect href="/signin" />;
   }
 

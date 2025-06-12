@@ -2,55 +2,9 @@ import { SupabaseClient } from "@supabase/supabase-js"; // Import SupabaseClient
 import { ParsedResumeData } from "../lib/aiService";
 import { deleteCachedData, getCachedData, setCachedData } from "./cacheHelpers";
 import { error } from "console";
+import { logger } from "../server";
 
 const CACHE_TTL = 900;
-
-// export async function upsertOriginalResume(
-//   supabase: SupabaseClient, // Change type from 'any' to 'SupabaseClient'
-//   userId: string,
-//   parsedData: any,
-// ) {
-//   const { data: existingOriginal, error: fetchError } = await supabase
-//     .from("resume")
-//     .select("id")
-//     .eq("user_id", userId)
-//     .eq("is_original", true)
-//     .maybeSingle();
-
-//   if (fetchError) throw fetchError;
-
-//   let resumeId: string;
-//   let wasUpdated: boolean;
-
-//   if (existingOriginal) {
-//     const { error: updateError } = await supabase
-//       .from("resume")
-//       .update({ data: parsedData })
-//       .eq("id", existingOriginal.id);
-//     if (updateError) throw updateError;
-//     resumeId = existingOriginal.id;
-//     wasUpdated = true;
-//   } else {
-//     const { data: insertData, error: insertError } = await supabase
-//       .from("resume")
-//       .insert({
-//         user_id: userId,
-//         data: parsedData,
-//         is_original: true,
-//       })
-//       .select("id")
-//       .single();
-//     if (insertError) throw insertError;
-//     resumeId = insertData.id;
-//     wasUpdated = false;
-//   }
-//   // IMPORTANT: Invalidate cache after database update
-//   const cacheKey = `user:${userId}:original_resume`;
-//   await deleteCachedData(cacheKey); // Added cache invalidation
-//   console.log("✅ Cache invalidated for original resume");
-
-//   return { id: resumeId, updated: wasUpdated };
-// }
 
 export async function upsertResume(
   supabase: SupabaseClient,
@@ -77,7 +31,7 @@ export async function upsertResume(
       .maybeSingle();
 
     if (fetchError) {
-      console.log("Error here");
+      logger.error("Error fetching resume:", fetchError);
       throw fetchError;
     }
 
@@ -160,8 +114,6 @@ export async function upsertResume(
   // Also invalidate user's resume list cache
   await deleteCachedData(`user:${userId}:resumes`);
 
-  console.log("✅ Cache invalidated for resume:", cacheKey);
-
   return {
     id: targetResumeId,
     updated: wasUpdated,
@@ -177,7 +129,6 @@ export async function getOriginalResume(
 
   const cachedResume = await getCachedData(cacheKey);
   if (cachedResume) {
-    // console.log("✅ Returning original resume from cache");
     return cachedResume as ParsedResumeData;
   }
 
@@ -192,7 +143,6 @@ export async function getOriginalResume(
 
   if (data?.data) {
     await setCachedData(cacheKey, data.data, CACHE_TTL);
-    // console.log("✅ Original resume cached for future requests");
   }
 
   return data?.data as ParsedResumeData;
@@ -208,7 +158,6 @@ export async function getResumeById(
   // Try cache first
   const cachedResume = await getCachedData(cacheKey);
   if (cachedResume) {
-    // console.log('✅ Returning resume from cache');
     return cachedResume as ParsedResumeData;
   }
 
@@ -223,7 +172,6 @@ export async function getResumeById(
 
   if (data?.data) {
     await setCachedData(cacheKey, data.data, CACHE_TTL);
-    // console.log('✅ Resume cached for future requests');
   }
 
   return data?.data as ParsedResumeData;
@@ -240,7 +188,6 @@ export async function getUserResumes(
   // Try cache first
   const cachedResumes = await getCachedData(cacheKey);
   if (cachedResumes) {
-    console.log("✅ Returning all resumes from cache");
     return cachedResumes as {
       id: string;
       data: any;
@@ -260,7 +207,6 @@ export async function getUserResumes(
 
   if (data) {
     await setCachedData(cacheKey, data, 300); // 5 minutes
-    console.log("✅ All resumes cached for future requests");
   }
 
   return data || [];
@@ -288,7 +234,6 @@ export async function insertImprovedResume(
 
   const cacheKey = `user:${userId}:all_resumes`;
   await deleteCachedData(cacheKey);
-  console.log("✅ Cache invalidated for user resume list");
 
   return insertData;
 }
@@ -305,7 +250,7 @@ export async function cleanupUserResumes(
       .list(userId);
 
     if (listError) {
-      console.error("Error listing files for cleanup:", listError);
+      logger.error("Error listing files for cleanup:", listError);
       return;
     }
 
@@ -321,15 +266,12 @@ export async function cleanupUserResumes(
         .remove(filesToDelete);
 
       if (deleteError) {
-        console.error("Error deleting old files:", deleteError);
+        logger.error("Error deleting old files:", deleteError);
       } else {
-        console.log(
-          `Cleaned up ${filesToDelete.length} old resume files for user ${userId}`,
-        );
       }
     }
   } catch (error) {
-    console.error("Error in cleanup function:", error);
+    logger.error("Error in cleanup function:", error);
     // Don't throw - cleanup failures shouldn't stop the main process
   }
 }

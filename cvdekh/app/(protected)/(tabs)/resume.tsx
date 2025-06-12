@@ -25,8 +25,9 @@ import {
   Save,
   Menu,
   CircleUserRound,
+  CircleCheck,
 } from "lucide-react-native";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Pressable, RefreshControl, ScrollView } from "react-native";
 import { handleBrowse } from "@/lib/browser";
 import * as DocumentPicker from "expo-document-picker";
@@ -46,7 +47,6 @@ import Animated, {
   withSpring,
 } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Progress, ProgressFilledTrack } from "@/components/ui/progress";
 import Toast from "react-native-toast-message";
 
 export default function Tab() {
@@ -63,6 +63,7 @@ export default function Tab() {
   const saveResume = useResumeStore((state) => state.saveResume);
   const hasChanges = useResumeStore((state) => state.hasChanges);
   const [refreshing, setRefreshing] = useState(false);
+  const [dotText, setDotText] = useState("Extracting");
   const progress = useResumeStore((state) => state.progress);
 
   useFocusEffect(
@@ -77,8 +78,40 @@ export default function Tab() {
     }, [session]),
   );
 
+  useEffect(() => {
+    let interval: number;
+
+    if (isLoading) {
+      let dotCount = 0;
+      interval = setInterval(() => {
+        dotCount = (dotCount % 4) + 1;
+        switch (dotCount) {
+          case 1:
+            setDotText("Extracting.");
+            break;
+          case 2:
+            setDotText("Extracting..");
+            break;
+          case 3:
+            setDotText("Extracting...");
+            break;
+          case 4:
+            setDotText("Extracting");
+            break;
+        }
+      }, 500);
+    } else {
+      setDotText("Extracting");
+    }
+
+    return () => {
+      if (interval) {
+        clearInterval(interval);
+      }
+    };
+  }, [isLoading]);
+
   const handleDownload = async () => {
-    // console.log("Downloading resume...");
     if (session) {
       await downloadPdf(null, session);
     } else {
@@ -110,11 +143,17 @@ export default function Tab() {
       return; // The store will handle the alert
     }
 
+    // setIsExtractionSuccess(false);
+
     // Call the store action and get the result
-    const result = await parseResumeFromPDF(selectedFile, session);
+    const result = await parseResumeFromPDF(selectedFile, session, () => {
+      setShowModal(false);
+      setSelectedFile(null);
+    });
 
     // Handle UI updates based on success/failure
     if (result.success) {
+      // setIsExtractionSuccess(true);
       // Close modal and reset file selection on success
       // setShowModal(false);
       // setSelectedFile(null);
@@ -868,26 +907,25 @@ export default function Tab() {
             </ModalBody>
             <ModalFooter>
               <VStack className="w-full">
-                {isLoading && (
-                  <Box className="w-full">
-                    <Progress
-                      value={progress}
-                      size="md"
-                      orientation="horizontal"
-                    >
-                      <ProgressFilledTrack />
-                    </Progress>
-                  </Box>
-                )}
                 <Button
-                  className={`w-full h-12 ${isLoading ? "opacity-50" : ""}`}
+                  className={`w-full h-12 rounded-lg ${
+                    !selectedFile ? "opacity-50" : ""
+                  } ${
+                    progress === 100 || isLoading ? "bg-background-500" : ""
+                  }`}
                   onPress={handleExtractAndParse} // Updated onPress handler
                   disabled={!selectedFile || isLoading}
                 >
-                  {isLoading ? (
+                  {isLoading || progress === 100 ? (
                     <Box className="flex flex-row gap-2">
-                      <Spinner size="small" color={"white"} />
-                      <ButtonText>Extracting...</ButtonText>
+                      {progress === 100 ? (
+                        <CircleCheck size={20} color="#42f548" />
+                      ) : (
+                        <Spinner size="small" color="white" />
+                      )}
+                      <ButtonText style={{ color: "white" }}>
+                        {progress === 100 ? "Extracted" : dotText}
+                      </ButtonText>
                     </Box>
                   ) : (
                     <ButtonText>Extract</ButtonText>

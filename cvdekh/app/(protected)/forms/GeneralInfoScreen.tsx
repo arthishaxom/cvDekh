@@ -29,7 +29,6 @@ export default function GeneralInfoScreen() {
       } else {
         updateFormData("contactInfo", { [field]: value });
       }
-      console.log("Updated Store", useResumeStore.getState().formData);
       setIsSaving(false);
     },
     1000, // 1-second debounce

@@ -1,5 +1,6 @@
 import { Queue, QueueOptions } from "bullmq"; // Removed Worker as it's not used here
 import IORedis from "ioredis";
+import { logger } from "../server";
 
 // Redis connection - you'll need Redis running
 // Ensure your .env file has REDIS_HOST and REDIS_PORT or update defaults
@@ -37,10 +38,8 @@ export const resumeQueue = new Queue("resume-parsing", queueOptions);
 
 // It's good practice to handle connection errors for the queue's Redis client
 resumeQueue.on("error", (err) => {
-  console.error("BullMQ Queue Error:", err);
+  logger.error("BullMQ Queue Error:", err);
 });
-
-console.log("BullMQ resumeQueue initialized.");
 
 // Graceful shutdown for the queue connection
 export const closeResumeQueue = async () => {
@@ -48,5 +47,5 @@ export const closeResumeQueue = async () => {
   // also close the IORedis connection if it's not shared by BullMQ workers in the same process
   // If workers are in separate processes, they'll manage their own connections.
   // await redisConnection.quit(); // or .disconnect()
-  console.log("BullMQ resumeQueue closed.");
+  logger.info("BullMQ resumeQueue closed.");
 };

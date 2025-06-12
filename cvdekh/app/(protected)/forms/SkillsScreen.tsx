@@ -185,10 +185,6 @@ export default function SkillsScreen() {
 
   const debouncedUpdateStore = useDebouncedCallback((skills: SkillsData) => {
     updateFormData("skills", skills);
-    console.log(
-      "Updated Skills Store",
-      useResumeStore.getState().formData.skills,
-    );
     setIsSaving(false);
   }, 1000);
 

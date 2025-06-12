@@ -1,5 +1,6 @@
 import { AIService, ParsedResumeData } from "../lib/aiService";
 import { GeminiService } from "../lib/geminiService";
+import { logger } from "../server";
 
 export class ResumeImproverService {
   private aiService: AIService;
@@ -12,7 +13,8 @@ export class ResumeImproverService {
   async improveResume(
     resumeData: ParsedResumeData,
     jobDescription: string,
-  ): Promise<any> { // You might want to define a more specific return type
+  ): Promise<any> {
+    // You might want to define a more specific return type
     try {
       if (!this.aiService.improveResume) {
         throw new Error(
@@ -25,11 +27,12 @@ export class ResumeImproverService {
       );
       return improvedResume;
     } catch (error) {
-      console.error("Error improving resume:", error);
-      throw new Error(
-        `Failed to improve resume: ${
-          error instanceof Error ? error.message : "Unknown error"
-        }`,
+      logger.error(
+        new Error(
+          `Failed to improve resume: ${
+            error instanceof Error ? error.message : "Unknown error"
+          }`,
+        ),
       );
     }
   }

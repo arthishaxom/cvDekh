@@ -114,6 +114,7 @@ export interface ResumeStoreState {
   improveResumeWithJobDescription: (
     jobDescription: string,
     session: Session,
+    onComplete: () => void,
   ) => Promise<void>;
   downloadGeneratedResume: (
     resumeId: string | null, // Pass null to download the original resume
@@ -122,6 +123,7 @@ export interface ResumeStoreState {
   parseResumeFromPDF: (
     selectedFile: any,
     session: Session,
+    onComplete: () => void,
   ) => Promise<{ success: boolean }>;
   resetStore: () => void;
 }

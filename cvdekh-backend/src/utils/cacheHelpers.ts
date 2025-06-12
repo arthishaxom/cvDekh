@@ -1,5 +1,6 @@
 // src/utils/cacheHelpers.ts
 import redisClient from "../config/redisClient";
+import { logger } from "../server";
 
 // Cache statistics for monitoring
 
@@ -14,14 +15,12 @@ export const getCachedData = async <T>(key: string): Promise<T | null> => {
     const cachedData = await redisClient.get(key);
 
     if (cachedData) {
-      console.log(`✅ Cache hit for key: ${key}`);
       return JSON.parse(cachedData);
     } else {
-      console.log(`❌ Cache miss for key: ${key}`);
       return null;
     }
   } catch (error) {
-    console.error(`Error reading from cache (key: ${key}):`, error);
+    logger.error(`Error reading from cache (key: ${key}):`, error);
     return null;
   }
 };
@@ -43,9 +42,8 @@ export const setCachedData = async (
         value: ttlSeconds,
       },
     });
-    console.log(`✅ Data cached for key: ${key} (TTL: ${ttlSeconds}s)`);
   } catch (error) {
-    console.error(`Error writing to cache (key: ${key}):`, error);
+    logger.error(`Error writing to cache (key: ${key}):`, error);
   }
 };
 
@@ -58,8 +56,7 @@ export const deleteCachedData = async (key: string): Promise<void> => {
     }
 
     await redisClient.del(key);
-    console.log(`✅ Cache deleted for key: ${key}`);
   } catch (error) {
-    console.error(`Error deleting from cache (key: ${key}):`, error);
+    logger.error(`Error deleting from cache (key: ${key}):`, error);
   }
 };

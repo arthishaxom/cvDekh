@@ -29,7 +29,6 @@ export class GeminiService implements AIService {
 
     return JSON.parse(response.text!, (key, value) => {
       if (value === "null") {
-        console.log(key, value);
         return null;
       }
       return value;
@@ -56,11 +55,8 @@ Job Description: ${jobDescription}
       },
     });
 
-    console.log(response.text);
-
     return JSON.parse(response.text!, (key, value) => {
       if (value === "null") {
-        console.log(key, value);
         return null;
       }
       return value;

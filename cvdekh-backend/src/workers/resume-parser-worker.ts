@@ -7,6 +7,7 @@ import { createClient, SupabaseClient } from "@supabase/supabase-js"; // Import 
 import { upsertResume } from "../utils/resumeUtils"; // Corrected path
 import IORedis from "ioredis"; // For worker's Redis connection
 import { GeminiService } from "../lib/geminiService"; // Assuming GeminiService is your AI service
+import { logger } from "../server";
 
 interface ResumeParsingJobData {
   userId: string;
@@ -26,7 +27,7 @@ const workerRedisConnection = new IORedis({
 });
 
 workerRedisConnection.on("error", (err) => {
-  console.error("Worker Redis Connection Error:", err);
+  logger.error("Worker Redis Connection Error:", err);
 });
 
 // Create worker
@@ -37,13 +38,8 @@ const resumeWorker = new Worker<ResumeParsingJobData>(
     const { userId, filePath, originalName, userToken } = job.data;
     let supabaseClient: SupabaseClient | null = null; // Initialize to null
 
-    console.log(
-      `[Worker Job ${job.id}] Starting processing for user ${userId}, file: ${originalName}`,
-    );
-
     try {
       await job.updateProgress(5);
-      console.log(`[Worker Job ${job.id}] Progress: 5% - Initialized`);
 
       // Create a Supabase client instance for this job using the user's token
       // This ensures operations are performed in the context of the user
@@ -59,18 +55,15 @@ const resumeWorker = new Worker<ResumeParsingJobData>(
       supabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
         global: { headers: { Authorization: `Bearer ${userToken}` } },
       });
-      console.log(`[Worker Job ${job.id}] Supabase client created for user.`);
       await job.updateProgress(10);
 
       const fileBuffer = await fs.readFile(filePath);
-      console.log(`[Worker Job ${job.id}] File read from ${filePath}`);
       await job.updateProgress(20);
 
       // Initialize your AI service (e.g., GeminiService)
       const aiService = new GeminiService(); // Or however you instantiate your AIService
       const resumeParser = new ResumeParserService(aiService); // Pass AI service if constructor expects it
       const parsedData = await resumeParser.parseResumeFromBuffer(fileBuffer);
-      console.log(`[Worker Job ${job.id}] Resume parsed successfully.`);
       await job.updateProgress(70);
 
       if (!supabaseClient) {
@@ -83,18 +76,15 @@ const resumeWorker = new Worker<ResumeParsingJobData>(
       await upsertResume(supabaseClient, userId, parsedData, {
         isOriginal: true, // Assuming this is for the original resume
       });
-      console.log(`[Worker Job ${job.id}] Parsed data upserted to database.`);
       await job.updateProgress(90);
 
       // Clean up temporary file
       await fs.unlink(filePath);
-      console.log(`[Worker Job ${job.id}] Temporary file ${filePath} deleted.`);
       await job.updateProgress(100);
 
-      console.log(`[Worker Job ${job.id}] Processing completed successfully.`);
       return parsedData; // This will be stored in job.returnvalue
     } catch (error: any) {
-      console.error(
+      logger.error(
         `[Worker Job ${job.id}] Error during processing:`,
         error.message,
         error.stack,
@@ -102,11 +92,8 @@ const resumeWorker = new Worker<ResumeParsingJobData>(
       // Clean up file even if processing fails
       try {
         await fs.unlink(filePath);
-        console.log(
-          `[Worker Job ${job.id}] Temporary file ${filePath} deleted after error.`,
-        );
       } catch (cleanupError: any) {
-        console.error(
+        logger.error(
           `[Worker Job ${job.id}] Error cleaning up file ${filePath} after error:`,
           cleanupError.message,
         );
@@ -123,36 +110,36 @@ const resumeWorker = new Worker<ResumeParsingJobData>(
 );
 
 // Handle worker events
-resumeWorker.on("completed", (job, result) => {
-  console.log(
-    `Job ${job.id} completed successfully. Result:`,
-    result ? "has result" : "no result",
-  );
-});
+// resumeWorker.on("completed", (job, result) => {
+//   console.log(
+//     `Job ${job.id} completed successfully. Result:`,
+//     result ? "has result" : "no result",
+//   );
+// });
 
-resumeWorker.on("failed", (job, err) => {
-  console.error(`Job ${job?.id} failed with error: "${err.message}"`);
-});
+// resumeWorker.on("failed", (job, err) => {
+//   logger.error(`Job ${job?.id} failed with error: "${err.message}"`);
+// });
 
-resumeWorker.on("error", (err) => {
-  console.error("Resume Worker encountered an error:", err);
-});
+// resumeWorker.on("error", (err) => {
+//   logger.error("Resume Worker encountered an error:", err);
+// });
 
-resumeWorker.on("active", (job) => {
-  console.log(`Job ${job.id} has started.`);
-});
+// resumeWorker.on("active", (job) => {
+//   console.log(`Job ${job.id} has started.`);
+// });
 
-resumeWorker.on("progress", (job, progress) => {
-  console.log(`Job ${job.id} reported progress: ${progress}%`);
-});
+// resumeWorker.on("progress", (job, progress) => {
+//   console.log(`Job ${job.id} reported progress: ${progress}%`);
+// });
 
-console.log("Resume parsing worker started and listening for jobs...");
+// console.log("Resume parsing worker started and listening for jobs...");
 
 // Graceful shutdown for the worker and its Redis connection
 export const closeResumeWorker = async () => {
   await resumeWorker.close();
   await workerRedisConnection.quit(); // or .disconnect()
-  console.log("BullMQ resumeWorker closed.");
+  logger.info("BullMQ resumeWorker closed.");
 };
 
 export { resumeWorker }; // Export the worker instance if needed elsewhere (e.g. for health checks)

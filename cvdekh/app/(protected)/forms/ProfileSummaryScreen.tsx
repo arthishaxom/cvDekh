@@ -23,10 +23,6 @@ export default function ProfileSummaryScreen() {
 
   const debouncedUpdateStore = useDebouncedCallback((value: string) => {
     updateFormData("summary", value);
-    console.log(
-      "Updated Store Summary:",
-      useResumeStore.getState().formData.summary,
-    );
     setIsSaving(false);
   }, 1000); // 1-second debounce
 
