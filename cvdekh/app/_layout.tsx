@@ -1,7 +1,7 @@
-import { SplashScreen, Stack } from "expo-router";
+import { router, SplashScreen, Stack } from "expo-router";
 import "../global.css";
 import { useAuthStore } from "@/store/auth";
-import { JSX, useEffect } from "react";
+import { JSX, useEffect, useState } from "react";
 import { GluestackUIProvider } from "@/components/ui/gluestack-ui-provider";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import Toast, { BaseToast, BaseToastProps } from "react-native-toast-message";
@@ -10,6 +10,8 @@ import { Check, CircleAlert, CircleCheck, CircleX } from "lucide-react-native";
 import { Text } from "@/components/ui/text";
 import { HStack } from "@/components/ui/hstack";
 import { VStack } from "@/components/ui/vstack";
+import * as Linking from "expo-linking";
+import { supabase } from "@/lib/api";
 
 const toastConfig = {
   success: (props: JSX.IntrinsicAttributes & BaseToastProps) => (
@@ -90,7 +92,68 @@ const toastConfig = {
   ),
 };
 
+const handleDeepLink = async ({
+  access_token,
+  refresh_token,
+  type, // Add a type parameter if your Supabase email link includes it
+}: {
+  access_token: string;
+  refresh_token: string;
+  type?: string; // e.g., 'recovery'
+}) => {
+  await supabase.auth.setSession({
+    access_token,
+    refresh_token,
+  });
+
+  // It's often better to let Supabase handle the session refresh internally
+  // or ensure it's done before navigating.
+  // await supabase.auth.refreshSession();
+
+  // Check if the link is specifically for password recovery
+  // Supabase recovery links often have type=recovery in the fragment
+  if (type === "recovery") {
+    // You might need to adjust how you check the link type
+    router.replace("/passreset"); // Use replace to not keep the deep link in history
+  } else {
+    // Handle other deep link types or default to main app screen if session is valid
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    if (session) {
+      router.replace("/(protected)/(tabs)");
+    } else {
+      router.replace("/signin");
+    }
+  }
+};
+
 export default function RootLayout() {
+  const url = Linking.useURL();
+  const [isInitialLinkHandled, setIsInitialLinkHandled] = useState(false);
+
+  useEffect(() => {
+    if (url && !isInitialLinkHandled) {
+      const parsedUrl = url.replace("#", "?");
+      const { queryParams } = Linking.parse(parsedUrl);
+
+      console.log(`Linked to app with data: ${JSON.stringify(queryParams)}`);
+
+      if (
+        queryParams &&
+        queryParams.access_token &&
+        queryParams.refresh_token
+      ) {
+        handleDeepLink({
+          access_token: queryParams.access_token as string,
+          refresh_token: queryParams.refresh_token as string,
+          type: queryParams.type as string, // Pass the type if available
+        });
+        setIsInitialLinkHandled(true); // Mark as handled
+      }
+    }
+  }, [url, isInitialLinkHandled]);
+
   SplashScreen.preventAutoHideAsync();
 
   const refreshSession = useAuthStore((state) => state.refreshSession);

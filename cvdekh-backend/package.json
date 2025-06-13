@@ -1,12 +1,12 @@
 {
   "name": "cvdekh-backend",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "dist/server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon src/server.ts",
-    "ngrok": "ngrok http --domain=hip-cardinal-usefully.ngrok-free.app 80",
-    "dev:ngrok": "concurrently \"npm run dev\" \"npm run ngrok\""
+    "build": "tsc",
+    "start": "node dist/server.js"
   },
   "keywords": [],
   "author": "",

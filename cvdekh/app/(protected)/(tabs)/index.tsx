@@ -204,17 +204,19 @@ export default function Tab() {
 
   return (
     <SafeAreaView edges={["top"]} className="flex-1 bg-background-500">
-      <Fab
-        size="md"
-        placement="bottom right"
-        isHovered={false}
-        isDisabled={false}
-        isPressed={false}
-        className="hover:bg-background-600 focus:bg-background-600 rounded-lg bg-background-400/30 border border-white/15 shadow-none"
-        onPress={() => setShowImproveModal(true)} // Open modal on press
-      >
-        <Plus color={"#9DFF41"} size={20} />
-      </Fab>
+      {!isLoading && (
+        <Fab
+          size="md"
+          placement="bottom right"
+          isHovered={false}
+          isDisabled={false}
+          isPressed={false}
+          className="hover:bg-background-700 active:bg-background-700 rounded-lg bg-background-400/30 border border-white/15 shadow-none"
+          onPress={() => setShowImproveModal(true)} // Open modal on press
+        >
+          <Plus color={"#9DFF41"} size={20} />
+        </Fab>
+      )}
       <Box className="flex-1 justify-between">
         <HStack className="items-center justify-center py-2">
           <Heading className="text-2xl">Jobs</Heading>

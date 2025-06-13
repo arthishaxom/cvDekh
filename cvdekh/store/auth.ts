@@ -21,6 +21,8 @@ supabase.auth.onAuthStateChange((event, session) => {
     useAuthStore.setState({ session, isLoading: false });
   } else if (event === "SIGNED_OUT") {
     useAuthStore.setState({ session: null, isLoading: false });
+  } else if (event === "PASSWORD_RECOVERY") {
+    useAuthStore.setState({ session: session, isLoading: false });
   }
   // No need to handle USER_UPDATED or PASSWORD_RECOVERY specifically for isLoading or session here
   // unless your logic requires it.
@@ -32,9 +34,15 @@ type AuthState = {
   error: string | null;
   refreshSession: () => Promise<void>;
   signInWithEmail: (email: string, password: string) => Promise<boolean>;
-  signUpWithEmail: (email: string, password: string) => Promise<boolean>;
+  signUpWithEmail: (
+    email: string,
+    password: string,
+    displayName: string,
+  ) => Promise<boolean>;
   signInWithGoogle: () => Promise<boolean>;
   signOut: () => Promise<void>;
+  resetPassword: (email: string) => Promise<void>;
+  updatePassword: (newPassword: string) => Promise<void>;
 };
 
 export const useAuthStore = create<AuthState>((set, get) => ({
@@ -86,13 +94,22 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
   },
 
-  signUpWithEmail: async (email: string, password: string) => {
+  signUpWithEmail: async (
+    email: string,
+    password: string,
+    displayName: string,
+  ) => {
     set({ isLoading: true, error: null });
 
     try {
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          data: {
+            full_name: displayName,
+          },
+        },
       });
 
       if (error) {
@@ -137,7 +154,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       }
 
       // Sign in to Supabase with Google ID token
-      const { data, error } = await supabase.auth.signInWithIdToken({
+      const { error } = await supabase.auth.signInWithIdToken({
         provider: "google",
         token: userInfo.data.idToken,
       });
@@ -170,6 +187,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   signOut: async () => {
     try {
+      set({ isLoading: true });
       const provider = get().session?.user.app_metadata.provider;
       if (provider === "google") {
         await GoogleSignin.revokeAccess();
@@ -179,10 +197,48 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       if (error) {
         console.error("Error signing out:", error.message);
       }
-      set({ session: null });
+      set({ session: null, isLoading: false });
       useResumeStore.getState().resetStore();
     } catch (error) {
       console.error("Error revoking Google access:", error);
+    }
+  },
+
+  resetPassword: async (email: string) => {
+    set({ isLoading: true, error: null });
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: "cvdekh://",
+      });
+      if (error) {
+        set({ error: error.message, isLoading: false });
+        return;
+      }
+      set({ isLoading: false });
+    } catch (error: any) {
+      set({
+        error: error.message || "An unexpected error occurred",
+        isLoading: false,
+      });
+    }
+  },
+
+  updatePassword: async (newPassword: string) => {
+    set({ isLoading: true, error: null });
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword,
+      });
+      if (error) {
+        set({ error: error.message, isLoading: false });
+        return;
+      }
+      set({ isLoading: false });
+    } catch (error: any) {
+      set({
+        error: error.message || "An unexpected error occurred",
+        isLoading: false,
+      });
     }
   },
 }));

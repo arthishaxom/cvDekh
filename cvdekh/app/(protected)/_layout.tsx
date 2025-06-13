@@ -31,6 +31,7 @@ export default function ProtectedLayout() {
       />
       <Stack.Screen name="forms" />
       <Stack.Screen name="resume-details/[id]" />
+      <Stack.Screen name="settings" />
     </Stack>
   );
 }

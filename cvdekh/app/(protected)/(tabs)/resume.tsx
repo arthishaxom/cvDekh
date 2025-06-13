@@ -23,9 +23,8 @@ import {
   Phone,
   User,
   Save,
-  Menu,
-  CircleUserRound,
   CircleCheck,
+  LogOut,
 } from "lucide-react-native";
 import { useCallback, useEffect, useState } from "react";
 import { Pressable, RefreshControl, ScrollView } from "react-native";
@@ -65,6 +64,7 @@ export default function Tab() {
   const [refreshing, setRefreshing] = useState(false);
   const [dotText, setDotText] = useState("Extracting");
   const progress = useResumeStore((state) => state.progress);
+  const signOut = useAuthStore((state) => state.signOut);
 
   useFocusEffect(
     useCallback(() => {
@@ -143,24 +143,10 @@ export default function Tab() {
       return; // The store will handle the alert
     }
 
-    // setIsExtractionSuccess(false);
-
-    // Call the store action and get the result
-    const result = await parseResumeFromPDF(selectedFile, session, () => {
+    await parseResumeFromPDF(selectedFile, session, () => {
       setShowModal(false);
       setSelectedFile(null);
     });
-
-    // Handle UI updates based on success/failure
-    if (result.success) {
-      // setIsExtractionSuccess(true);
-      // Close modal and reset file selection on success
-      // setShowModal(false);
-      // setSelectedFile(null);
-    }
-
-    // The store already handles loading states and alerts
-    // No need for local loading state management
   };
 
   const paddingBottom = useSharedValue(50); // Initial value when FAB is hidden
@@ -179,6 +165,11 @@ export default function Tab() {
       paddingBottom: paddingBottom.value,
     };
   });
+
+  const handleSignOut = async () => {
+    await signOut();
+    router.replace("/signin"); // Redirect to sign-in page after sign out
+  };
 
   return (
     <SafeAreaView edges={["top"]} className="flex-1 bg-background-500">
@@ -203,21 +194,9 @@ export default function Tab() {
       )}
       <Box className="flex-1 justify-between">
         <HStack className="items-center justify-between px-4 py-2">
-          <Menu
-            color={"white"}
-            size={20}
-            onPress={() => {
-              Toast.show({
-                type: "sToast",
-                text1: "Success",
-                text2: "Resume Saved Successfully!",
-              });
-            }}
-          />
-          <Heading className="text-2xl">Resume</Heading>
-          <Pressable onPress={() => router.push("/settings")}>
-            <CircleUserRound color={"white"} size={20} />
-          </Pressable>
+          <Box className="w-[22px]"></Box>
+          <Heading className="text-2xl flex-1 text-center">Resume</Heading>
+          <LogOut color={"white"} size={22} onPress={handleSignOut} />
         </HStack>
         <Box className="flex flex-col gap-4 pt-4">
           <ScrollView

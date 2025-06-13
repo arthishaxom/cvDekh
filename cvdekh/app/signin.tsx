@@ -3,14 +3,25 @@ import { router, useNavigation } from "expo-router";
 import { Box } from "@/components/ui/box";
 import { Text } from "@/components/ui/text";
 import { Input, InputField, InputSlot } from "@/components/ui/input";
-import { Eye, EyeOff, Lock, Mail } from "lucide-react-native";
-import { Button } from "@/components/ui/button";
+import { Eye, EyeOff, Lock, Mail, User } from "lucide-react-native";
+import { Button, ButtonText } from "@/components/ui/button";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import { supabase } from "@/lib/api"; // Added for Supabase client
 import { useAuthStore } from "@/store/auth";
-import { TouchableOpacity, AppState } from "react-native";
+import { TouchableOpacity, AppState, Pressable } from "react-native";
 import { VStack } from "@/components/ui/vstack";
 import Toast from "react-native-toast-message";
+import {
+  Modal,
+  ModalBackdrop,
+  ModalBody,
+  ModalCloseButton,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+} from "@/components/ui/modal";
+import { CloseIcon, Icon } from "@/components/ui/icon";
+import { Heading } from "@/components/ui/heading";
 
 AppState.addEventListener("change", (state) => {
   if (state === "active") {
@@ -24,20 +35,22 @@ export default function Signin() {
   const navigation = useNavigation();
 
   // Form state
+  const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false); // Toggle between sign in and sign up
+  const [showModal, setShowModal] = useState(false);
+  const [emailToReset, setEmailToReset] = useState("");
 
   // Auth store
-  const {
-    signInWithEmail,
-    signUpWithEmail,
-    signInWithGoogle,
-    isLoading,
-    error,
-    session,
-  } = useAuthStore();
+  const signInWithEmail = useAuthStore((state) => state.signInWithEmail);
+  const signUpWithEmail = useAuthStore((state) => state.signUpWithEmail);
+  const signInWithGoogle = useAuthStore((state) => state.signInWithGoogle);
+  const resetPassword = useAuthStore((state) => state.resetPassword);
+  const isLoading = useAuthStore((state) => state.isLoading);
+  const error = useAuthStore((state) => state.error);
+  const session = useAuthStore((state) => state.session);
 
   // Handle email/password authentication
   const handleEmailAuth = async () => {
@@ -51,7 +64,7 @@ export default function Signin() {
     }
 
     const success = isSignUp
-      ? await signUpWithEmail(email, password)
+      ? await signUpWithEmail(email, password, displayName)
       : await signInWithEmail(email, password);
 
     if (success) {
@@ -75,21 +88,42 @@ export default function Signin() {
     }
   };
 
+  const handleResetPassword = async () => {
+    if (!emailToReset.trim()) {
+      Toast.show({
+        type: "eToast",
+        text1: "Error",
+        text2: "Please fill in all fields",
+      });
+      return;
+    }
+    await resetPassword(emailToReset);
+    setShowModal(false);
+  };
+
   // Show error if there is one
   useEffect(() => {
     if (error) {
-      Toast.show({
-        type: "eToast",
-        text1: "Auth Error",
-        text2: error,
-      });
+      if (error.includes("confirm")) {
+        Toast.show({
+          type: "iToast",
+          text1: "Check Email",
+          text2: "After Confirming Try Login Again",
+        });
+      } else {
+        Toast.show({
+          type: "eToast",
+          text1: "Auth Error",
+          text2: error,
+        });
+      }
     }
   }, [error]);
 
   // Redirect if already authenticated
   useEffect(() => {
     if (session) {
-      router.replace("./(protected)");
+      router.replace("/(protected)/(tabs)");
     }
   }, [session]);
 
@@ -117,6 +151,23 @@ export default function Signin() {
       </Box>
 
       <Box className="mb-4">
+        {isSignUp && (
+          <Input className="mb-4 rounded-lg h-16 bg-background-400/30 border-zinc-700">
+            <InputSlot className="pl-4">
+              <User color="white" size={20} />
+            </InputSlot>
+            <InputField
+              placeholder="Display Name"
+              placeholderTextColor="#9CA3AF"
+              className="text-white ml-1"
+              value={displayName}
+              onChangeText={setDisplayName}
+              keyboardType="default"
+              autoCapitalize="none"
+              autoComplete="name"
+            />
+          </Input>
+        )}
         <Input className="mb-4 rounded-lg h-16 bg-background-400/30 border-zinc-700">
           <InputSlot className="pl-4">
             <Mail color="white" size={20} />
@@ -158,11 +209,11 @@ export default function Signin() {
         </Input>
 
         {!isSignUp && (
-          <TouchableOpacity>
+          <Pressable onPress={() => setShowModal(true)}>
             <Text className="text-primary-300 text-right">
               Forgot Password?
             </Text>
-          </TouchableOpacity>
+          </Pressable>
         )}
       </Box>
 
@@ -204,11 +255,70 @@ export default function Signin() {
         onPress={handleGoogleSignIn}
         disabled={isLoading}
         size="lg"
-        className="bg-white p-2 h-min rounded-lg flex-row items-center justify-center gap-1 py-4"
+        action="secondary"
+        className="p-2 h-min rounded-lg border border-white/30 bg-background-400/30 flex-row items-center justify-center gap-1 py-4"
       >
-        <AntDesign name="google" size={20} color="black" className="" />
-        <Text className="text-black font-semibold">Google</Text>
+        <AntDesign name="google" size={20} color="white" className="" />
+        <Text className="text-white font-semibold">Google</Text>
       </Button>
+
+      <Modal
+        isOpen={showModal}
+        onClose={() => {
+          setShowModal(false);
+        }}
+        size="lg"
+      >
+        <ModalBackdrop />
+        <ModalContent className="bg-background-500">
+          <ModalHeader>
+            <Heading size="md" className="text-typography-950">
+              Reset Password
+            </Heading>
+            <ModalCloseButton>
+              <Icon
+                as={CloseIcon}
+                size="md"
+                className="stroke-background-100 group-[:hover]/modal-close-button:stroke-background-100 group-[:active]/modal-close-button:stroke-background-100 group-[:focus-visible]/modal-close-button:stroke-background-100"
+              />
+            </ModalCloseButton>
+          </ModalHeader>
+          <ModalBody>
+            <Input className="rounded-lg h-16 bg-background-400/30 border-zinc-700">
+              <InputSlot className="pl-4">
+                <Mail color="white" size={20} />
+              </InputSlot>
+              <InputField
+                placeholder="Email"
+                placeholderTextColor="#9CA3AF"
+                className="text-white ml-1"
+                value={emailToReset}
+                onChangeText={setEmailToReset}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoComplete="email"
+              />
+            </Input>
+          </ModalBody>
+          <ModalFooter>
+            <VStack className="w-full">
+              <Button
+                className={`w-full h-12 rounded-lg ${
+                  isLoading ? "opacity-50" : ""
+                } ${isLoading ? "bg-background-500" : ""}`}
+                onPress={handleResetPassword} // Updated onPress handler
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <ButtonText className="text-white">Sending</ButtonText>
+                ) : (
+                  <ButtonText>Send Reset Link</ButtonText>
+                )}
+              </Button>
+            </VStack>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </VStack>
   );
 }

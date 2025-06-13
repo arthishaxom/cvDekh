@@ -1,10 +1,23 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { View, Text, Button, StyleSheet } from "react-native";
 import { useAuthStore } from "@/store/auth";
-import { router } from "expo-router";
+import { router, useNavigation } from "expo-router";
 
 export default function Settings() {
   const { signOut } = useAuthStore();
+
+  const navigation = useNavigation();
+
+  useEffect(() => {
+    navigation.setOptions({
+      // headerShown: false,
+      title: "Settings",
+      headerStyle: {
+        backgroundColor: "#161616",
+      },
+      headerShadowVisible: false,
+    });
+  }, [navigation]);
 
   const handleSignOut = async () => {
     await signOut();
