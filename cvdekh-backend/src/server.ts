@@ -40,11 +40,9 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.get("/api/ok", authMiddleware, (req: AuthenticatedRequest, res) => {
+app.get("/api/ok", (req, res) => {
   // If authMiddleware passes, req.user will be populated
-  res
-    .status(200)
-    .json({ message: "Pong", userId: req.user?.id, email: req.user?.email });
+  res.status(200).json({ message: "Pong" });
 });
 
 app.use("/api/resume", authMiddleware, resumeRouter);
