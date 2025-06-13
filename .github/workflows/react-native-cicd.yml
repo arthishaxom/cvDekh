@@ -16,6 +16,10 @@ env:
   EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
   NODE_OPTIONS: --openssl-legacy-provider
 
+defaults:
+  run:
+    working-directory: ./cvdekh
+
 jobs:
   check-skip:
     runs-on: ubuntu-latest
