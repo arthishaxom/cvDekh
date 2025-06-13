@@ -24,7 +24,7 @@ import {
   User,
   Save,
   CircleCheck,
-  LogOut,
+  Menu,
 } from "lucide-react-native";
 import { useCallback, useEffect, useState } from "react";
 import { Pressable, RefreshControl, ScrollView } from "react-native";
@@ -64,7 +64,6 @@ export default function Tab() {
   const [refreshing, setRefreshing] = useState(false);
   const [dotText, setDotText] = useState("Extracting");
   const progress = useResumeStore((state) => state.progress);
-  const signOut = useAuthStore((state) => state.signOut);
 
   useFocusEffect(
     useCallback(() => {
@@ -166,11 +165,6 @@ export default function Tab() {
     };
   });
 
-  const handleSignOut = async () => {
-    await signOut();
-    router.replace("/signin"); // Redirect to sign-in page after sign out
-  };
-
   return (
     <SafeAreaView edges={["top"]} className="flex-1 bg-background-500">
       {hasChanges && (
@@ -194,9 +188,15 @@ export default function Tab() {
       )}
       <Box className="flex-1 justify-between">
         <HStack className="items-center justify-between px-4 py-2">
-          <Box className="w-[22px]"></Box>
+          <Menu
+            color={"white"}
+            size={22}
+            onPress={() => {
+              router.push("/(protected)/settings");
+            }}
+          />
           <Heading className="text-2xl flex-1 text-center">Resume</Heading>
-          <LogOut color={"white"} size={22} onPress={handleSignOut} />
+          <Box className="w-[22px]"></Box>
         </HStack>
         <Box className="flex flex-col gap-4 pt-4">
           <ScrollView
