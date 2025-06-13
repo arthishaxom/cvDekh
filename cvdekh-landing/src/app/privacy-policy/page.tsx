@@ -7,10 +7,10 @@ export default function PrivacyPolicyPage() {
         <h1 className="text-3xl font-bold mb-6 text-center">
           Privacy Policy - cvDekh
         </h1>
-        <p className="mb-4 text-sm text-center text-neutral-200">
+        <p className="mb-4 text-md text-center text-neutral-200">
           <strong>Effective Date:</strong> {launchDate}
         </p>
-        <p className="mb-6 text-sm text-center text-neutral-200">
+        <p className="mb-6 text-md text-center text-neutral-200">
           <strong>Developer Contact:</strong>{" "}
           <span className="text-green-300">
             <a href="mailto:pothal.builds@gmail.com">pothal.builds@gmail.com</a>
@@ -20,10 +20,10 @@ export default function PrivacyPolicyPage() {
         <section className="mb-6">
           <h2 className="text-2xl font-semibold mb-3">1. Overview</h2>
           <p className="text-neutral-300">
-            cvDekh (“we”, “us”, or “our”) is a resume builder app designed to
-            help users edit, enhance, and tailor their resumes for job
-            applications. We take your privacy seriously and aim to be
-            transparent about how we collect, use, and store your information.
+            cvDekh is a resume builder app designed to help users edit, enhance,
+            and tailor their resumes for job applications. We take your privacy
+            seriously and aim to be transparent about how we collect, use, and
+            store your information.
           </p>
         </section>
 
@@ -106,7 +106,7 @@ export default function PrivacyPolicyPage() {
             personal information (e.g., government IDs) within your resume.
           </p>
           <p className="text-neutral-300">
-            Your resume data is stored securely using Supabase’s database
+            Your resume data is stored securely using Supabase&apos;s database
             infrastructure.
           </p>
         </section>
@@ -123,7 +123,9 @@ export default function PrivacyPolicyPage() {
         </section>
 
         <section className="mb-6">
-          <h2 className="text-2xl font-semibold mb-3">8. Children's Privacy</h2>
+          <h2 className="text-2xl font-semibold mb-3">
+            8. Children&apos;s Privacy
+          </h2>
           <p className="text-neutral-300 mb-2">
             This app is intended for users 18 years and older. We do not
             knowingly collect personal information from anyone under the age of
@@ -141,7 +143,7 @@ export default function PrivacyPolicyPage() {
           </h2>
           <p className="text-neutral-300">
             We may update this Privacy Policy as needed. If we make changes,
-            we’ll notify users via the app or by email.
+            we&apos;ll notify users via the app or by email.
           </p>
         </section>
 
