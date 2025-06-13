@@ -1,5 +1,8 @@
 name: React Native CI/CD
 
+defaults:
+  run:
+    working-directory: ./cvdekh
 on:
   workflow_dispatch:
     inputs:
@@ -16,9 +19,6 @@ env:
   EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
   NODE_OPTIONS: --openssl-legacy-provider
 
-defaults:
-  run:
-    working-directory: ./cvdekh
 
 jobs:
   check-skip:
