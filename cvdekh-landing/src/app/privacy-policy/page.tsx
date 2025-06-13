@@ -130,7 +130,7 @@ export default function PrivacyPolicyPage() {
               >
                 pothal.builds@gmail.com
               </a>{" "}
-              with the subject line: "Delete my cvDekh account".
+              with the subject line: &quot;Delete my cvDekh account&quot;.
             </li>
             <li>
               In your email, please confirm your registered email address.
