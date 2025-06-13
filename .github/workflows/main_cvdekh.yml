@@ -9,13 +9,13 @@ on:
       - main
   workflow_dispatch:
 
-defaults:
-  run:
-    working-directory: ./cvdekh-backend
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./cvdekh-backend
     permissions:
       contents: read #This is required for actions/checkout
 
