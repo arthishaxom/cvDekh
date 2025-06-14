@@ -275,7 +275,7 @@ export const useResumeStore = create<ResumeStoreState>()(
           throw new Error("User session not found. Please log in.");
         }
 
-        const response = await axios.post(
+        await axios.post(
           `${backendApiUrl}/api/resume/save-resume`,
           requestBody,
           {
@@ -292,8 +292,9 @@ export const useResumeStore = create<ResumeStoreState>()(
 
         set({ isLoading: false, hasChanges: false });
         Toast.show({
-          type: "success",
-          text1: "Resume Saved Successfully",
+          type: "sToast",
+          text1: "Success",
+          text2: "Resume has been saved successfully.",
         });
       } catch (err) {
         console.error("Failed to submit resume:", err);

@@ -13,6 +13,10 @@
       "bundleIdentifier": "com.justashish.cvdekh"
     },
     "android": {
+      "blockedPermissions": [
+        "android.permission.READ_MEDIA_IMAGES",
+        "android.permission.READ_MEDIA_VIDEO"
+      ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#161616"
