@@ -2,9 +2,9 @@ import { Worker, Job } from "bullmq";
 import fs from "fs/promises";
 // import path from 'path'; // Not strictly needed here but good for path manipulations
 import { resumeQueue, closeResumeQueue } from "../config/bullmq-config"; // Import queue and its closer
-import { ResumeParserService } from "../utils/resumeParserService"; // Corrected path assuming utils is at src/utils
+import { ResumeParserService } from "../services/resumeParserService"; // Corrected path assuming utils is at src/utils
 import { createClient, SupabaseClient } from "@supabase/supabase-js"; // Import SupabaseClient type
-import { upsertResume } from "../utils/resumeUtils"; // Corrected path
+import { upsertResume } from "../services/resumeUtils"; // Corrected path
 import IORedis from "ioredis"; // For worker's Redis connection
 import { GeminiService } from "../lib/geminiService"; // Assuming GeminiService is your AI service
 import { logger } from "../server";

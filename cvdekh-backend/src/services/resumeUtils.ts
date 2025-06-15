@@ -1,6 +1,10 @@
 import { SupabaseClient } from "@supabase/supabase-js"; // Import SupabaseClient
 import { ParsedResumeData } from "../lib/aiService";
-import { deleteCachedData, getCachedData, setCachedData } from "./cacheHelpers";
+import {
+  deleteCachedData,
+  getCachedData,
+  setCachedData,
+} from "../utils/cacheHelpers";
 import { error } from "console";
 import { logger } from "../server";
 

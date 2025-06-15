@@ -290,7 +290,11 @@ export default function ProjectsScreen() {
           )}
         </Box>
 
-        <Button size="xl" onPress={() => router.back()} className="mt-2">
+        <Button
+          size="xl"
+          onPress={() => router.back()}
+          className="mt-2 rounded-lg"
+        >
           <ButtonText>Done</ButtonText>
         </Button>
       </VStack>

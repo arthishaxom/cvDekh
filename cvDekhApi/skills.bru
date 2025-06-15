@@ -1,0 +1,21 @@
+meta {
+  name: skills
+  type: http
+  seq: 6
+}
+
+get {
+  url: https://hip-cardinal-usefully.ngrok-free.app/api/resume/skills/?search=js&category=languages&limit=10
+  body: none
+  auth: bearer
+}
+
+params:query {
+  search: js
+  category: languages
+  limit: 10
+}
+
+auth:bearer {
+  token: eyJhbGciOiJIUzI1NiIsImtpZCI6IkltNndGRncrMHY4QWVYaHQiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL2xkbmN6d3VjcWp4YnVqa3J1cndxLnN1cGFiYXNlLmNvL2F1dGgvdjEiLCJzdWIiOiI2ZmYzOWJiNy1lMzM3LTQwY2YtYTMzNS00YWU4MWJlZjc2Y2MiLCJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoxNzQ5OTYxNzQ0LCJpYXQiOjE3NDk5NTgxNDQsImVtYWlsIjoiYXNoaXNocG90aGFsQGdtYWlsLmNvbSIsInBob25lIjoiIiwiYXBwX21ldGFkYXRhIjp7InByb3ZpZGVyIjoiZW1haWwiLCJwcm92aWRlcnMiOlsiZW1haWwiXX0sInVzZXJfbWV0YWRhdGEiOnsiZW1haWwiOiJhc2hpc2hwb3RoYWxAZ21haWwuY29tIiwiZW1haWxfdmVyaWZpZWQiOnRydWUsImZ1bGxfbmFtZSI6IkFzaGlzaCBQb3RoYWwiLCJwaG9uZV92ZXJpZmllZCI6ZmFsc2UsInN1YiI6IjZmZjM5YmI3LWUzMzctNDBjZi1hMzM1LTRhZTgxYmVmNzZjYyJ9LCJyb2xlIjoiYXV0aGVudGljYXRlZCIsImFhbCI6ImFhbDEiLCJhbXIiOlt7Im1ldGhvZCI6InBhc3N3b3JkIiwidGltZXN0YW1wIjoxNzQ5OTU0NjU0fV0sInNlc3Npb25faWQiOiJiMzlmZjczMy1hZmE2LTRmMTUtYWVjYS1lYjliYmJkNGFiOWUiLCJpc19hbm9ueW1vdXMiOmZhbHNlfQ.gSnQsdfzsq71-G9qW7RguL4awu2C5HTq6og_YHGK0X8
+}

@@ -53,6 +53,7 @@ export default function Tab() {
       return;
     }
     useResumeStore.getState().fetchAllResume(session);
+    console.log(session);
   }, [session]);
   const progress = useResumeStore((state) => state.progress);
   const [dotText, setDotText] = useState("Extracting");

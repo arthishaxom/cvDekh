@@ -1,6 +1,6 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { AIService, ParsedResumeData } from "./aiService";
-import systemInstructions from "../utils/prompts";
+import systemInstructions from "./prompts";
 import "dotenv/config";
 
 export class GeminiService implements AIService {

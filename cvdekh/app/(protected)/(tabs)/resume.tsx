@@ -662,9 +662,10 @@ export default function Tab() {
                 </Pressable>
               )}
 
-              {/* Skills Section - Apply similar skeleton logic here */}
+              {/* Skills Section */}
+
               {isLoading ? (
-                // Add Skeleton for Skills
+                // Your existing skeleton loader remains the same
                 <VStack className="gap-2 p-4 bg-background-400/40 border border-white/30 rounded-lg w-full">
                   <HStack className="items-center justify-between mb-2">
                     <SkeletonLoader
@@ -731,20 +732,28 @@ export default function Tab() {
                   </HStack>
                 </VStack>
               ) : (
-                <Pressable
-                  onPress={() => {
-                    router.push("/forms/SkillsScreen");
-                  }}
-                  className="w-full"
-                >
-                  <VStack className="gap-2 p-4 bg-background-400/40 border border-white/30 rounded-lg">
-                    <HStack className="items-center justify-between">
-                      <Heading>Skills</Heading>
-                      <PencilLine color={"white"} size={16} />
-                    </HStack>
-                    <VStack className="opacity-90 items-start gap-1">
-                      <VStack className="gap-2">
-                        <Text className="font-semibold">Languages </Text>
+                <VStack className="gap-1 p-4 bg-background-400/40 border border-white/30 rounded-lg w-full">
+                  <HStack className="items-center justify-between">
+                    <Heading>Skills</Heading>
+                  </HStack>
+
+                  <VStack className="opacity-90 items-start gap-3">
+                    {/* Languages Category - Individual Pressable Section */}
+                    <Pressable
+                      onPress={() => {
+                        // Navigate to generic edit screen with languages category
+                        router.push(`/forms/SkillsScreen?category=languages`);
+                      }}
+                      className="w-full"
+                    >
+                      <VStack className="gap-2 w-full">
+                        <HStack
+                          className={`items-center justify-between pb-1 pr-1 rounded-md`}
+                        >
+                          <Text className="font-semibold">Languages</Text>
+                          <PencilLine color={"white"} size={14} />
+                        </HStack>
+
                         <HStack className="gap-2 flex-wrap">
                           {resume.skills?.languages?.map((lang, index) => (
                             <Badge
@@ -765,9 +774,25 @@ export default function Tab() {
                           )}
                         </HStack>
                       </VStack>
-                      <VStack className="gap-2">
-                        <Text className="font-semibold">Frameworks</Text>
-                        <HStack className="gap-2 flex-wrap">
+                    </Pressable>
+
+                    {/* Frameworks Category - Individual Pressable Section */}
+                    <Pressable
+                      onPress={() => {
+                        // Navigate to generic edit screen with frameworks category
+                        router.push(`/forms/SkillsScreen?category=frameworks`);
+                      }}
+                      className="w-full"
+                    >
+                      <VStack className="gap-2 w-full">
+                        <HStack
+                          className={`items-center justify-between pb-1 pr-1 rounded-md`}
+                        >
+                          <Text className="font-semibold">Frameworks</Text>
+                          <PencilLine color={"white"} size={14} />
+                        </HStack>
+
+                        <HStack className="gap-2 flex-wrap ">
                           {resume.skills?.frameworks?.map(
                             (framework, index) => (
                               <Badge
@@ -789,10 +814,25 @@ export default function Tab() {
                           )}
                         </HStack>
                       </VStack>
+                    </Pressable>
 
-                      <VStack className="gap-2">
-                        <Text className="font-semibold">Others</Text>
-                        <HStack className="gap-2 flex-wrap">
+                    {/* Others Category - Individual Pressable Section */}
+                    <Pressable
+                      onPress={() => {
+                        // Navigate to generic edit screen with others category
+                        router.push(`/forms/SkillsScreen?category=others`);
+                      }}
+                      className="w-full"
+                    >
+                      <VStack className="gap-2 w-full">
+                        <HStack
+                          className={`items-center justify-between pb-1 pr-1 rounded-md `}
+                        >
+                          <Text className="font-semibold">Others</Text>
+                          <PencilLine color={"white"} size={14} />
+                        </HStack>
+
+                        <HStack className="gap-2 flex-wrap ">
                           {resume.skills?.others?.map((other, index) => (
                             <Badge
                               key={index}
@@ -812,9 +852,9 @@ export default function Tab() {
                           )}
                         </HStack>
                       </VStack>
-                    </VStack>
+                    </Pressable>
                   </VStack>
-                </Pressable>
+                </VStack>
               )}
             </Animated.View>
           </ScrollView>

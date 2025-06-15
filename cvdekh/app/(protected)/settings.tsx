@@ -17,7 +17,7 @@ export default function Settings() {
 
   const handleSignOut = async () => {
     await signOut();
-    router.replace("/signin"); // Redirect to sign-in page after sign out
+    // router.replace("/signin"); // Redirect to sign-in page after sign out
   };
 
   return (
@@ -51,6 +51,7 @@ export default function Settings() {
               }}
               size="lg"
               action="secondary"
+              disabled={isLoading}
               className="p-2 px-4 w-full h-min rounded-lg border border-white/30 bg-background-400/30 flex-row items-center justify-start gap-2 py-4"
             >
               <HelpCircle color="white" size={22} />

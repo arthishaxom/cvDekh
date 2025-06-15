@@ -15,8 +15,8 @@ import {
   cleanupUserResumes,
   upsertResume,
   deleteResume,
-} from "../utils/resumeUtils";
-import { resumeImproverService } from "../utils/resumeImproverService";
+} from "../services/resumeUtils";
+import { resumeImproverService } from "../services/resumeImproverService";
 import { ParsedResumeData } from "../lib/aiService";
 
 // NEW: Import BullMQ queue and rate limiter
@@ -25,6 +25,7 @@ import { resumeQueue } from "../config/bullmq-config"; // Adjusted path
 import fs from "fs/promises"; // For creating temp-uploads directory
 import path from "path"; // For path operations
 import { logger } from "../server";
+import { SkillQuery } from "../interfraces/skillQuery";
 
 var fonts = {
   Roboto: {
@@ -507,5 +508,48 @@ router.delete(
     }
   },
 );
+
+// Add this new route alongside your existing /skills route
+router.get("/skills", async (req: AuthenticatedRequest, res) => {
+  if (!req.supabaseClient || !req.user) {
+    res.status(500).json({ message: "Server configuration error" });
+    return;
+  }
+
+  try {
+    const supabase = req.supabaseClient;
+
+    const { search, category, limit = "10" } = req.query as SkillQuery;
+
+    let queryBuilder = supabase
+      .from("skills")
+      .select("id, name, category") // Only essential fields for autocomplete
+      .limit(Math.min(parseInt(limit), 20));
+
+    if (search && search.trim() !== "") {
+      queryBuilder = queryBuilder.ilike("name", `%${search.trim()}%`);
+    }
+
+    if (category && category.trim() !== "") {
+      queryBuilder = queryBuilder.eq("category", category.trim());
+    }
+
+    queryBuilder = queryBuilder.order("name", { ascending: true });
+
+    const { data, error } = await queryBuilder;
+
+    if (error) {
+      logger.error("Autocomplete error:", error);
+      res.status(500).json({ message: "Search failed" });
+      return;
+    }
+
+    res.json({ suggestions: data || [] });
+    return;
+  } catch (err) {
+    logger.error("Autocomplete server error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
 
 export default router;
