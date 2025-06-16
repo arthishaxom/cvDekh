@@ -4,6 +4,7 @@ import type {
   ContentCanvas,
   TDocumentDefinitions,
 } from "pdfmake/interfaces";
+import { text } from "stream/consumers";
 
 var fonts = {
   Roboto: {
@@ -45,9 +46,9 @@ export function generateResumePdf(resumeData: any) {
         text: resumeData.name,
         style: "header",
         alignment: "center",
-        fontSize: 24,
+        fontSize: 20,
         bold: true,
-        margin: [0, 0, 0, 5],
+        margin: [0, 0, 0, 0],
       },
       {
         stack: (() => {
@@ -66,68 +67,12 @@ export function generateResumePdf(resumeData: any) {
               : null,
           ].filter(Boolean);
 
-          if (contacts.length <= 3) {
-            return [
-              {
-                columns: contacts.reduce((acc: any[], contact, index) => {
-                  if (index > 0) {
-                    acc.push({
-                      text: "|",
-                      width: "*",
-                    });
-                  }
-                  acc.push({
-                    text: contact,
-                    width: "auto",
-                    margin: [0, 0, 0, 0],
-                  });
-                  return acc;
-                }, []),
-                alignment: "center",
-              },
-            ];
-          } else {
-            const firstRow = contacts.slice(0, Math.ceil(contacts.length / 2));
-            const secondRow = contacts.slice(Math.ceil(contacts.length / 2));
-
-            return [
-              {
-                columns: firstRow.reduce((acc: any[], contact, index) => {
-                  if (index > 0) {
-                    acc.push({
-                      text: "|",
-                      width: "auto",
-                    });
-                  }
-                  acc.push({
-                    text: contact,
-                    width: "*",
-                    margin: [0, 0, 0, 0],
-                  });
-                  return acc;
-                }, []),
-                alignment: "center",
-                margin: [0, 0, 0, 5],
-              },
-              {
-                columns: secondRow.reduce((acc: any[], contact, index) => {
-                  if (index > 0) {
-                    acc.push({
-                      text: "|",
-                      width: "auto",
-                    });
-                  }
-                  acc.push({
-                    text: contact,
-                    width: "*",
-                    margin: [0, 0, 0, 0],
-                  });
-                  return acc;
-                }, []),
-                alignment: "center",
-              },
-            ];
-          }
+          return [
+            {
+              text: contacts.join(" | "),
+              alignment: "center",
+            },
+          ];
         })(),
         margin: [0, 0, 0, 0],
       },
@@ -181,7 +126,7 @@ export function generateResumePdf(resumeData: any) {
             },
             hr({ color: "black", lineWidth: 0.5 }),
           ]),
-      ...resumeData.experience.slice(0, 2).map((exp: any) => {
+      ...resumeData.experience.map((exp: any) => {
         return {
           stack: [
             {
@@ -219,15 +164,23 @@ export function generateResumePdf(resumeData: any) {
         style: "sectionHeader",
       },
       hr({ color: "black", lineWidth: 0.5 }),
-      ...resumeData.projects.slice(0, 2).map((project: any) => {
+      ...resumeData.projects.map((project: any) => {
         return {
           stack: [
             {
               columns: [
                 {
                   width: "70%",
-                  text: project.title,
-                  bold: true,
+                  text: [
+                    { text: project.title, bold: true },
+                    {
+                      text: " | ",
+                    },
+                    {
+                      text: project.techStack.join(", "),
+                      italics: true,
+                    },
+                  ],
                   style: "titleStyle",
                 },
                 {
@@ -242,13 +195,13 @@ export function generateResumePdf(resumeData: any) {
                   alignment: "right",
                 },
               ],
-              margin: [0, 5, 0, 5],
+              margin: [0, 5, 0, 0],
             },
-            {
-              text: `Technologies: ${project.techStack.join(", ")}`,
-              italics: true,
-              margin: [0, 0, 0, 5],
-            },
+            // {
+            //   text: `Technologies: ${project.techStack.join(", ")}`,
+            //   italics: true,
+            //   margin: [0, 0, 0, 5],
+            // },
             {
               ul: project.details,
               margin: [0, 0, 0, 0],
@@ -266,7 +219,7 @@ export function generateResumePdf(resumeData: any) {
           { text: "Languages: ", bold: true },
           { text: resumeData.skills.languages.join(", ") },
         ],
-        margin: [0, 0, 0, 5],
+        margin: [0, 4, 0, 5],
       },
       {
         text: [
