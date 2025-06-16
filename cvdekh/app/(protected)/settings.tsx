@@ -23,7 +23,7 @@ export default function Settings() {
   return (
     <SafeAreaView className="flex-1 bg-background-500">
       <VStack className=" w-full flex-1 px-4 items-center jus">
-        <HStack className="items-center justify-between py-2">
+        <HStack className="items-center w-full justify-between py-2">
           <ChevronLeft
             color={"white"}
             size={24}

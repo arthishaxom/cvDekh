@@ -28,7 +28,7 @@ import {
 import { Icon, CloseIcon } from "@/components/ui/icon";
 import { Heading } from "@/components/ui/heading";
 import { Textarea, TextareaInput } from "@/components/ui/textarea"; // Import Textarea
-import { Link, router } from "expo-router";
+import { router } from "expo-router";
 import {
   ANIMATION_DIRECTION,
   ANIMATION_TYPE,
@@ -300,93 +300,90 @@ export default function Tab() {
                   data={allResumes}
                   renderItem={({ item }) => {
                     return (
-                      <Link
+                      <Pressable
                         onPress={() => {
                           useResumeStore.setState({
                             formData: item,
                             isInitialDataFetched: false,
                           });
+                          const route = `/resume-details/?id=${item.id}`;
+                          console.log(route);
+                          router.push(`/resume-details/${item.id}`);
                         }}
-                        href={`../resume-details/${item.id}`}
-                        asChild
                       >
-                        <Pressable>
-                          <Box className="p-4 bg-background-400/30 border border-white/15 rounded-lg w-full mb-3">
-                            {item.job_desc && (
-                              <VStack className="gap-0.5">
-                                <HStack className="justify-between">
-                                  <VStack className="max-w-[75%]">
-                                    <Text className="text-md text-white/50">
-                                      {item.job_desc.company || "N/A"}
-                                    </Text>
-                                    <Text
-                                      numberOfLines={1}
-                                      className="text-xl font-semibold text-ellipsis"
-                                    >
-                                      {item.job_desc.jobTitle || "N/A"}
-                                    </Text>
-                                  </VStack>
-                                  <VStack className="items-end justify-start">
-                                    <Text className="text-md text-white/50">
-                                      Score
-                                    </Text>
-                                    <Text
-                                      className={`text-xl font-semibold ${
-                                        item.job_desc.matchScore &&
-                                        !isNaN(Number(item.job_desc.matchScore))
-                                          ? Number(item.job_desc.matchScore) >=
-                                            75
-                                            ? "text-green-500"
-                                            : Number(
-                                                item.job_desc.matchScore,
-                                              ) >= 50
-                                            ? "text-orange-500"
-                                            : "text-red-500"
-                                          : "text-primary-500"
-                                      }`}
-                                    >
-                                      {item.job_desc.matchScore || "N/A"}
-                                    </Text>
-                                  </VStack>
-                                </HStack>
-                                <HStack className="flex-wrap w-2/3 gap-x-2 gap-y-1">
-                                  <HStack className="items-center gap-1">
-                                    <MapPin
-                                      color={"white"}
-                                      opacity={0.6}
-                                      size={16}
-                                    />
-                                    <Text className="text-white/60 text-md">
-                                      {item.job_desc.location || "N/A"}
-                                    </Text>
-                                  </HStack>
-                                  <HStack className="items-center gap-1">
-                                    <BriefcaseBusiness
-                                      color={"white"}
-                                      opacity={0.6}
-                                      size={16}
-                                    />
-                                    <Text className="text-white/60 text-md">
-                                      {item.job_desc.type || "N/A"}
-                                    </Text>
-                                  </HStack>
-                                </HStack>
+                        <Box className="p-4 bg-background-400/30 border border-white/15 rounded-lg w-full mb-3">
+                          {item.job_desc && (
+                            <VStack className="gap-0.5">
+                              <HStack className="justify-between">
+                                <VStack className="max-w-[75%]">
+                                  <Text className="text-md text-white/50">
+                                    {item.job_desc.company || "N/A"}
+                                  </Text>
+                                  <Text
+                                    numberOfLines={1}
+                                    className="text-xl font-semibold text-ellipsis"
+                                  >
+                                    {item.job_desc.jobTitle || "N/A"}
+                                  </Text>
+                                </VStack>
+                                <VStack className="items-end justify-start">
+                                  <Text className="text-md text-white/50">
+                                    Score
+                                  </Text>
+                                  <Text
+                                    className={`text-xl font-semibold ${
+                                      item.job_desc.matchScore &&
+                                      !isNaN(Number(item.job_desc.matchScore))
+                                        ? Number(item.job_desc.matchScore) >= 75
+                                          ? "text-green-500"
+                                          : Number(item.job_desc.matchScore) >=
+                                            50
+                                          ? "text-orange-500"
+                                          : "text-red-500"
+                                        : "text-primary-500"
+                                    }`}
+                                  >
+                                    {item.job_desc.matchScore || "N/A"}
+                                  </Text>
+                                </VStack>
+                              </HStack>
+                              <HStack className="flex-wrap w-2/3 gap-x-2 gap-y-1">
                                 <HStack className="items-center gap-1">
-                                  <Landmark
+                                  <MapPin
                                     color={"white"}
                                     opacity={0.6}
                                     size={16}
                                   />
                                   <Text className="text-white/60 text-md">
-                                    {item.job_desc.stipend || "N/A"}
+                                    {item.job_desc.location || "N/A"}
                                   </Text>
                                 </HStack>
-                              </VStack>
-                            )}
-                            {/* Add more details or an edit button here */}
-                          </Box>
-                        </Pressable>
-                      </Link>
+                                <HStack className="items-center gap-1">
+                                  <BriefcaseBusiness
+                                    color={"white"}
+                                    opacity={0.6}
+                                    size={16}
+                                  />
+                                  <Text className="text-white/60 text-md">
+                                    {item.job_desc.type || "N/A"}
+                                  </Text>
+                                </HStack>
+                              </HStack>
+                              <HStack className="items-center gap-1">
+                                <Landmark
+                                  color={"white"}
+                                  opacity={0.6}
+                                  size={16}
+                                />
+                                <Text className="text-white/60 text-md">
+                                  {item.job_desc.stipend || "N/A"}
+                                </Text>
+                              </HStack>
+                            </VStack>
+                          )}
+                          {/* Add more details or an edit button here */}
+                        </Box>
+                      </Pressable>
                     );
                   }}
                   keyExtractor={(item) => item.id!}

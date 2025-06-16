@@ -28,3 +28,8 @@ build/
 *.apk
 cvdekh-backend/.env.local
 cvdekh-backend/.env.production.local
+cvdekh/cvdekh-5cc3e6d0cf77.json
+cvDekhApi\environments\cvDekh.bru
+cvDekhApi/environments/
+cvDekhApi/environments/cvDekh.bru
+cvDekhApi/environments/cvDekh.bru

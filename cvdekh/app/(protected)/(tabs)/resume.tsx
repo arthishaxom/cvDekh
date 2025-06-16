@@ -223,7 +223,7 @@ export default function Tab() {
               style={animatedPaddingStyle}
               className=" flex flex-col gap-4 items-start px-4"
             >
-              <HStack className="gap-4">
+              <HStack className="gap-4 w-full">
                 <Button
                   action="secondary"
                   isDisabled={isLoading}
