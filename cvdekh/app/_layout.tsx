@@ -12,6 +12,7 @@ import { HStack } from "@/components/ui/hstack";
 import { VStack } from "@/components/ui/vstack";
 import * as Linking from "expo-linking";
 import { supabase } from "@/lib/api";
+import { KeyboardProvider } from "react-native-keyboard-controller";
 
 const toastConfig = {
   success: (props: JSX.IntrinsicAttributes & BaseToastProps) => (
@@ -169,9 +170,11 @@ export default function RootLayout() {
   return (
     <GluestackUIProvider mode="dark">
       <SafeAreaProvider>
-        <Stack>
-          <Stack.Screen name="(protected)" options={{ headerShown: false }} />
-        </Stack>
+        <KeyboardProvider>
+          <Stack>
+            <Stack.Screen name="(protected)" options={{ headerShown: false }} />
+          </Stack>
+        </KeyboardProvider>
         <Toast config={toastConfig} />
       </SafeAreaProvider>
     </GluestackUIProvider>

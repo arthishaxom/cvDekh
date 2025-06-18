@@ -157,7 +157,11 @@ export default function ProjectsScreen() {
 
   return (
     <VStack className="pb-4 pt-2 px-5 flex-1 bg-background-500 justify-between">
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ flexGrow: 1 }}
+        keyboardShouldPersistTaps="handled"
+      >
         <VStack className="mb-4 gap-2">
           {localProjects.map((project, index) => (
             <Box
