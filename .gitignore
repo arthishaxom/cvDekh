@@ -35,3 +35,4 @@ cvDekhApi/environments/cvDekh.bru
 cvDekhApi/environments/cvDekh.bru
 cvdekh-backend/scripts/output.pdf
 cvdekh-backend/scripts/testPdfGenerator.ts
+bin/act

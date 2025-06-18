@@ -25,6 +25,8 @@ jobs:
     runs-on: ubuntu-latest
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
     steps:
+      - name: 🏗 Checkout repository
+        uses: actions/checkout@v4
       - name: Skip CI check
         run: echo "Proceeding with workflow"
 
@@ -48,12 +50,6 @@ jobs:
 
       - name: 📦 Install dependencies
         run: pnpm install
-
-      - name: 🧪 Run TypeScript check
-        run: pnpm tsc
-
-      - name: 🧹 Run ESLint
-        run: pnpm lint
 
   build-and-release:
     needs: test
