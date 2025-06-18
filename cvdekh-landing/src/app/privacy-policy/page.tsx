@@ -12,7 +12,7 @@ export default function PrivacyPolicyPage() {
         </p>
         <p className="mb-6 text-md text-center text-neutral-200">
           <strong>Developer Contact:</strong>{" "}
-          <span className="text-green-300">
+          <span className="text-[#9FFE3F]">
             <a href="mailto:pothal.builds@gmail.com">pothal.builds@gmail.com</a>
           </span>
         </p>
@@ -20,7 +20,7 @@ export default function PrivacyPolicyPage() {
         <section className="mb-6">
           <h2 className="text-2xl font-semibold mb-3">1. Overview</h2>
           <p className="text-neutral-300">
-            <span className="text-green-300 font-bold">cvDekh</span> is a resume
+            <span className="text-[#9FFE3F] font-bold">cvDekh</span> is a resume
             builder app designed to help users edit, enhance, and tailor their
             resumes for job applications. We take your privacy seriously and aim
             to be transparent about how we collect, use, and store your
@@ -126,7 +126,7 @@ export default function PrivacyPolicyPage() {
               Email us at{" "}
               <a
                 href="mailto:pothal.builds@gmail.com"
-                className="text-green-300 hover:underline"
+                className="text-[#9FFE3F] hover:underline"
               >
                 pothal.builds@gmail.com
               </a>{" "}
@@ -180,8 +180,10 @@ export default function PrivacyPolicyPage() {
           <p className="text-neutral-300">
             If you have any questions or requests, please reach out at:
           </p>
-          <p className="text-green-300 font-semibold">
-            📧 pothal.builds@gmail.com
+          <p className="text-[#9FFE3F] font-semibold">
+            <a href="mailto:pothal.builds@gmail.com">
+              📧 pothal.builds@gmail.com
+            </a>
           </p>
         </section>
       </div>
