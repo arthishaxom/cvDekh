@@ -37,19 +37,14 @@ jobs:
       - name: 🏗 Checkout repository
         uses: actions/checkout@v4
 
-      - name: 📦 Install pnpm
-        uses: pnpm/action-setup@v2
-        with:
-          version: 8
-
       - name: 🏗 Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "20"
-          cache: "pnpm"
+          cache: "npm"
 
       - name: 📦 Install dependencies
-        run: pnpm install
+        run: npm ci
 
   build-and-release:
     needs: test
@@ -59,27 +54,22 @@ jobs:
       - name: 🏗 Checkout repository
         uses: actions/checkout@v4
 
-      - name: 📦 Install pnpm
-        uses: pnpm/action-setup@v2
-        with:
-          version: 8
-
       - name: 🏗 Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "20"
-          cache: "pnpm"
+          cache: "npm"
 
       - name: 📦 Install dependencies
         run: |
-          pnpm install
-          pnpm add -g eas-cli@latest
+          npm ci
+          npm install -g eas-cli@latest
 
       - name: 📱 Setup EAS build cache
         uses: actions/cache@v3
         with:
           path: ~/.eas-build-local
-          key: ${{ runner.os }}-eas-build-local-${{ hashFiles('**/package.json') }}
+          key: ${{ runner.os }}-eas-build-local-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-eas-build-local-
 
