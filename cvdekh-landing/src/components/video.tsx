@@ -1,29 +1,20 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Play, Pause, Volume2, VolumeX, Loader2 } from "lucide-react";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { Play, Pause, Loader2 } from "lucide-react";
 
 interface VideoModalProps {
   videoUrl?: string;
   thumbnailUrl?: string;
-  title?: string;
 }
 
 export default function VercelBlobVideoModal({
   videoUrl = process.env.NEXT_PUBLIC_DEMO_VIDEO_URL || "",
   thumbnailUrl = process.env.NEXT_PUBLIC_DEMO_THUMBNAIL_URL || "",
-  title = "Demo Video",
 }: VideoModalProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [isMuted, setIsMuted] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
   const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState(0);

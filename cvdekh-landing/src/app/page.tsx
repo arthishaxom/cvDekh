@@ -1,20 +1,11 @@
 "use client";
 import { Button } from "@/components/ui/button";
-import {
-  DialogHeader,
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import VercelBlobVideoModal from "@/components/video";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
 
 export default function LandingPage() {
-  const [isModalOpen, setIsModalOpen] = useState(false);
   return (
     <div className="relative flex h-[50rem] w-full max-h-screen items-center justify-center bg-black">
       <div
@@ -70,7 +61,6 @@ export default function LandingPage() {
           <VercelBlobVideoModal
             videoUrl={process.env.NEXT_PUBLIC_DEMO_VIDEO_URL}
             thumbnailUrl={process.env.NEXT_PUBLIC_DEMO_THUMBNAIL_URL}
-            title="cvDekh Demo"
           />
         </main>
 
