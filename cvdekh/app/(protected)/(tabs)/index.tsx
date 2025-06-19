@@ -306,8 +306,6 @@ export default function Tab() {
                             formData: item,
                             isInitialDataFetched: false,
                           });
-                          const route = `/resume-details/?id=${item.id}`;
-                          console.log(route);
                           router.push(`/resume-details/${item.id}`);
                         }}
                       >
@@ -331,17 +329,16 @@ export default function Tab() {
                                     Score
                                   </Text>
                                   <Text
-                                    className={`text-xl font-semibold ${
-                                      item.job_desc.matchScore &&
+                                    className={`text-xl font-semibold ${item.job_desc.matchScore &&
                                       !isNaN(Number(item.job_desc.matchScore))
-                                        ? Number(item.job_desc.matchScore) >= 75
-                                          ? "text-green-500"
-                                          : Number(item.job_desc.matchScore) >=
-                                            50
+                                      ? Number(item.job_desc.matchScore) >= 75
+                                        ? "text-green-500"
+                                        : Number(item.job_desc.matchScore) >=
+                                          50
                                           ? "text-orange-500"
                                           : "text-red-500"
-                                        : "text-primary-500"
-                                    }`}
+                                      : "text-primary-500"
+                                      }`}
                                   >
                                     {item.job_desc.matchScore || "N/A"}
                                   </Text>
@@ -456,9 +453,8 @@ export default function Tab() {
                 <ButtonText>Cancel</ButtonText>
               </Button> */}
               <Button
-                className={`flex-1 rounded-lg h-12 ${
-                  progress === 100 || isLoading ? "bg-background-500" : ""
-                }`}
+                className={`flex-1 rounded-lg h-12 ${progress === 100 || isLoading ? "bg-background-500" : ""
+                  }`}
                 onPress={handleImproveResume}
                 isDisabled={isLoading}
               >

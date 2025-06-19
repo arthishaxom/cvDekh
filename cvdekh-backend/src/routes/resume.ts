@@ -3,8 +3,6 @@ import express from "express";
 // Remove resumeParserService if it's no longer used directly in this file
 // import { resumeParserService } from "../utils/resumeParserService";
 import { generateResumePdf } from "../utils/pdfResumeGenerator";
-import pdfPrinter from "pdfmake";
-import type { TDocumentDefinitions } from "pdfmake/interfaces";
 // Remove: import { supabase } from "../lib/supabaseClient"; // No longer need global client here for this route
 import { AuthenticatedRequest } from "../middleware/authMiddleware";
 import {
@@ -330,6 +328,7 @@ router.post("/improve-resume", async (req: AuthenticatedRequest, res) => {
     const filteredResumeData = {
       summary: originalResumeData.summary,
       projects: originalResumeData.projects,
+      skills: originalResumeData.skills,
     };
 
     // 2. Improve the resume using the new service

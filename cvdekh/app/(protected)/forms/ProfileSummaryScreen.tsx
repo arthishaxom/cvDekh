@@ -12,6 +12,7 @@ import { Button, ButtonText } from "@/components/ui/button";
 import { useDebouncedCallback } from "use-debounce";
 import { useResumeStore } from "../../../store/resume/resumeStore";
 import { Textarea, TextareaInput } from "@/components/ui/textarea";
+import { ScrollView } from "react-native";
 
 export default function ProfileSummaryScreen() {
   const router = useRouter();
@@ -38,33 +39,35 @@ export default function ProfileSummaryScreen() {
 
   return (
     <VStack className="pb-4 pt-2 px-5 flex-1 bg-background-500 justify-between">
-      <VStack>
-        <FormControl className="mb-4">
-          <FormControlLabel>
-            <FormControlLabelText className="text-typography-500 font-semibold text-lg">
-              Professional Summary
-            </FormControlLabelText>
-          </FormControlLabel>
-          <Textarea
-            size="lg"
-            style={{
-              height: inputHeight,
-              minHeight: 64,
-            }}
-          >
-            <TextareaInput
-              multiline
-              value={localSummary}
-              onContentSizeChange={(e) => {
-                setInputHeight(Math.max(64, e.nativeEvent.contentSize.height));
+      <ScrollView className="flex-1" showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+        <VStack>
+          <FormControl className="mb-4">
+            <FormControlLabel>
+              <FormControlLabelText className="text-typography-500 font-semibold text-lg">
+                Professional Summary
+              </FormControlLabelText>
+            </FormControlLabel>
+            <Textarea
+              size="lg"
+              style={{
+                height: inputHeight,
+                minHeight: 64,
               }}
-              onChangeText={handleInputChange}
-              placeholder="Write a concise summary of your professional experience and skills."
-              style={{ textAlignVertical: "top" }}
-            />
-          </Textarea>
-        </FormControl>
-      </VStack>
+            >
+              <TextareaInput
+                multiline
+                value={localSummary}
+                onContentSizeChange={(e) => {
+                  setInputHeight(Math.max(64, e.nativeEvent.contentSize.height));
+                }}
+                onChangeText={handleInputChange}
+                placeholder="Write a concise summary of your professional experience and skills."
+                style={{ textAlignVertical: "top" }}
+              />
+            </Textarea>
+          </FormControl>
+        </VStack>
+      </ScrollView>
 
       <VStack className="mb-6">
         <Box className="items-center p-0">

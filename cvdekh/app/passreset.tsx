@@ -6,24 +6,23 @@ import { Input, InputField, InputSlot } from "@/components/ui/input";
 import { Eye, EyeOff, Lock } from "lucide-react-native";
 import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/store/auth";
-import { Alert, TouchableOpacity } from "react-native";
+import { TouchableOpacity } from "react-native";
 import { VStack } from "@/components/ui/vstack";
 import Toast from "react-native-toast-message";
-import * as Linking from "expo-linking";
 
 export default function PassReset() {
-  const url = Linking.useURL();
+  // const url = Linking.useURL();
 
-  if (url) {
-    Alert.alert("URL", url);
-    const { hostname, path, queryParams } = Linking.parse(url);
-    console.log(url);
-    console.log(
-      `Linked to app with hostname: ${hostname}, path: ${path} and data: ${JSON.stringify(
-        queryParams,
-      )}`,
-    );
-  }
+  // if (url) {
+  //   Alert.alert("URL", url);
+  //   const { hostname, path, queryParams } = Linking.parse(url);
+  //   console.log(url);
+  //   console.log(
+  //     `Linked to app with hostname: ${hostname}, path: ${path} and data: ${JSON.stringify(
+  //       queryParams,
+  //     )}`,
+  //   );
+  // }
   const navigation = useNavigation();
 
   // Form state

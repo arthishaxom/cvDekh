@@ -32,6 +32,31 @@ export default function FormLayout() {
         }}
         name="ProfileSummaryScreen" // This is what makes it navigate to your tabs layout
       />
+      <Stack.Screen
+        options={{
+          title: "Work Experience",
+        }}
+        name="ExperienceScreen" // This is what makes it navigate to your tabs layout
+      />
+      <Stack.Screen
+        options={{
+          title: "Projects",
+        }}
+        name="ProjectsScreen" // This is what makes it navigate to your tabs layout
+      />
+
+      <Stack.Screen
+        options={{
+          title: "Education",
+        }}
+        name="EducationScreen" // This is what makes it navigate to your tabs layout
+      />
+      <Stack.Screen
+        options={{
+          title: "Skills",
+        }}
+        name="SkillsScreen" // This is what makes it navigate to your tabs layout
+      />
     </Stack>
   );
 }

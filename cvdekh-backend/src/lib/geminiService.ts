@@ -18,8 +18,6 @@ export class GeminiService implements AIService {
       contents: resumeText,
       config: {
         temperature: 0.1,
-        topK: 1,
-        topP: 1,
         maxOutputTokens: 2048,
         systemInstruction: systemInstructions["resume-parser"],
         responseMimeType: "application/json",

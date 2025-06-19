@@ -174,7 +174,7 @@ export default function Tab() {
           isHovered={false}
           isDisabled={isLoading}
           isPressed={false}
-          className="rounded-lg bg-background-400/30 backdrop-blur-lg border border-white/15 shadow-none"
+          className="hover:bg-background-700 active:bg-background-700 rounded-lg bg-background-400 backdrop-blur-lg border border-white/15 shadow-none"
           onPress={() => {
             saveResume(session!, null);
           }} // Open modal on press
@@ -228,9 +228,8 @@ export default function Tab() {
                   action="secondary"
                   isDisabled={isLoading}
                   onPress={handleDownload}
-                  className={`border border-white/15 bg-background-400/30 rounded-lg flex-1 h-16 ${
-                    isLoading ? "opacity-50" : ""
-                  }`}
+                  className={`border border-white/15 bg-background-400/30 rounded-lg flex-1 h-16 ${isLoading ? "opacity-50" : ""
+                    }`}
                 >
                   <Download color="#D9D9D9" size={18} />
                   <Text className={`font-semibold text-typography-white/90`}>
@@ -239,9 +238,8 @@ export default function Tab() {
                 </Button>
                 <Button
                   isDisabled={isLoading}
-                  className={`rounded-lg bg-primary-400/90 h-16 flex-1 ${
-                    isLoading ? "opacity-50" : "opacity-100"
-                  }`}
+                  className={`rounded-lg bg-primary-400/90 h-16 flex-1 ${isLoading ? "opacity-50" : "opacity-100"
+                    }`}
                   onPress={() => setShowModal(true)}
                 >
                   <FileOutput color="black" size={18} />
@@ -493,10 +491,10 @@ export default function Tab() {
                     ))}
                     {(resume?.education?.length === 0 ||
                       !resume?.education) && (
-                      <Text className="opacity-70">
-                        No education entries yet.
-                      </Text>
-                    )}
+                        <Text className="opacity-70">
+                          No education entries yet.
+                        </Text>
+                      )}
                   </VStack>
                 </Pressable>
               )}
@@ -573,10 +571,10 @@ export default function Tab() {
                     ))}
                     {(resume?.experience?.length === 0 ||
                       !resume?.experience) && (
-                      <Text className="opacity-70">
-                        No experience entries yet.
-                      </Text>
-                    )}
+                        <Text className="opacity-70">
+                          No experience entries yet.
+                        </Text>
+                      )}
                   </VStack>
                 </Pressable>
               )}
@@ -768,10 +766,10 @@ export default function Tab() {
                           ))}
                           {(resume.skills?.languages?.length === 0 ||
                             !resume.skills?.languages) && (
-                            <Text className="opacity-70">
-                              No languages listed.
-                            </Text>
-                          )}
+                              <Text className="opacity-70">
+                                No languages listed.
+                              </Text>
+                            )}
                         </HStack>
                       </VStack>
                     </Pressable>
@@ -808,10 +806,10 @@ export default function Tab() {
                           )}
                           {(resume.skills?.frameworks?.length === 0 ||
                             !resume.skills?.frameworks) && (
-                            <Text className="opacity-70">
-                              No frameworks listed.
-                            </Text>
-                          )}
+                              <Text className="opacity-70">
+                                No frameworks listed.
+                              </Text>
+                            )}
                         </HStack>
                       </VStack>
                     </Pressable>
@@ -846,10 +844,10 @@ export default function Tab() {
                           ))}
                           {(resume.skills?.others?.length === 0 ||
                             !resume.skills?.others) && (
-                            <Text className="opacity-70">
-                              No other skills listed.
-                            </Text>
-                          )}
+                              <Text className="opacity-70">
+                                No other skills listed.
+                              </Text>
+                            )}
                         </HStack>
                       </VStack>
                     </Pressable>
@@ -927,11 +925,9 @@ export default function Tab() {
             <ModalFooter>
               <VStack className="w-full">
                 <Button
-                  className={`w-full h-12 rounded-lg ${
-                    !selectedFile ? "opacity-50" : ""
-                  } ${
-                    progress === 100 || isLoading ? "bg-background-500" : ""
-                  }`}
+                  className={`w-full h-12 rounded-lg ${!selectedFile ? "opacity-50" : ""
+                    } ${progress === 100 || isLoading ? "bg-background-500" : ""
+                    }`}
                   onPress={handleExtractAndParse} // Updated onPress handler
                   disabled={!selectedFile || isLoading}
                 >

@@ -7,7 +7,7 @@ import Link from "next/link";
 
 export default function LandingPage() {
   return (
-    <div className="relative flex h-[50rem] w-full max-h-screen items-center justify-center bg-black">
+    <div className="relative flex h-[50rem] w-full sm:max-h-[50rem] lg:max-h-screen items-center justify-center bg-black">
       <div
         className={cn(
           "absolute inset-0 opacity-50",
@@ -19,7 +19,7 @@ export default function LandingPage() {
       {/* Radial gradient for the container to give a faded look */}
       <div className="pointer-events-none absolute inset-0 flex items-center justify-center  [mask-image:radial-gradient(ellipse_at_center,transparent_20%,black)] bg-black"></div>
 
-      <div className="min-h-screen relative z-20  text-neutral-50 flex flex-col items-center justify-center p-4">
+      <div className="lg:min-h-screen sm:min-h-dvh relative z-20  text-neutral-50 flex flex-col items-center justify-center p-4">
         <header className="text-center mb-8">
           {/* <Image
           src="/cvdekh-header.png" // Assumes icon.png is in the public folder

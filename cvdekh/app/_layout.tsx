@@ -138,7 +138,7 @@ export default function RootLayout() {
       const parsedUrl = url.replace("#", "?");
       const { queryParams } = Linking.parse(parsedUrl);
 
-      console.log(`Linked to app with data: ${JSON.stringify(queryParams)}`);
+      // console.log(`Linked to app with data: ${JSON.stringify(queryParams)}`);
 
       if (
         queryParams &&

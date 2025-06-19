@@ -14,10 +14,10 @@ import { Text } from "@/components/ui/text";
 import { Button, ButtonText } from "@/components/ui/button";
 import { useDebouncedCallback } from "use-debounce";
 import { produce } from "immer";
-import { ScrollView } from "react-native";
 import * as Crypto from "expo-crypto";
 import { EducationEntry } from "@/store/resume/types";
 import { Trash2 } from "lucide-react-native";
+import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 // import { Divider } from "@/components/ui/divider";
 
 export default function EducationScreen() {
@@ -132,7 +132,11 @@ export default function EducationScreen() {
 
   return (
     <VStack className="pb-4 pt-2 px-5 flex-1 bg-background-500 justify-between">
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <KeyboardAwareScrollView showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        bottomOffset={12}
+        extraKeyboardSpace={-100}
+      >
         <VStack className="mb-4 gap-2">
           {localEducation.map((education, index) => (
             <Box
@@ -248,15 +252,15 @@ export default function EducationScreen() {
             </Box>
           ))}
 
-          <Button
-            action="secondary"
-            onPress={addEducationEntry}
-            className="mb-4 flex-1 rounded-lg h-12 border border-white/30 bg-background-400/30"
-          >
-            <ButtonText>Add Education</ButtonText>
-          </Button>
         </VStack>
-      </ScrollView>
+        <Button
+          action="secondary"
+          onPress={addEducationEntry}
+          className="mb-4 flex-1 rounded-lg h-12 border border-white/30 bg-background-400/30"
+        >
+          <ButtonText>Add Education</ButtonText>
+        </Button>
+      </KeyboardAwareScrollView>
 
       <VStack className="mb-6">
         <Box className="items-center p-0">

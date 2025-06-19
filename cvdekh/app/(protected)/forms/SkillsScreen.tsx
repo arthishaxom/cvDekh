@@ -174,7 +174,7 @@ export default function GenericSkillsEditScreen() {
     <VStack className="flex-1 bg-background-500">
       {/* Header */}
 
-      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+      <ScrollView className="flex-1" showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
         <VStack className="px-5">
           {/* Search Input */}
           <FormControl className="mb-4">
@@ -250,7 +250,7 @@ export default function GenericSkillsEditScreen() {
                       </Text>
                     </HStack>
                   ) : (
-                    <ScrollView className="max-h-64">
+                    <ScrollView className="max-h-64" keyboardShouldPersistTaps="handled">
                       {filteredSuggestions.map((suggestion) => (
                         <SuggestionItem
                           key={suggestion}

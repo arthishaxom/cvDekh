@@ -81,7 +81,6 @@ export const useSkillsAutocomplete = () => {
         }
 
         const result = await response.data;
-        console.log(result);
 
         // Extract just the skill names for the autocomplete
         const skillNames =

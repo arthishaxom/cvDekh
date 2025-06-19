@@ -15,6 +15,7 @@ import { Button, ButtonText } from "@/components/ui/button";
 import { useDebouncedCallback } from "use-debounce";
 import { produce } from "immer";
 import { ContactInfo } from "@/store/resume/types";
+import { ScrollView } from "react-native";
 
 export default function GeneralInfoScreen() {
   const router = useRouter();
@@ -64,86 +65,89 @@ export default function GeneralInfoScreen() {
 
   return (
     <VStack className="pb-4 pt-2 px-5 flex-1 bg-background-500 justify-between">
-      <VStack>
-        <FormControl className="mb-4">
-          <FormControlLabel>
-            <FormControlLabelText className="text-typography-500 font-semibold text-lg">
-              Full Name
-            </FormControlLabelText>
-          </FormControlLabel>
-          <Input className="h-12" size="lg">
-            <InputField
-              value={localFormData.name}
-              onChangeText={(text) => {
-                handleInputChange("name", text);
-              }}
-              placeholder="Enter your full name"
-            />
-          </Input>
-        </FormControl>
+      <ScrollView className="flex-1" showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
 
-        <FormControl className="mb-4">
-          <FormControlLabel>
-            <FormControlLabelText className="text-typography-500 font-semibold text-lg">
-              LinkedIn Profile URL
-            </FormControlLabelText>
-          </FormControlLabel>
-          <Input className="h-12" size="lg">
-            <InputField
-              value={localFormData.contactInfo.linkedin}
-              onChangeText={(text) => handleInputChange("linkedin", text)}
-              placeholder="https://linkedin.com/in/yourprofile"
-            />
-          </Input>
-        </FormControl>
+        <VStack>
+          <FormControl className="mb-4">
+            <FormControlLabel>
+              <FormControlLabelText className="text-typography-500 font-semibold text-lg">
+                Full Name
+              </FormControlLabelText>
+            </FormControlLabel>
+            <Input className="h-12" size="lg">
+              <InputField
+                value={localFormData.name}
+                onChangeText={(text) => {
+                  handleInputChange("name", text);
+                }}
+                placeholder="Enter your full name"
+              />
+            </Input>
+          </FormControl>
 
-        <FormControl className="mb-4">
-          <FormControlLabel>
-            <FormControlLabelText className="text-typography-500 font-semibold text-lg">
-              GitHub Profile URL
-            </FormControlLabelText>
-          </FormControlLabel>
-          <Input className="h-12" size="lg">
-            <InputField
-              value={localFormData.contactInfo.github}
-              onChangeText={(text) => handleInputChange("github", text)}
-              placeholder="https://github.com/yourusername"
-            />
-          </Input>
-        </FormControl>
+          <FormControl className="mb-4">
+            <FormControlLabel>
+              <FormControlLabelText className="text-typography-500 font-semibold text-lg">
+                LinkedIn Profile URL
+              </FormControlLabelText>
+            </FormControlLabel>
+            <Input className="h-12" size="lg">
+              <InputField
+                value={localFormData.contactInfo.linkedin}
+                onChangeText={(text) => handleInputChange("linkedin", text)}
+                placeholder="https://linkedin.com/in/yourprofile"
+              />
+            </Input>
+          </FormControl>
 
-        <FormControl className="mb-4">
-          <FormControlLabel>
-            <FormControlLabelText className="text-typography-500 font-semibold text-lg">
-              Email Address
-            </FormControlLabelText>
-          </FormControlLabel>
-          <Input className="h-12" size="lg">
-            <InputField
-              value={localFormData.contactInfo.gmail}
-              onChangeText={(text) => handleInputChange("gmail", text)}
-              placeholder="your.email@example.com"
-              keyboardType="email-address"
-            />
-          </Input>
-        </FormControl>
+          <FormControl className="mb-4">
+            <FormControlLabel>
+              <FormControlLabelText className="text-typography-500 font-semibold text-lg">
+                GitHub Profile URL
+              </FormControlLabelText>
+            </FormControlLabel>
+            <Input className="h-12" size="lg">
+              <InputField
+                value={localFormData.contactInfo.github}
+                onChangeText={(text) => handleInputChange("github", text)}
+                placeholder="https://github.com/yourusername"
+              />
+            </Input>
+          </FormControl>
 
-        <FormControl className="mb-4">
-          <FormControlLabel>
-            <FormControlLabelText className="text-typography-500 font-semibold text-lg">
-              Phone Number
-            </FormControlLabelText>
-          </FormControlLabel>
-          <Input className="h-12" size="lg">
-            <InputField
-              value={localFormData.contactInfo.phone}
-              onChangeText={(text) => handleInputChange("phone", text)}
-              placeholder="+1234567890"
-              keyboardType="phone-pad"
-            />
-          </Input>
-        </FormControl>
-      </VStack>
+          <FormControl className="mb-4">
+            <FormControlLabel>
+              <FormControlLabelText className="text-typography-500 font-semibold text-lg">
+                Email Address
+              </FormControlLabelText>
+            </FormControlLabel>
+            <Input className="h-12" size="lg">
+              <InputField
+                value={localFormData.contactInfo.gmail}
+                onChangeText={(text) => handleInputChange("gmail", text)}
+                placeholder="your.email@example.com"
+                keyboardType="email-address"
+              />
+            </Input>
+          </FormControl>
+
+          <FormControl className="mb-4">
+            <FormControlLabel>
+              <FormControlLabelText className="text-typography-500 font-semibold text-lg">
+                Phone Number
+              </FormControlLabelText>
+            </FormControlLabel>
+            <Input className="h-12" size="lg">
+              <InputField
+                value={localFormData.contactInfo.phone}
+                onChangeText={(text) => handleInputChange("phone", text)}
+                placeholder="+1234567890"
+                keyboardType="phone-pad"
+              />
+            </Input>
+          </FormControl>
+        </VStack>
+      </ScrollView>
 
       <VStack className="mb-6">
         <Box className="items-center p-0">
