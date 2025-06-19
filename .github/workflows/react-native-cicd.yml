@@ -180,10 +180,10 @@ jobs:
           name: "Release v${{ steps.build-info.outputs.version }}-${{ steps.build-info.outputs.build_number }}"
           tag_name: "v${{ steps.build-info.outputs.version }}-${{ steps.build-info.outputs.build_number }}"
           files: |
-            ./app-dev.apk
-            ./app-prod.apk
-            ./app-prod.aab
-          body_path: changelog.md
+            ./cvdekh/app-dev.apk
+            ./cvdekh/app-prod.apk
+            ./cvdekh/app-prod.aab
+          body_path: ./cvdekh/changelog.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: 📦 Upload build artifacts to GitHub
@@ -191,7 +191,7 @@ jobs:
         with:
           name: app-builds
           path: |
-            ./app-dev.apk
-            ./app-prod.apk
-            ./app-prod.aab
+            ./cvdekh/app-dev.apk
+            ./cvdekh/app-prod.apk
+            ./cvdekh/app-prod.aab
           retention-days: 7
