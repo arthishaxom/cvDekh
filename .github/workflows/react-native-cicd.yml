@@ -19,6 +19,8 @@ env:
   EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
   NODE_OPTIONS: --openssl-legacy-provider
 
+permissions:
+  contents: write
 
 jobs:
   check-skip:
