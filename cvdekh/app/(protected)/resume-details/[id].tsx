@@ -6,7 +6,6 @@ import { Text } from "@/components/ui/text";
 import { Heading } from "@/components/ui/heading";
 import { VStack } from "@/components/ui/vstack";
 import { HStack } from "@/components/ui/hstack";
-import { SafeAreaView } from "react-native-safe-area-context";
 import {
   Download,
   MapPin,
@@ -107,7 +106,7 @@ export default function ResumeDetailScreen() {
   // };
 
   return (
-    <SafeAreaView className="flex-1 bg-background-500">
+    <VStack className="flex-1 bg-background-500">
       {hasChanges && (
         <Fab
           style={{
@@ -204,9 +203,8 @@ export default function ResumeDetailScreen() {
           <Button
             action="secondary"
             onPress={handleDownload}
-            className={`color-white flex-1 rounded-lg h-16 border border-white/30 bg-background-400/30 ${
-              isLoading ? "opacity-50" : ""
-            }`}
+            className={`color-white flex-1 rounded-lg h-16 border border-white/30 bg-background-400/30 ${isLoading ? "opacity-50" : ""
+              }`}
           >
             <Download color={"#D9D9D9"} size={18} />
             <Text className={`font-semibold text-typography-white/90`}>
@@ -229,9 +227,8 @@ export default function ResumeDetailScreen() {
                 });
               }
             }}
-            className={` flex-1 rounded-lg h-16 border-white/15 bg-error-500 ${
-              isLoading ? "opacity-50" : ""
-            }`}
+            className={` flex-1 rounded-lg h-16 border-white/15 bg-error-500 ${isLoading ? "opacity-50" : ""
+              }`}
           >
             <Trash2 color={"white"} size={18} />
             <Text className={`font-semibold text-typography-white`}>
@@ -468,8 +465,8 @@ export default function ResumeDetailScreen() {
                       ))}
                       {(resume.skills?.languages?.length === 0 ||
                         !resume.skills?.languages) && (
-                        <Text className="opacity-70">No languages listed.</Text>
-                      )}
+                          <Text className="opacity-70">No languages listed.</Text>
+                        )}
                     </HStack>
                   </VStack>
                 </Pressable>
@@ -504,10 +501,10 @@ export default function ResumeDetailScreen() {
                       ))}
                       {(resume.skills?.frameworks?.length === 0 ||
                         !resume.skills?.frameworks) && (
-                        <Text className="opacity-70">
-                          No frameworks listed.
-                        </Text>
-                      )}
+                          <Text className="opacity-70">
+                            No frameworks listed.
+                          </Text>
+                        )}
                     </HStack>
                   </VStack>
                 </Pressable>
@@ -540,10 +537,10 @@ export default function ResumeDetailScreen() {
                       ))}
                       {(resume.skills?.others?.length === 0 ||
                         !resume.skills?.others) && (
-                        <Text className="opacity-70">
-                          No other skills listed.
-                        </Text>
-                      )}
+                          <Text className="opacity-70">
+                            No other skills listed.
+                          </Text>
+                        )}
                     </HStack>
                   </VStack>
                 </Pressable>
@@ -583,6 +580,6 @@ export default function ResumeDetailScreen() {
 
         {/* Placeholder for Improvements - you'll need to define how these are stored and displayed */}
       </ScrollView>
-    </SafeAreaView>
+    </VStack>
   );
 }

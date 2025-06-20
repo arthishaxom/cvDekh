@@ -9,6 +9,7 @@ import { useAuthStore } from "@/store/auth";
 import { TouchableOpacity } from "react-native";
 import { VStack } from "@/components/ui/vstack";
 import Toast from "react-native-toast-message";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function PassReset() {
   // const url = Linking.useURL();
@@ -113,78 +114,82 @@ export default function PassReset() {
   }, [navigation]);
 
   return (
-    <VStack className="flex-1 bg-background-500 px-6 justify-center">
-      <Box className="mb-6">
-        <Text className="text-white text-4xl font-bold mb-2">
-          Set New Password
-        </Text>
-        <Text className="text-gray-400 text-lg">
-          Enter your new password below.
-        </Text>
-      </Box>
+    <SafeAreaView className="flex-1 bg-background-500">
 
-      <Box className="mb-4">
-        <Input className="mb-4 rounded-lg h-16 bg-background-400/30 border-zinc-700">
-          <InputSlot className="pl-4">
-            <Lock color="white" size={20} />
-          </InputSlot>
-          <InputField
-            placeholder="New Password"
-            placeholderTextColor="#9CA3AF"
-            className="text-white ml-1 flex-1"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry={!showPassword}
-            autoComplete="new-password"
-          />
-          <InputSlot className="pr-4">
-            <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-              {showPassword ? (
-                <EyeOff color="white" size={20} />
-              ) : (
-                <Eye color="white" size={20} />
-              )}
-            </TouchableOpacity>
-          </InputSlot>
-        </Input>
+      <VStack className="flex-1 bg-background-500 px-6 justify-center">
+        <Box className="mb-6">
+          <Text className="text-white text-4xl font-bold mb-2">
+            Set New Password
+          </Text>
+          <Text className="text-gray-400 text-lg">
+            Enter your new password below.
+          </Text>
+        </Box>
 
-        <Input className="mb-4 rounded-lg h-16 bg-background-400/30 border-zinc-700">
-          <InputSlot className="pl-4">
-            <Lock color="white" size={20} />
-          </InputSlot>
-          <InputField
-            placeholder="Confirm New Password"
-            placeholderTextColor="#9CA3AF"
-            className="text-white ml-1 flex-1"
-            value={confirmPassword}
-            onChangeText={setConfirmPassword}
-            secureTextEntry={!showConfirmPassword}
-            autoComplete="new-password"
-          />
-          <InputSlot className="pr-4">
-            <TouchableOpacity
-              onPress={() => setShowConfirmPassword(!showConfirmPassword)}
-            >
-              {showConfirmPassword ? (
-                <EyeOff color="white" size={20} />
-              ) : (
-                <Eye color="white" size={20} />
-              )}
-            </TouchableOpacity>
-          </InputSlot>
-        </Input>
-      </Box>
+        <Box className="mb-4">
+          <Input className="mb-4 rounded-lg h-16 bg-background-400/30 border-zinc-700">
+            <InputSlot className="pl-4">
+              <Lock color="white" size={20} />
+            </InputSlot>
+            <InputField
+              placeholder="New Password"
+              placeholderTextColor="#9CA3AF"
+              className="text-white ml-1 flex-1"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry={!showPassword}
+              autoComplete="new-password"
+            />
+            <InputSlot className="pr-4">
+              <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+                {showPassword ? (
+                  <EyeOff color="white" size={20} />
+                ) : (
+                  <Eye color="white" size={20} />
+                )}
+              </TouchableOpacity>
+            </InputSlot>
+          </Input>
 
-      <Button
-        onPress={handlePasswordReset}
-        disabled={isLoading}
-        size="lg"
-        className="bg-primary-300 p-2 rounded-lg mb-4 h-min py-4"
-      >
-        <Text className="text-black font-semibold text-lg">
-          {isLoading ? "Resetting Password..." : "Reset Password"}
-        </Text>
-      </Button>
-    </VStack>
+          <Input className="mb-4 rounded-lg h-16 bg-background-400/30 border-zinc-700">
+            <InputSlot className="pl-4">
+              <Lock color="white" size={20} />
+            </InputSlot>
+            <InputField
+              placeholder="Confirm New Password"
+              placeholderTextColor="#9CA3AF"
+              className="text-white ml-1 flex-1"
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
+              secureTextEntry={!showConfirmPassword}
+              autoComplete="new-password"
+            />
+            <InputSlot className="pr-4">
+              <TouchableOpacity
+                onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+              >
+                {showConfirmPassword ? (
+                  <EyeOff color="white" size={20} />
+                ) : (
+                  <Eye color="white" size={20} />
+                )}
+              </TouchableOpacity>
+            </InputSlot>
+          </Input>
+        </Box>
+
+        <Button
+          onPress={handlePasswordReset}
+          disabled={isLoading}
+          size="lg"
+          className="bg-primary-300 p-2 rounded-lg mb-4 h-min py-4"
+        >
+          <Text className="text-black font-semibold text-lg">
+            {isLoading ? "Resetting Password..." : "Reset Password"}
+          </Text>
+        </Button>
+      </VStack>
+    </SafeAreaView>
+
   );
 }

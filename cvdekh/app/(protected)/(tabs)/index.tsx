@@ -34,7 +34,6 @@ import {
   ANIMATION_TYPE,
   SkeletonLoader,
 } from "@/components/skeleton";
-import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 import { Spinner } from "@/components/ui/spinner";
 
@@ -122,89 +121,8 @@ export default function Tab() {
     }
   };
 
-  // if (isLoading) {
-  //   return (
-  //     <SafeAreaView className="flex-1 bg-background-500">
-  //       <VStack className="flex-1 justify-between">
-  //         <HStack className="items-center justify-center py-2">
-  //           <Heading className="text-2xl">Jobs</Heading>
-  //         </HStack>
-
-  //         <Box className="flex-1 bg-background-500 items-center p-4">
-  //           {[...Array(3)].map((_, index) => (
-  //             <VStack
-  //               key={index}
-  //               className="p-4 bg-background-400/30 border border-white/15 rounded-lg w-full mb-3 gap-2"
-  //             >
-  //               <HStack className="justify-between">
-  //                 <SkeletonLoader
-  //                   style={{ marginRight: 20 }}
-  //                   width={"20%"}
-  //                   height={15}
-  //                   className="rounded-lg bg-background-300/50"
-  //                   direction={ANIMATION_DIRECTION.leftToRight}
-  //                   animationType={ANIMATION_TYPE.pulse}
-  //                 />
-  //                 <SkeletonLoader
-  //                   style={{ marginRight: 0 }}
-  //                   width={"15%"}
-  //                   height={15}
-  //                   className="rounded-lg bg-background-300/50"
-  //                   direction={ANIMATION_DIRECTION.leftToRight}
-  //                   animationType={ANIMATION_TYPE.pulse}
-  //                 />
-  //               </HStack>
-  //               <HStack className="justify-between">
-  //                 <SkeletonLoader
-  //                   style={{ marginRight: 20 }}
-  //                   width={"50%"}
-  //                   height={25}
-  //                   className="rounded-lg bg-background-300/50"
-  //                   direction={ANIMATION_DIRECTION.leftToRight}
-  //                   animationType={ANIMATION_TYPE.pulse}
-  //                 />
-  //                 <SkeletonLoader
-  //                   width={"10%"}
-  //                   height={25}
-  //                   className="rounded-lg bg-background-300/50"
-  //                   direction={ANIMATION_DIRECTION.leftToRight}
-  //                   animationType={ANIMATION_TYPE.pulse}
-  //                 />
-  //               </HStack>
-  //               <HStack className="gap-2">
-  //                 <SkeletonLoader
-  //                   width={"15%"}
-  //                   height={15}
-  //                   className="rounded-lg bg-background-300/50"
-  //                   direction={ANIMATION_DIRECTION.leftToRight}
-  //                   animationType={ANIMATION_TYPE.pulse}
-  //                 />
-  //                 <SkeletonLoader
-  //                   width={"15%"}
-  //                   height={15}
-  //                   className="rounded-lg bg-background-300/50"
-  //                   direction={ANIMATION_DIRECTION.leftToRight}
-  //                   animationType={ANIMATION_TYPE.pulse}
-  //                 />
-  //               </HStack>
-  //               <SkeletonLoader
-  //                 style={{ marginRight: 20 }}
-  //                 width={"35%"}
-  //                 height={15}
-  //                 className="rounded-lg bg-background-300/50"
-  //                 direction={ANIMATION_DIRECTION.leftToRight}
-  //                 animationType={ANIMATION_TYPE.pulse}
-  //               />
-  //             </VStack>
-  //           ))}
-  //         </Box>
-  //       </VStack>
-  //     </SafeAreaView>
-  //   );
-  // }
-
   return (
-    <SafeAreaView edges={["top"]} className="flex-1 bg-background-500">
+    <>
       {!isLoading && (
         <Fab
           size="md"
@@ -218,7 +136,7 @@ export default function Tab() {
           <Plus color={"#9DFF41"} size={20} />
         </Fab>
       )}
-      <Box className="flex-1 justify-between">
+      <Box className="flex-1 justify-between bg-background-500">
         <HStack className="items-center justify-center py-2">
           <Heading className="text-2xl">Jobs</Heading>
         </HStack>
@@ -477,6 +395,6 @@ export default function Tab() {
           </ModalContent>
         </Modal>
       </Box>
-    </SafeAreaView>
+    </>
   );
 }

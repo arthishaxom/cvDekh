@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/modal";
 import { CloseIcon, Icon } from "@/components/ui/icon";
 import { Heading } from "@/components/ui/heading";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 AppState.addEventListener("change", (state) => {
   if (state === "active") {
@@ -140,185 +141,186 @@ export default function Signin() {
   }, [navigation]);
 
   return (
-    <VStack className="flex-1 bg-background-500 px-6 justify-center">
-      <Box className="mb-6">
-        <Text className="text-white text-5xl font-bold mb-2">
-          {isSignUp ? "Create" : "Hello,"}
-        </Text>
-        <Text className="text-white text-5xl font-bold">
-          {isSignUp ? "Account" : "Welcome Back"}
-        </Text>
-      </Box>
-
-      <Box className="mb-4">
-        {isSignUp && (
-          <Input className="mb-4 rounded-lg h-16 bg-background-400/30 border-zinc-700">
-            <InputSlot className="pl-4">
-              <User color="white" size={20} />
-            </InputSlot>
-            <InputField
-              placeholder="Display Name"
-              placeholderTextColor="#9CA3AF"
-              className="text-white ml-1"
-              value={displayName}
-              onChangeText={setDisplayName}
-              keyboardType="default"
-              autoCapitalize="none"
-              autoComplete="name"
-            />
-          </Input>
-        )}
-        <Input className="mb-4 rounded-lg h-16 bg-background-400/30 border-zinc-700">
-          <InputSlot className="pl-4">
-            <Mail color="white" size={20} />
-          </InputSlot>
-          <InputField
-            placeholder="Email"
-            placeholderTextColor="#9CA3AF"
-            className="text-white ml-1"
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            autoComplete="email"
-          />
-        </Input>
-
-        <Input className="mb-4 rounded-lg h-16 bg-background-400/30 border-zinc-700">
-          <InputSlot className="pl-4">
-            <Lock color="white" size={20} />
-          </InputSlot>
-          <InputField
-            placeholder="Password"
-            placeholderTextColor="#9CA3AF"
-            className="text-white ml-1 flex-1"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry={!showPassword}
-            autoComplete="password"
-          />
-          <InputSlot className="pr-4">
-            <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-              {showPassword ? (
-                <EyeOff color="white" size={20} />
-              ) : (
-                <Eye color="white" size={20} />
-              )}
-            </TouchableOpacity>
-          </InputSlot>
-        </Input>
-
-        {!isSignUp && (
-          <Pressable onPress={() => setShowModal(true)}>
-            <Text className="text-primary-300 text-right">
-              Forgot Password?
-            </Text>
-          </Pressable>
-        )}
-      </Box>
-
-      <Button
-        onPress={handleEmailAuth}
-        disabled={isLoading}
-        size="lg"
-        className="bg-primary-300 p-2 rounded-lg mb-4 h-min py-4"
-      >
-        <Text className="text-black font-semibold text-lg">
-          {isLoading
-            ? isSignUp
-              ? "Creating Account..."
-              : "Signing In..."
-            : isSignUp
-            ? "Create Account"
-            : "Login"}
-        </Text>
-      </Button>
-
-      <Box className="flex-row items-center justify-center mb-4">
-        <Text className="text-gray-400">
-          {isSignUp ? "Already have an account? " : "Don't have an account? "}
-        </Text>
-        <TouchableOpacity onPress={() => setIsSignUp(!isSignUp)}>
-          <Text className="text-primary-300 font-semibold">
-            {isSignUp ? "Sign In" : "Sign Up"}
+    <SafeAreaView className="flex-1 bg-background-500">
+      <VStack className="flex-1 bg-background-500 px-6 justify-center">
+        <Box className="mb-6">
+          <Text className="text-white text-5xl font-bold mb-2">
+            {isSignUp ? "Create" : "Hello,"}
           </Text>
-        </TouchableOpacity>
-      </Box>
+          <Text className="text-white text-5xl font-bold">
+            {isSignUp ? "Account" : "Welcome Back"}
+          </Text>
+        </Box>
 
-      <Box className="flex-row items-center justify-center mb-4">
-        <Box className="flex-1 h-px bg-gray-600" />
-        <Text className="text-gray-400 mx-4">or continue with</Text>
-        <Box className="flex-1 h-px bg-gray-600" />
-      </Box>
-
-      <Button
-        onPress={handleGoogleSignIn}
-        disabled={isLoading}
-        size="lg"
-        action="secondary"
-        className="p-2 h-min rounded-lg border border-white/30 bg-background-400/30 flex-row items-center justify-center gap-1 py-4"
-      >
-        <AntDesign name="google" size={20} color="white" className="" />
-        <Text className="text-white font-semibold">Google</Text>
-      </Button>
-
-      <Modal
-        isOpen={showModal}
-        onClose={() => {
-          setShowModal(false);
-        }}
-        size="lg"
-      >
-        <ModalBackdrop />
-        <ModalContent className="bg-background-500">
-          <ModalHeader>
-            <Heading size="md" className="text-typography-950">
-              Reset Password
-            </Heading>
-            <ModalCloseButton>
-              <Icon
-                as={CloseIcon}
-                size="md"
-                className="stroke-background-100 group-[:hover]/modal-close-button:stroke-background-100 group-[:active]/modal-close-button:stroke-background-100 group-[:focus-visible]/modal-close-button:stroke-background-100"
-              />
-            </ModalCloseButton>
-          </ModalHeader>
-          <ModalBody>
-            <Input className="rounded-lg h-16 bg-background-400/30 border-zinc-700">
+        <Box className="mb-4">
+          {isSignUp && (
+            <Input className="mb-4 rounded-lg h-16 bg-background-400/30 border-zinc-700">
               <InputSlot className="pl-4">
-                <Mail color="white" size={20} />
+                <User color="white" size={20} />
               </InputSlot>
               <InputField
-                placeholder="Email"
+                placeholder="Display Name"
                 placeholderTextColor="#9CA3AF"
                 className="text-white ml-1"
-                value={emailToReset}
-                onChangeText={setEmailToReset}
-                keyboardType="email-address"
+                value={displayName}
+                onChangeText={setDisplayName}
+                keyboardType="default"
                 autoCapitalize="none"
-                autoComplete="email"
+                autoComplete="name"
               />
             </Input>
-          </ModalBody>
-          <ModalFooter>
-            <VStack className="w-full">
-              <Button
-                className={`w-full h-12 rounded-lg ${
-                  isLoading ? "opacity-50" : ""
-                } ${isLoading ? "bg-background-500" : ""}`}
-                onPress={handleResetPassword} // Updated onPress handler
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <ButtonText className="text-white">Sending</ButtonText>
+          )}
+          <Input className="mb-4 rounded-lg h-16 bg-background-400/30 border-zinc-700">
+            <InputSlot className="pl-4">
+              <Mail color="white" size={20} />
+            </InputSlot>
+            <InputField
+              placeholder="Email"
+              placeholderTextColor="#9CA3AF"
+              className="text-white ml-1"
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoComplete="email"
+            />
+          </Input>
+
+          <Input className="mb-4 rounded-lg h-16 bg-background-400/30 border-zinc-700">
+            <InputSlot className="pl-4">
+              <Lock color="white" size={20} />
+            </InputSlot>
+            <InputField
+              placeholder="Password"
+              placeholderTextColor="#9CA3AF"
+              className="text-white ml-1 flex-1"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry={!showPassword}
+              autoComplete="password"
+            />
+            <InputSlot className="pr-4">
+              <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+                {showPassword ? (
+                  <EyeOff color="white" size={20} />
                 ) : (
-                  <ButtonText>Send Reset Link</ButtonText>
+                  <Eye color="white" size={20} />
                 )}
-              </Button>
-            </VStack>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
-    </VStack>
+              </TouchableOpacity>
+            </InputSlot>
+          </Input>
+
+          {!isSignUp && (
+            <Pressable onPress={() => setShowModal(true)}>
+              <Text className="text-primary-300 text-right">
+                Forgot Password?
+              </Text>
+            </Pressable>
+          )}
+        </Box>
+
+        <Button
+          onPress={handleEmailAuth}
+          disabled={isLoading}
+          size="lg"
+          className="bg-primary-300 p-2 rounded-lg mb-4 h-min py-4"
+        >
+          <Text className="text-black font-semibold text-lg">
+            {isLoading
+              ? isSignUp
+                ? "Creating Account..."
+                : "Signing In..."
+              : isSignUp
+                ? "Create Account"
+                : "Login"}
+          </Text>
+        </Button>
+
+        <Box className="flex-row items-center justify-center mb-4">
+          <Text className="text-gray-400">
+            {isSignUp ? "Already have an account? " : "Don't have an account? "}
+          </Text>
+          <TouchableOpacity onPress={() => setIsSignUp(!isSignUp)}>
+            <Text className="text-primary-300 font-semibold">
+              {isSignUp ? "Sign In" : "Sign Up"}
+            </Text>
+          </TouchableOpacity>
+        </Box>
+
+        <Box className="flex-row items-center justify-center mb-4">
+          <Box className="flex-1 h-px bg-gray-600" />
+          <Text className="text-gray-400 mx-4">or continue with</Text>
+          <Box className="flex-1 h-px bg-gray-600" />
+        </Box>
+
+        <Button
+          onPress={handleGoogleSignIn}
+          disabled={isLoading}
+          size="lg"
+          action="secondary"
+          className="p-2 h-min rounded-lg border border-white/30 bg-background-400/30 flex-row items-center justify-center gap-1 py-4"
+        >
+          <AntDesign name="google" size={20} color="white" className="" />
+          <Text className="text-white font-semibold">Google</Text>
+        </Button>
+
+        <Modal
+          isOpen={showModal}
+          onClose={() => {
+            setShowModal(false);
+          }}
+          size="lg"
+        >
+          <ModalBackdrop />
+          <ModalContent className="bg-background-500">
+            <ModalHeader>
+              <Heading size="md" className="text-typography-950">
+                Reset Password
+              </Heading>
+              <ModalCloseButton>
+                <Icon
+                  as={CloseIcon}
+                  size="md"
+                  className="stroke-background-100 group-[:hover]/modal-close-button:stroke-background-100 group-[:active]/modal-close-button:stroke-background-100 group-[:focus-visible]/modal-close-button:stroke-background-100"
+                />
+              </ModalCloseButton>
+            </ModalHeader>
+            <ModalBody>
+              <Input className="rounded-lg h-16 bg-background-400/30 border-zinc-700">
+                <InputSlot className="pl-4">
+                  <Mail color="white" size={20} />
+                </InputSlot>
+                <InputField
+                  placeholder="Email"
+                  placeholderTextColor="#9CA3AF"
+                  className="text-white ml-1"
+                  value={emailToReset}
+                  onChangeText={setEmailToReset}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  autoComplete="email"
+                />
+              </Input>
+            </ModalBody>
+            <ModalFooter>
+              <VStack className="w-full">
+                <Button
+                  className={`w-full h-12 rounded-lg ${isLoading ? "opacity-50" : ""
+                    } ${isLoading ? "bg-background-500" : ""}`}
+                  onPress={handleResetPassword} // Updated onPress handler
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <ButtonText className="text-white">Sending</ButtonText>
+                  ) : (
+                    <ButtonText>Send Reset Link</ButtonText>
+                  )}
+                </Button>
+              </VStack>
+            </ModalFooter>
+          </ModalContent>
+        </Modal>
+      </VStack>
+    </SafeAreaView>
   );
 }

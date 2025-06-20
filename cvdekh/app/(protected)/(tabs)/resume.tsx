@@ -45,7 +45,6 @@ import Animated, {
   useSharedValue,
   withSpring,
 } from "react-native-reanimated";
-import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 
 export default function Tab() {
@@ -154,7 +153,7 @@ export default function Tab() {
   const animatedPaddingStyle = useAnimatedStyle(() => {
     // Update the shared value directly based on hasChanges
     // This is more efficient than useEffect as it's handled by the Reanimated native thread
-    paddingBottom.value = withSpring(hasChanges ? 110 : 50, {
+    paddingBottom.value = withSpring(hasChanges ? 112 : 56, {
       damping: 15,
       mass: 0.5,
       stiffness: 100,
@@ -166,7 +165,7 @@ export default function Tab() {
   });
 
   return (
-    <SafeAreaView edges={["top"]} className="flex-1 bg-background-500">
+    <>
       {hasChanges && (
         <Fab
           size="md"
@@ -186,7 +185,7 @@ export default function Tab() {
           )}
         </Fab>
       )}
-      <Box className="flex-1 justify-between">
+      <Box className="flex-1 justify-between bg-background-500">
         <HStack className="items-center justify-between px-4 py-2">
           <Menu
             color={"white"}
@@ -951,6 +950,6 @@ export default function Tab() {
           </ModalContent>
         </Modal>
       </Box>
-    </SafeAreaView>
+    </>
   );
 }
