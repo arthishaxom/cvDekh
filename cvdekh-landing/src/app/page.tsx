@@ -7,7 +7,7 @@ import Link from "next/link";
 
 export default function LandingPage() {
   return (
-    <div className="relative flex h-[50rem] w-full sm:max-h-[50rem] lg:max-h-screen items-center justify-center bg-black">
+    <div className="relative flex min-h-screen w-full items-center justify-center bg-black">
       <div
         className={cn(
           "absolute inset-0 opacity-50",
@@ -52,12 +52,9 @@ export default function LandingPage() {
             className="bg-[#9FFE3F] hover:bg-[#9FFE3F]/70 text-black font-semibold py-3 px-8 rounded-lg text-lg transition duration-300 ease-in-out transform hover:scale-105"
             asChild
           >
-            <a
-              target="_blank"
-              href="https://docs.google.com/forms/d/e/1FAIpQLSfsTbe8pTCFhQZuwfA0OZXPQzBf372Bo1pY5Tsy5oZ6rxL2Pg/viewform?usp=dialog" // Replace with your app download link or sign-up page
-            >
+            <Link href="/early-access">
               Get Early Access
-            </a>
+            </Link>
           </Button>
           <VercelBlobVideoModal
             videoUrl={process.env.NEXT_PUBLIC_DEMO_VIDEO_URL}
