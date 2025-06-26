@@ -6,12 +6,24 @@ import Link from "next/link";
 import Script from "next/script";
 import { useEffect, useState } from "react";
 
+// Define proper types for the Tally widget
+interface TallyWidget {
+  loadEmbeds: () => void;
+}
+
+interface WindowWithTally extends Window {
+  Tally?: TallyWidget;
+}
+
 export default function EarlyAccessPage() {
   const [formLoading, setFormLoading] = useState(true);
-
+  
   useEffect(() => {
-    if (typeof window !== "undefined" && (window as any).Tally) {
-      (window as any).Tally.loadEmbeds();
+    if (
+      typeof window !== "undefined" &&
+      (window as WindowWithTally).Tally
+    ) {
+      (window as WindowWithTally).Tally!.loadEmbeds();
     }
   }, []);
 
@@ -27,7 +39,6 @@ export default function EarlyAccessPage() {
       />
       {/* Radial gradient for the container to give a faded look */}
       <div className="pointer-events-none absolute inset-0 flex items-center justify-center  [mask-image:radial-gradient(ellipse_at_center,transparent_20%,black)] bg-black"></div>
-
       <div className="lg:min-h-screen min-h-dvh relative z-20  text-neutral-50 flex flex-col items-center justify-center p-4">
         <header className="text-center my-8">
           <Image
@@ -44,7 +55,6 @@ export default function EarlyAccessPage() {
             Fill out the form below to join our early access program!
           </p>
         </header>
-
         <main className="flex items-center w-full z-21 min-h-[400px]">
           {formLoading && (
             <div className="absolute left-0 right-0 flex justify-center items-center min-h-[400px]">
@@ -64,13 +74,15 @@ export default function EarlyAccessPage() {
             id="tally-js"
             src="https://tally.so/widgets/embed.js"
             onLoad={() => {
-              if (typeof window !== "undefined" && (window as any).Tally) {
-                (window as any).Tally.loadEmbeds();
+              if (
+                typeof window !== "undefined" &&
+                (window as WindowWithTally).Tally
+              ) {
+                (window as WindowWithTally).Tally!.loadEmbeds();
               }
             }}
           />
         </main>
-
         <footer className="text-center text-neutral-400 text-sm mt-8">
           <Button variant={"link"} className="text-white/70">
             <Link href="/">Back to Home</Link>
@@ -79,4 +91,4 @@ export default function EarlyAccessPage() {
       </div>
     </div>
   );
-} 
+}
