@@ -1,6 +1,6 @@
 import { useAuthStore } from "@/store/auth";
 import { router } from "expo-router";
-import { ChevronLeft, HelpCircle, LogOut } from "lucide-react-native";
+import { ChevronLeft, HelpCircle, LogOut, MessageSquareText, Star } from "lucide-react-native";
 import { VStack } from "@/components/ui/vstack";
 import { Heading } from "@/components/ui/heading";
 import { Button } from "@/components/ui/button";
@@ -8,7 +8,7 @@ import { Text } from "@/components/ui/text";
 import { HStack } from "@/components/ui/hstack";
 import { Box } from "@/components/ui/box";
 import * as Linking from "expo-linking";
-
+import * as WebBrowser from "expo-web-browser";
 export default function Settings() {
   const signOut = useAuthStore((state) => state.signOut);
   const isLoading = useAuthStore((state) => state.isLoading);
@@ -40,6 +40,32 @@ export default function Settings() {
           </Heading>
         </VStack>
         <VStack className="w-full gap-4">
+          <Button
+            onPress={() => {
+              const tallyURL = "https://tally.so/r/mBqxbA";
+              WebBrowser.openBrowserAsync(tallyURL);
+            }}
+            size="lg"
+            action="secondary"
+            disabled={isLoading}
+            className="p-2 px-4 w-full h-min rounded-lg border border-white/30 bg-background-400/30 flex-row items-center justify-start gap-2 py-4"
+          >
+            <MessageSquareText color="white" size={22} />
+            <Text className="text-white font-semibold">Send Feedback</Text>
+          </Button>
+          <Button
+            onPress={() => {
+              const rateLink = `https://play.google.com/store/apps/details?id=com.justashish.cvdekh&pcampaignid=web_share`;
+              Linking.openURL(rateLink);
+            }}
+            size="lg"
+            action="secondary"
+            disabled={isLoading}
+            className="p-2 px-4 w-full h-min rounded-lg border border-white/30 bg-background-400/30 flex-row items-center justify-start gap-2 py-4"
+          >
+            <Star color="white" size={22} />
+            <Text className="text-white font-semibold">Rate Us</Text>
+          </Button>
           <Button
             onPress={() => {
               const mailtoUrl = `mailto:pothal.builds@gmail.com?subject=${encodeURIComponent(

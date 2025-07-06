@@ -2,6 +2,10 @@ import { ExpoConfig, ConfigContext } from "@expo/config";
 
 const IS_DEV = process.env.APP_VARIANT === "development";
 const IS_PREVIEW = process.env.APP_VARIANT === "preview";
+const versionCode = process.env.ANDROID_VERSION_CODE
+	? parseInt(process.env.ANDROID_VERSION_CODE)
+	: 19;
+const versionName = process.env.APP_VERSION || "1.0.1"
 
 const getUniqueIdentifier = () => {
   if (IS_DEV) {
@@ -31,7 +35,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   name: getAppName(),
   slug: "cvdekh",
-  version: "1.0.0",
+  version: versionName,
   orientation: "portrait",
   icon: "./assets/images/icon.png",
   scheme: "cvdekh",
@@ -54,6 +58,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     },
     edgeToEdgeEnabled: true,
     package: getUniqueIdentifier(),
+    versionCode: versionCode,
   },
   web: {
     bundler: "metro",
