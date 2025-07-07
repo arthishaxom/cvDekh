@@ -4,6 +4,7 @@ import VercelBlobVideoModal from "@/components/video";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
+import { Icon } from '@iconify-icon/react';
 
 export default function LandingPage() {
   return (
@@ -45,21 +46,24 @@ export default function LandingPage() {
           </p>
         </header>
 
-        <main className="text-center mb-8 flex flex-row gap-4">
+        <main className="text-center mb-8 flex flex-row gap-4 items-center justify-center">
           {/* You can add more sections here, like features, testimonials, etc. */}
           <Button
-            // variant="outline"
-            className="bg-[#9FFE3F] hover:bg-[#9FFE3F]/70 text-black font-semibold py-3 px-8 rounded-lg text-lg transition duration-300 ease-in-out transform hover:scale-105"
+            className="bg-neutral-900 hover:bg-neutral-900/70 text-neutral-100 py-3 px-6 rounded-lg transition duration-300 ease-in-out transform hover:scale-105 flex items-center border-neutral-300/40 border h-16"
             asChild
           >
-            <Link href="/early-access">
-              Get Early Access
-            </Link>
+            <a href="https://play.google.com/store/apps/details?id=com.justashish.cvdekh&pcampaignid=web_share" target="_blank">
+              <Icon icon="logos:google-play-icon" width="32"></Icon>
+              <div className="flex flex-col items-start ml-2">
+                <p className="text-xs text-neutral-100/75 p-0 m-0 leading-none">
+                  GET IT ON
+                </p>
+                <p className="text-xl font-bold leading-none">
+                  Google Play
+                </p>
+              </div>
+            </a>
           </Button>
-          <VercelBlobVideoModal
-            videoUrl={process.env.NEXT_PUBLIC_DEMO_VIDEO_URL}
-            thumbnailUrl={process.env.NEXT_PUBLIC_DEMO_THUMBNAIL_URL}
-          />
         </main>
 
         <footer className="text-center text-neutral-400 text-sm">

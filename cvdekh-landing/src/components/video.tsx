@@ -80,9 +80,11 @@ export default function VercelBlobVideoModal({
       <DialogTrigger asChild>
         <Button
           variant="outline"
-          className="font-semibold bg-neutral-800 hover:bg-neutral-900 hover:text-neutral-200 py-3 px-8 rounded-lg text-lg transition duration-300 ease-in-out transform hover:scale-105"
+          className="font-semibold bg-neutral-900 hover:bg-neutral-900/70 text-neutral-100 py-3 px-4 rounded-lg transition duration-300 ease-in-out transform hover:scale-105 flex items-center border-neutral-300/40 border h-16"
         >
-          Watch Demo
+          <div className="flex items-center">
+            <span className="text-lg text-neutral-100">Watch Demo</span>
+          </div>
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-xl w-max p-0 overflow-hidden">
