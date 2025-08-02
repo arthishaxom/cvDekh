@@ -1,12 +1,11 @@
 {
   "name": "cvdekh-backend",
   "version": "1.0.0",
-  "main": "dist/server.js",
+  "main": "dist/index.js",
   "scripts": {
-    "test": "echo \"No tests yet\"",
-    "dev": "nodemon src/server.ts",
+    "dev": "nodemon src/index.ts",
     "build": "tsc",
-    "start": "node dist/server.js"
+    "start": "node dist/index.js"
   },
   "keywords": [],
   "author": "",
@@ -14,11 +13,13 @@
   "type": "commonjs",
   "description": "",
   "dependencies": {
+    "@ai-sdk/google": "2.0.0-beta.19",
     "@google/genai": "^0.14.0",
     "@logtail/node": "^0.5.5",
     "@logtail/winston": "^0.5.5",
     "@prisma/client": "^6.7.0",
     "@supabase/supabase-js": "^2.49.8",
+    "ai": "5.0.0-beta.34",
     "bullmq": "^5.53.2",
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
@@ -28,7 +29,8 @@
     "pdf-parse": "^1.1.1",
     "pdfmake": "^0.2.20",
     "redis": "^5.5.6",
-    "winston": "^3.17.0"
+    "winston": "^3.17.0",
+    "zod": "^4.0.14"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
@@ -42,6 +44,7 @@
     "concurrently": "^9.1.2",
     "express": "^5.1.0",
     "nodemon": "^3.1.10",
+    "supabase": "^2.33.7",
     "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.8.3"

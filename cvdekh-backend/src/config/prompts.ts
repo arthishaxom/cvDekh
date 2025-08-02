@@ -1,4 +1,4 @@
-const systemInstructions = {
+const SYSTEM_INSTRUCTIONS = {
   "resume-parser": `
 Task: You are a resume parser and formatter. Parse the raw resume text provided and return a structured JSON output with specific fields.
 
@@ -108,4 +108,4 @@ Respond ONLY with a valid JSON object that matches the following structure, with
 `,
 };
 
-export default systemInstructions;
+export default SYSTEM_INSTRUCTIONS;

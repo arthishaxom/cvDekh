@@ -1,6 +1,6 @@
-import { Queue, QueueOptions } from "bullmq"; // Removed Worker as it's not used here
+import { Queue, type QueueOptions } from "bullmq"; // Removed Worker as it's not used here
 import IORedis from "ioredis";
-import { logger } from "../server";
+import { logger } from "..";
 
 // Redis connection - you'll need Redis running
 // Ensure your .env file has REDIS_HOST and REDIS_PORT or update defaults
