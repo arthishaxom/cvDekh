@@ -15,7 +15,7 @@ import {
   User,
 } from "lucide-react-native";
 import { useCallback, useEffect, useState } from "react";
-import { Pressable, RefreshControl, ScrollView } from "react-native";
+import { Pressable, ScrollView } from "react-native";
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -43,23 +43,23 @@ import {
 import { Spinner } from "@/components/ui/spinner";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
-import { handleBrowse } from "@/config/browser";
 import { useResumeData } from "@/hooks/useResumeData";
 import { useResumeOperations } from "@/hooks/useResumeOperations";
 import { useResumeParser } from "@/hooks/useResumeParser";
+import { useResumePDF } from "@/hooks/useResumePDF";
 import { useAuthStore } from "@/store/auth";
 import { useResumeStore } from "@/store/resume/resumeStore";
+import { handleBrowse } from "@/utils/resume.util";
 
 export default function Tab() {
   const [showModal, setShowModal] = useState(false);
   const [selectedFile, setSelectedFile] =
     useState<DocumentPicker.DocumentPickerAsset | null>(null);
-  const [refreshing, setRefreshing] = useState(false);
   const [dotText, setDotText] = useState("Extracting");
 
   // Store and auth
   const session = useAuthStore((state) => state.session);
-  const { formData, hasChanges } = useResumeStore();
+  const { formData, hasChanges, setData } = useResumeStore();
 
   // Hooks
   const {
@@ -69,16 +69,13 @@ export default function Tab() {
     refetch,
   } = useResumeData(session);
 
-  const {
-    isLoading: isSaving,
-    saveResume,
-    downloadResume,
-  } = useResumeOperations();
+  const { isLoading: isSaving, saveResume } = useResumeOperations();
 
   const { isLoading: isParsing, progress, parseResume } = useResumeParser();
+  const { isLoading: isDownloading, generatePDF } = useResumePDF();
 
   // Combined loading state
-  const loading = isDataLoading || isParsing;
+  const loading = isDataLoading || isParsing || isDownloading;
 
   useFocusEffect(
     useCallback(() => {
@@ -123,7 +120,7 @@ export default function Tab() {
         clearInterval(interval);
       }
     };
-  }, [isParsing]); // ✅ Changed dependency from isLoading to isParsing
+  }, [isParsing]);
 
   const handleDownload = async () => {
     if (!session) {
@@ -136,9 +133,8 @@ export default function Tab() {
     }
 
     try {
-      await downloadResume(session);
+      await generatePDF(session, undefined);
     } catch (error) {
-      // Error is already handled in the hook
       console.error("Download failed:", error);
     }
   };
@@ -149,7 +145,7 @@ export default function Tab() {
       if (file) {
         setSelectedFile(file);
       }
-    } catch (error) {
+    } catch (_error) {
       Toast.show({
         type: "eToast",
         text1: "File Selection Failed",
@@ -174,6 +170,7 @@ export default function Tab() {
 
     try {
       await saveResume(session, null, formData);
+      await setData(formData);
     } catch (error) {
       // Error is already handled in the hook
       console.error("Save failed:", error);
@@ -209,31 +206,6 @@ export default function Tab() {
       console.error("Parse failed:", error);
     }
   };
-
-  // ✅ Fixed: Better refresh handling
-  const handleRefresh = useCallback(async () => {
-    if (!session) {
-      router.replace("/");
-      return;
-    }
-
-    // console.log(useResumeStore.getState().formData);
-
-    setRefreshing(true);
-    try {
-      // Reset the data fetched flag to force refetch
-      useResumeStore.setState({ isInitialDataFetched: false });
-      refetch();
-    } catch (error) {
-      Toast.show({
-        type: "eToast",
-        text1: "Refresh Failed",
-        text2: "Could not refresh data. Please try again.",
-      });
-    } finally {
-      setRefreshing(false);
-    }
-  }, [session, refetch]);
 
   // ✅ Fixed: Proper animated style
   const paddingBottom = useSharedValue(56); // Initial value
@@ -309,15 +281,7 @@ export default function Tab() {
         </HStack>
 
         <Box className="flex flex-col gap-4 pt-4">
-          <ScrollView
-            className="w-full"
-            refreshControl={
-              <RefreshControl
-                refreshing={refreshing}
-                onRefresh={handleRefresh}
-              />
-            }
-          >
+          <ScrollView className="w-full">
             <Animated.View
               style={animatedPaddingStyle}
               className="flex flex-col gap-4 items-start px-4"
@@ -743,6 +707,83 @@ export default function Tab() {
                       !formData?.projects) && (
                       <Text className="opacity-70">
                         No project entries yet.
+                      </Text>
+                    )}
+                  </VStack>
+                </Pressable>
+              )}
+
+              {/* Certificates Section */}
+              {loading ? (
+                <VStack className="gap-2 p-4 bg-background-400/40 border border-white/30 rounded-lg w-full">
+                  <HStack className="items-center justify-between mb-2">
+                    <SkeletonLoader
+                      width={100}
+                      height={24}
+                      className="bg-background-300/50"
+                    />
+                    <SkeletonLoader
+                      width={16}
+                      height={16}
+                      className="bg-background-300/50"
+                    />
+                  </HStack>
+                  {[...Array(2)].map((_, i) => (
+                    <VStack key={`n_${i + 100}`} className="gap-1 mb-2 w-full">
+                      <SkeletonLoader
+                        width={"70%"}
+                        height={16}
+                        className="bg-background-300/50"
+                      />
+                      <SkeletonLoader
+                        width={"90%"}
+                        height={14}
+                        className="bg-background-300/50"
+                      />
+                      <SkeletonLoader
+                        width={"50%"}
+                        height={14}
+                        className="bg-background-300/50"
+                      />
+                      {i < 1 && (
+                        <Divider className="my-2 bg-background-300/50 h-px border-0" />
+                      )}
+                    </VStack>
+                  ))}
+                </VStack>
+              ) : (
+                <Pressable
+                  onPress={() => {
+                    router.push("/forms/CertificateScreen");
+                  }}
+                  className="w-full"
+                >
+                  <VStack className="gap-2 p-4 bg-background-400/40 border border-white/30 rounded-lg">
+                    <HStack className="items-center justify-between">
+                      <Heading>Certificates</Heading>
+                      <PencilLine color={"white"} size={16} />
+                    </HStack>
+                    {formData?.certificates?.map((cert, index) => (
+                      <VStack
+                        key={cert.id || index}
+                        className="opacity-90 items-start gap-1"
+                      >
+                        <Text className="font-semibold">
+                          {displayValue(cert.name, "N/A")}
+                        </Text>
+                        <Text className="italic">{cert.company || "N/A"}</Text>
+                        <Text className="italic">
+                          {cert.issueDate || "N/A"}
+                        </Text>
+                        {index < (formData?.certificates?.length || 0) - 1 && (
+                          <Divider className="my-2" />
+                        )}
+                      </VStack>
+                    ))}
+                    {(formData?.certificates?.length === 0 ||
+                      !formData?.certificates) && (
+                      <Text className="opacity-70">
+                        No certification entries yet.
                       </Text>
                     )}
                   </VStack>

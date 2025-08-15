@@ -2,19 +2,19 @@ import { useRouter } from "expo-router";
 import { produce } from "immer";
 import { useCallback, useState } from "react";
 import { ScrollView } from "react-native";
-import { useDebouncedCallback } from "use-debounce";
+import { FormField } from "@/components/FormField";
 import { Box } from "@/components/ui/box";
 import { Button, ButtonText } from "@/components/ui/button";
-import {
-  FormControl,
-  FormControlLabel,
-  FormControlLabelText,
-} from "@/components/ui/form-control";
-import { Input, InputField } from "@/components/ui/input";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
+import { useAutoSave } from "@/hooks/useAutoSave";
 import type { ContactInfo } from "@/store/resume/types";
 import { useResumeStore } from "../../../store/resume/resumeStore";
+
+interface LocalFormData {
+  name: string;
+  contactInfo: ContactInfo;
+}
 
 export default function GeneralInfoScreen() {
   const router = useRouter();
@@ -22,37 +22,8 @@ export default function GeneralInfoScreen() {
   const updateFormData = useResumeStore((state) => state.updateFormData);
 
   const [isSaving, setIsSaving] = useState(false);
-  const debouncedUpdateStore = useDebouncedCallback(
-    (field: keyof ContactInfo | "name", value: string) => {
-      if (field === "name") {
-        updateFormData("name", value);
-      } else {
-        updateFormData("contactInfo", { [field]: value });
-      }
-      setIsSaving(false);
-    },
-    1000 // 1-second debounce
-  );
 
-  const handleInputChange = useCallback(
-    (field: keyof ContactInfo | "name", value: string) => {
-      setLocalFormData(
-        produce((draft) => {
-          if (field === "name") {
-            draft.name = value;
-          } else {
-            draft.contactInfo[field] = value;
-          }
-        })
-      );
-
-      setIsSaving(true);
-      debouncedUpdateStore(field, value);
-    },
-    [debouncedUpdateStore]
-  );
-
-  const [localFormData, setLocalFormData] = useState({
+  const [localFormData, setLocalFormData] = useState<LocalFormData>({
     name: formData.name || "",
     contactInfo: {
       linkedin: formData.contactInfo?.linkedin || "",
@@ -62,6 +33,33 @@ export default function GeneralInfoScreen() {
     },
   });
 
+  const { save } = useAutoSave((data: LocalFormData) => {
+    // Update both name and contactInfo in the store
+    updateFormData("name", data.name);
+    updateFormData("contactInfo", data.contactInfo);
+    setIsSaving(false);
+  }, 1000);
+
+  const handleInfoChange = useCallback(
+    (field: keyof ContactInfo | "name", value: string) => {
+      // Update local state
+      const updatedData = produce(localFormData, (draft) => {
+        if (field === "name") {
+          draft.name = value;
+        } else {
+          draft.contactInfo[field] = value;
+        }
+      });
+
+      setLocalFormData(updatedData);
+      setIsSaving(true);
+
+      // Save entire form data (debounced)
+      save(updatedData);
+    },
+    [localFormData, save]
+  );
+
   return (
     <VStack className="pb-4 pt-2 px-5 flex-1 bg-background-500 justify-between">
       <ScrollView
@@ -70,84 +68,48 @@ export default function GeneralInfoScreen() {
         keyboardShouldPersistTaps="handled"
       >
         <VStack>
-          <FormControl className="mb-4">
-            <FormControlLabel>
-              <FormControlLabelText className="text-typography-500 font-semibold text-lg">
-                Full Name
-              </FormControlLabelText>
-            </FormControlLabel>
-            <Input className="h-12" size="lg">
-              <InputField
-                value={localFormData.name}
-                onChangeText={(text) => {
-                  handleInputChange("name", text);
-                }}
-                placeholder="Enter your full name"
-              />
-            </Input>
-          </FormControl>
+          <FormField
+            label="Full Name"
+            value={localFormData.name}
+            onChangeText={(text) => handleInfoChange("name", text)}
+            placeholder="Enter your full name"
+            required
+            className="mb-4"
+          />
 
-          <FormControl className="mb-4">
-            <FormControlLabel>
-              <FormControlLabelText className="text-typography-500 font-semibold text-lg">
-                LinkedIn Profile URL
-              </FormControlLabelText>
-            </FormControlLabel>
-            <Input className="h-12" size="lg">
-              <InputField
-                value={localFormData.contactInfo.linkedin}
-                onChangeText={(text) => handleInputChange("linkedin", text)}
-                placeholder="https://linkedin.com/in/yourprofile"
-              />
-            </Input>
-          </FormControl>
+          <FormField
+            label="LinkedIn Profile URL"
+            value={localFormData.contactInfo.linkedin || ""}
+            onChangeText={(text) => handleInfoChange("linkedin", text)}
+            placeholder="https://linkedin.com/in/yourprofile"
+            className="mb-4"
+          />
 
-          <FormControl className="mb-4">
-            <FormControlLabel>
-              <FormControlLabelText className="text-typography-500 font-semibold text-lg">
-                GitHub Profile URL
-              </FormControlLabelText>
-            </FormControlLabel>
-            <Input className="h-12" size="lg">
-              <InputField
-                value={localFormData.contactInfo.github}
-                onChangeText={(text) => handleInputChange("github", text)}
-                placeholder="https://github.com/yourusername"
-              />
-            </Input>
-          </FormControl>
+          <FormField
+            label="GitHub Profile URL"
+            value={localFormData.contactInfo.github || ""}
+            onChangeText={(text) => handleInfoChange("github", text)}
+            placeholder="https://github.com/yourusername"
+            className="mb-4"
+          />
 
-          <FormControl className="mb-4">
-            <FormControlLabel>
-              <FormControlLabelText className="text-typography-500 font-semibold text-lg">
-                Email Address
-              </FormControlLabelText>
-            </FormControlLabel>
-            <Input className="h-12" size="lg">
-              <InputField
-                value={localFormData.contactInfo.gmail}
-                onChangeText={(text) => handleInputChange("gmail", text)}
-                placeholder="your.email@example.com"
-                keyboardType="email-address"
-              />
-            </Input>
-          </FormControl>
+          <FormField
+            label="Email Address"
+            value={localFormData.contactInfo.gmail || ""}
+            onChangeText={(text) => handleInfoChange("gmail", text)}
+            placeholder="your.email@example.com"
+            className="mb-4"
+            type="text"
+          />
 
-          <FormControl className="mb-4">
-            <FormControlLabel>
-              <FormControlLabelText className="text-typography-500 font-semibold text-lg">
-                Phone Number
-              </FormControlLabelText>
-            </FormControlLabel>
-            <Input className="h-12" size="lg">
-              <InputField
-                value={localFormData.contactInfo.phone}
-                onChangeText={(text) => handleInputChange("phone", text)}
-                placeholder="+1234567890"
-                keyboardType="phone-pad"
-              />
-            </Input>
-          </FormControl>
+          <FormField
+            label="Phone Number"
+            value={localFormData.contactInfo.phone || ""}
+            onChangeText={(text) => handleInfoChange("phone", text)}
+            placeholder="+1234567890"
+            className="mb-4"
+            type="text"
+          />
         </VStack>
       </ScrollView>
 

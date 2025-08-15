@@ -48,32 +48,33 @@ export function DynamicListForm<T extends { id?: string }>({
   };
 
   return (
-    <VStack className="gap-2">
-      {items.map((item, index) => (
-        <Box
-          key={item.id || index}
-          className="border border-background-300/30 rounded-lg mb-2 pb-0 bg-background-600/50 p-2"
-        >
-          <HStack className="justify-between items-center mb-3">
-            <Box className="border border-background-300/30 rounded-full px-4 py-2">
-              <Text className="text-lg font-semibold">{index + 1}</Text>
-            </Box>
-            {items.length > minItems && (
-              <Button
-                className="w-min flex-row"
-                size="sm"
-                variant="link"
-                onPress={() => removeItem(index)}
-              >
-                <Trash2 size={20} color={"#E42A33"} />
-              </Button>
-            )}
-          </HStack>
+    <>
+      <VStack className="gap-2">
+        {items.map((item, index) => (
+          <Box
+            key={item.id || index}
+            className="border border-background-300/30 rounded-lg mb-2 pb-0 bg-background-600/50 p-2"
+          >
+            <HStack className="justify-between items-center mb-3">
+              <Box className="border border-background-300/30 rounded-full px-4 py-2">
+                <Text className="text-lg font-semibold">{index + 1}</Text>
+              </Box>
+              {items.length > minItems && (
+                <Button
+                  className="w-min flex-row"
+                  size="sm"
+                  variant="link"
+                  onPress={() => removeItem(index)}
+                >
+                  <Trash2 size={20} color={"#E42A33"} />
+                </Button>
+              )}
+            </HStack>
 
-          {renderItem(item, index, (updates) => updateItem(index, updates))}
-        </Box>
-      ))}
-
+            {renderItem(item, index, (updates) => updateItem(index, updates))}
+          </Box>
+        ))}
+      </VStack>
       {items.length < maxItems && (
         <Button
           action="secondary"
@@ -83,6 +84,6 @@ export function DynamicListForm<T extends { id?: string }>({
           <ButtonText>{addButtonText}</ButtonText>
         </Button>
       )}
-    </VStack>
+    </>
   );
 }

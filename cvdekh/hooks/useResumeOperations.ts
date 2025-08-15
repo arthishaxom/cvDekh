@@ -5,7 +5,6 @@ import { useState } from "react";
 import Toast from "react-native-toast-message";
 import { useResumeStore } from "@/store/resume/resumeStore";
 import { resumeApi } from "@/utils/api.util";
-import { downloadPDFToDevice } from "@/utils/resume.util";
 
 export const useResumeOperations = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -111,32 +110,11 @@ export const useResumeOperations = () => {
     }
   };
 
-  const downloadResume = async (session: Session, resumeId?: string) => {
-    setIsLoading(true);
-    try {
-      const response = await resumeApi.generatePDF(session, resumeId);
-
-      if (response.data.pdfUrl) {
-        const fileName = `resume-${resumeId || "original"}-${Date.now()}.pdf`;
-        await downloadPDFToDevice(response.data.pdfUrl, fileName);
-      }
-    } catch (error) {
-      Toast.show({
-        type: "eToast",
-        text1: "Download Failed",
-        text2: "Failed to generate PDF.",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   return {
     isLoading,
     progress,
     saveResume,
     improveResume,
     deleteResume,
-    downloadResume,
   };
 };

@@ -1,6 +1,6 @@
-import { useAuthStore } from "@/store/auth";
 import { Redirect, Stack } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useAuthStore } from "@/store/auth";
 
 // useEffect is no longer needed here for refreshSession
 // import { useEffect } from "react";
@@ -20,23 +20,20 @@ export default function ProtectedLayout() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-background-500">
-
-      <Stack
-        screenOptions={{
-          headerShown: false,
+    <Stack
+      screenOptions={{
+        headerShown: false,
+      }}
+    >
+      <Stack.Screen
+        options={{
+          title: "cvDekh",
         }}
-      >
-        <Stack.Screen
-          options={{
-            title: "cvDekh",
-          }}
-          name="(tabs)" // This is what makes it navigate to your tabs layout
-        />
-        <Stack.Screen name="forms" />
-        <Stack.Screen name="resume-details/[id]" />
-        <Stack.Screen name="settings" />
-      </Stack>
-    </SafeAreaView>
+        name="(tabs)" // This is what makes it navigate to your tabs layout
+      />
+      <Stack.Screen name="forms" />
+      <Stack.Screen name="resume-details/[id]" />
+      <Stack.Screen name="settings" />
+    </Stack>
   );
 }

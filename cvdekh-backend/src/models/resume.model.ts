@@ -39,7 +39,7 @@ export const ResumeDataSchema = z.object({
     frameworks: z.array(z.string()),
     others: z.array(z.string()),
   }),
-  certicates: z.array(CertificateSchema),
+  certificates: z.array(CertificateSchema),
   education: z.array(EducationSchema),
   projects: z.array(ProjectSchema),
   experience: z.array(ExperienceSchema),

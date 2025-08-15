@@ -51,6 +51,13 @@ export interface JobDetails {
   improvementsORSuggestions?: string[];
 }
 
+export interface CertificateEntry {
+  id?: string;
+  name: string;
+  company: string;
+  issueDate: string;
+}
+
 export interface ResumeFormData {
   id?: string;
   name?: string;
@@ -60,6 +67,7 @@ export interface ResumeFormData {
   education?: EducationEntry[];
   projects?: ProjectEntry[];
   experience?: ExperienceEntry[];
+  certificates?: CertificateEntry[];
   job_desc?: JobDetails;
   // Add any other sections you might have
 }
@@ -83,32 +91,7 @@ export interface ResumeStoreState {
     section: K,
     data: Partial<ResumeFormData[K]>
   ) => void;
-  addListItem: <K extends "education" | "projects" | "experience">(
-    section: K,
-    item: K extends "education"
-      ? EducationEntry
-      : K extends "projects"
-      ? ProjectEntry
-      : ExperienceEntry
-  ) => void;
-  updateListItem: <K extends "education" | "projects" | "experience">(
-    section: K,
-    itemId: string,
-    updatedItem: Partial<
-      K extends "education"
-        ? EducationEntry
-        : K extends "projects"
-        ? ProjectEntry
-        : ExperienceEntry
-    >
-  ) => void;
-  removeListItem: <K extends "education" | "projects" | "experience">(
-    section: K,
-    itemId: string
-  ) => void;
-
-  // Resume collection operations
-  setAllResumes: (resumes: any[]) => void;
+  setAllResumes: (resumes: ResumeFormData[]) => void;
   addToAllResumes: (resumeData: ResumeFormData) => void;
   removeFromAllResumes: (resumeId: string) => void;
 
@@ -162,7 +145,7 @@ export interface SaveResumePayload {
   isOriginal: boolean;
 }
 
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T> {
   success: boolean;
   data?: T;
   message?: string;

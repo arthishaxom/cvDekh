@@ -83,12 +83,22 @@ export const resumeApi = {
 
   generatePDF: async (session: Session, resumeId?: string) => {
     const url = resumeId
-      ? `${API_BASE}/api/v1/resumes/generate/${resumeId}`
-      : `${API_BASE}/api/v1/resumes/generate`;
+      ? `${API_BASE}/api/v1/resumes/pdf/${resumeId}`
+      : `${API_BASE}/api/v1/resumes/pdf`;
     const { data } = await axios.get(url, {
       headers: createHeaders(session),
     });
 
+    return data;
+  },
+
+  getPDFJobStatus: async (session: Session, jobId: string) => {
+    const { data } = await axios.get(
+      `${API_BASE}/api/v1/resumes/pdf/status/${jobId}`,
+      {
+        headers: createHeaders(session),
+      }
+    );
     return data;
   },
 

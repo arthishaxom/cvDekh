@@ -19,7 +19,7 @@
 
   // Helper function to create horizontal rules
   let hr() = {
-    box(height: 0.5pt)[
+    box(height: 0.5pt, width: 100%)[
       #line(length: 100%, stroke: 0.5pt + black)
     ]
   }
@@ -127,7 +127,6 @@
       v(1pt)
       grid(
         columns: (70%, 30%),
-        gutter: 10pt,
         [
           #text(weight: "bold")[#exp.jobTitle] \
           #text(style: "italic")[#exp.company]
@@ -156,7 +155,6 @@
     v(1pt)
     grid(
       columns: (70%, 30%),
-      gutter: 10pt,
       [
         #text(weight: "bold")[#project.title] |
         #text(style: "italic")[#project.techStack.join(", ")]
@@ -181,29 +179,22 @@
   v(2pt)
 
   // Certification Section (only if there are certifications)
-  [#if data.certifications.len() > 0 {
+  [#if data.certificates.len() > 0 {
     text(size: 10.5pt, weight: "bold")[CERTIFICATIONS]
     hr()
     v(6pt, weak: true)
-    for cert in data.certifications {
+    for cert in data.certificates {
       v(1pt)
       grid(
         columns: (70%, 30%),
-        gutter: 10pt,
         [
-          #text(weight: "bold")[#cert.title] \
-          #text(style: "italic")[#cert.company]
+          #text(weight: "bold")[#cert.name] - #text(style: "italic")[#cert.company]
         ],
         align(right)[
-          #if cert.startDate != "null" and cert.endDate != "null" and cert.startDate != "" and cert.endDate != "" [
-            #cert.startDate - #cert.endDate
+          #if cert.issueDate != "null" and cert.issueDate != "" [
+            #cert.issueDate
           ]
         ],
-      )
-      // Certifications details as bullet points
-      list(
-        ..cert.details,
-        spacing: 8pt,
       )
     }
 

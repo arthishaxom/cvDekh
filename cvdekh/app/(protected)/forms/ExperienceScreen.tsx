@@ -1,132 +1,120 @@
 import * as Crypto from "expo-crypto";
 import { useRouter } from "expo-router";
-import { produce } from "immer";
-import { Trash2 } from "lucide-react-native";
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
-import { useDebouncedCallback } from "use-debounce";
+import { DynamicListForm } from "@/components/DynamicListForm";
+import { FormField } from "@/components/FormField";
 import { Box } from "@/components/ui/box";
 import { Button, ButtonText } from "@/components/ui/button";
-import {
-  FormControl,
-  FormControlLabel,
-  FormControlLabelText,
-} from "@/components/ui/form-control";
 import { HStack } from "@/components/ui/hstack";
-import { Input, InputField } from "@/components/ui/input";
 import { Text } from "@/components/ui/text";
-import { Textarea, TextareaInput } from "@/components/ui/textarea";
 import { VStack } from "@/components/ui/vstack";
+import { useAutoSave } from "@/hooks/useAutoSave";
+import { useDynamicList } from "@/hooks/useDynamicList";
 import type { ExperienceEntry } from "@/store/resume/types";
 import { useResumeStore } from "../../../store/resume/resumeStore";
-// import { Divider } from "@/components/ui/divider";
 
 export default function ExperienceScreen() {
   const router = useRouter();
   const formData = useResumeStore((state) => state.formData);
-  const addListItem = useResumeStore((state) => state.addListItem);
-  const removeListItem = useResumeStore((state) => state.removeListItem);
-  const updateListItem = useResumeStore((state) => state.updateListItem);
+  const updateFormData = useResumeStore((state) => state.updateFormData);
 
-  const [isSaving, setIsSaving] = useState(false);
-  const [localExperience, setLocalExperience] = useState<ExperienceEntry[]>(
-    formData.experience || []
-  );
-
-  const debouncedUpdateStore = useDebouncedCallback(
-    (experienceList: ExperienceEntry[]) => {
-      const currentExperience =
-        useResumeStore.getState().formData.experience || [];
-      const currIds = currentExperience.map((item) => item.id);
-      const newIds = experienceList.map((item) => item.id);
-
-      currIds.forEach((id) => {
-        if (id && !newIds.includes(id)) {
-          removeListItem("experience", id);
-        }
-      });
-
-      experienceList.forEach((item) => {
-        // Create a new item with details filtered
-        const cleanedItem = {
-          ...item,
-          details: item.details?.filter((s) => s.trim()) || [],
-        };
-
-        if (
-          cleanedItem.jobTitle ||
-          cleanedItem.company ||
-          cleanedItem.details?.length
-        ) {
-          const existingItem = currentExperience.find(
-            (existing) => cleanedItem.id === existing.id
-          );
-
-          if (existingItem) {
-            updateListItem("experience", cleanedItem.id!, cleanedItem);
-          } else {
-            addListItem("experience", cleanedItem);
-          }
-        }
-      });
-
-      setIsSaving(false);
-    },
-    1000
-  );
-
-  const handleExperienceChange = useCallback(
-    (index: number, field: keyof ExperienceEntry, value: string | string[]) => {
-      const updatedExperience = produce(localExperience, (draft) => {
-        if (!draft[index]) {
-          draft[index] = { id: Crypto.randomUUID(), details: [] };
-        }
-        if (field === "details" && typeof value === "string") {
-          draft[index][field] = value.split("\n");
-        } else {
-          draft[index][field] = value as any;
-        }
-      });
-
-      setLocalExperience(updatedExperience);
-      setIsSaving(true);
-      debouncedUpdateStore(updatedExperience);
-    },
-    [localExperience, debouncedUpdateStore]
-  );
-
-  const addExperienceEntry = () => {
-    const newEntry: ExperienceEntry = {
-      id: Crypto.randomUUID(),
+  const createEmptyExperience = useCallback(
+    (): Omit<ExperienceEntry, "id"> => ({
       jobTitle: "",
       company: "",
       startDate: "",
       endDate: "",
       details: [],
-    };
-    setLocalExperience([...localExperience, newEntry]);
-  };
+    }),
+    []
+  );
 
-  const removeExperienceEntry = (index: number) => {
-    const itemToRemove = localExperience[index];
-    const updatedExperience = localExperience.filter((_, i) => i !== index);
-    setLocalExperience(updatedExperience);
+  const { items: experience, setItems } = useDynamicList(
+    formData.experience || [],
+    createEmptyExperience
+  );
 
-    if (itemToRemove.id) {
-      const storeExperience =
-        useResumeStore.getState().formData.experience || [];
-      const existsInStore = storeExperience.some(
-        (item) => item.id === itemToRemove.id
-      );
+  const { save, isSaving } = useAutoSave(
+    (experience: ExperienceEntry[]) => {
+      updateFormData("experience", experience);
+    },
+    1000,
+    true
+  ); // Enable saving state tracking
 
-      if (existsInStore) {
-        removeListItem("experience", itemToRemove.id);
-      }
-    }
+  const handleExperienceChange = useCallback(
+    (newExperience: ExperienceEntry[]) => {
+      setItems(newExperience);
+      save(newExperience);
+    },
+    [setItems, save]
+  );
 
-    setIsSaving(true);
-    debouncedUpdateStore(updatedExperience);
-  };
+  const renderExperience = useCallback(
+    (
+      exp: ExperienceEntry,
+      _index: number,
+      onUpdate: (updates: Partial<ExperienceEntry>) => void
+    ) => (
+      <VStack>
+        {/* Job Title */}
+        <FormField
+          label="Job Title"
+          value={exp.jobTitle || ""}
+          onChangeText={(text) => onUpdate({ jobTitle: text })}
+          placeholder="e.g., Software Engineer"
+          required
+        />
+
+        {/* Company */}
+        <FormField
+          label="Company"
+          value={exp.company || ""}
+          onChangeText={(text) => onUpdate({ company: text })}
+          placeholder="Enter company name"
+          required
+        />
+
+        {/* Date Range */}
+        <HStack className="justify-between mb-2">
+          <FormField
+            label="Start Date"
+            value={exp.startDate || ""}
+            onChangeText={(text) => onUpdate({ startDate: text })}
+            placeholder="MM/YYYY"
+            className="flex-1 mr-2"
+            type="date"
+            required
+          />
+          <FormField
+            label="End Date"
+            value={exp.endDate || ""}
+            onChangeText={(text) => onUpdate({ endDate: text })}
+            placeholder="MM/YYYY or Present"
+            className="flex-1 ml-2"
+            type="date"
+            required
+          />
+        </HStack>
+
+        {/* Job Responsibilities */}
+        <FormField
+          label="Job Responsibilities (one per line)"
+          value={exp.details?.join("\n") || ""}
+          onChangeText={(text) =>
+            onUpdate({
+              details: text.split("\n").filter((s) => s.trim()),
+            })
+          }
+          placeholder={`• Developed and maintained web applications\n• Collaborated with cross-functional teams\n• Improved system performance by 30%`}
+          multiline
+          className="mb-1"
+        />
+      </VStack>
+    ),
+    []
+  );
 
   return (
     <VStack className="pb-4 pt-2 px-5 flex-1 bg-background-500 justify-between">
@@ -136,130 +124,18 @@ export default function ExperienceScreen() {
         bottomOffset={12}
         extraKeyboardSpace={-100}
       >
-        <VStack className="mb-4 gap-2">
-          {localExperience.map((experience, index) => (
-            <Box
-              key={experience.id || index}
-              className="border border-background-300/30 rounded-lg mb-2 pb-0 bg-background-600/50 p-2"
-            >
-              <HStack className="justify-between items-center mb-2">
-                <Box className="border border-background-300/30 rounded-full px-4 py-2">
-                  <Text className="text-lg font-semibold">{index + 1}</Text>
-                </Box>
-                {localExperience.length > 0 && (
-                  <Button
-                    className="w-min flex-row"
-                    size="sm"
-                    variant="link"
-                    onPress={() => removeExperienceEntry(index)}
-                  >
-                    <Trash2 size={20} color={"#E42A33"} />
-                  </Button>
-                )}
-              </HStack>
-
-              <FormControl className="mb-2">
-                <FormControlLabel>
-                  <FormControlLabelText className="text-typography-500 font-semibold">
-                    Job Title
-                  </FormControlLabelText>
-                </FormControlLabel>
-                <Input className="h-12" size="lg">
-                  <InputField
-                    value={experience.jobTitle || ""}
-                    onChangeText={(text) =>
-                      handleExperienceChange(index, "jobTitle", text)
-                    }
-                    placeholder="e.g., Software Engineer"
-                  />
-                </Input>
-              </FormControl>
-
-              <FormControl className="mb-2">
-                <FormControlLabel>
-                  <FormControlLabelText className="text-typography-500 font-semibold">
-                    Company
-                  </FormControlLabelText>
-                </FormControlLabel>
-                <Input className="h-12" size="lg">
-                  <InputField
-                    value={experience.company || ""}
-                    onChangeText={(text) =>
-                      handleExperienceChange(index, "company", text)
-                    }
-                    placeholder="Enter company name"
-                  />
-                </Input>
-              </FormControl>
-
-              <HStack className="justify-between mb-2">
-                <FormControl className="flex-1 mr-2">
-                  <FormControlLabel>
-                    <FormControlLabelText className="text-typography-500 font-semibold">
-                      Start Date
-                    </FormControlLabelText>
-                  </FormControlLabel>
-                  <Input className="h-12" size="lg">
-                    <InputField
-                      value={experience.startDate || ""}
-                      onChangeText={(text) =>
-                        handleExperienceChange(index, "startDate", text)
-                      }
-                      placeholder="MM/YYYY"
-                    />
-                  </Input>
-                </FormControl>
-
-                <FormControl className="flex-1 ml-2">
-                  <FormControlLabel>
-                    <FormControlLabelText className="text-typography-500 font-semibold">
-                      End Date
-                    </FormControlLabelText>
-                  </FormControlLabel>
-                  <Input className="h-12" size="lg">
-                    <InputField
-                      value={experience.endDate || ""}
-                      onChangeText={(text) =>
-                        handleExperienceChange(index, "endDate", text)
-                      }
-                      placeholder="MM/YYYY or Present"
-                    />
-                  </Input>
-                </FormControl>
-              </HStack>
-
-              <FormControl className="mb-1">
-                <FormControlLabel>
-                  <FormControlLabelText className="text-typography-500 font-semibold">
-                    Job Responsibilities (one per line)
-                  </FormControlLabelText>
-                </FormControlLabel>
-                <Textarea size="lg">
-                  <TextareaInput
-                    value={experience.details?.join("\n") || ""}
-                    onChangeText={(text) =>
-                      handleExperienceChange(index, "details", text)
-                    }
-                    placeholder={`• Developed and maintained web applications\n• Collaborated with cross-functional teams\n• Improved system performance by 30%`}
-                    multiline={true}
-                    style={{
-                      textAlignVertical: "top",
-                      minHeight: 100,
-                      maxHeight: 200,
-                    }}
-                  />
-                </Textarea>
-              </FormControl>
-            </Box>
-          ))}
-        </VStack>
-        <Button
-          action="secondary"
-          onPress={addExperienceEntry}
-          className="mb-4 flex-1 rounded-lg h-12 border border-white/30 bg-background-400/30"
-        >
-          <ButtonText>Add Experience</ButtonText>
-        </Button>
+        <DynamicListForm
+          items={experience}
+          onItemsChange={handleExperienceChange}
+          createEmptyItem={() => ({
+            ...createEmptyExperience(),
+            id: Crypto.randomUUID(),
+          })}
+          renderItem={renderExperience}
+          addButtonText="Add Experience"
+          minItems={0}
+          maxItems={10}
+        />
       </KeyboardAwareScrollView>
 
       <VStack className="mb-6">

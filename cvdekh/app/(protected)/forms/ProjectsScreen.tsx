@@ -1,10 +1,13 @@
+import * as Crypto from "expo-crypto";
 import { useRouter } from "expo-router";
 import { useCallback } from "react";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { DateRangeFields } from "@/components/DataRangeField";
 import { DynamicListForm } from "@/components/DynamicListForm";
 import { FormField } from "@/components/FormField";
+import { Box } from "@/components/ui/box";
 import { Button, ButtonText } from "@/components/ui/button";
+import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
 import { useAutoSave } from "@/hooks/useAutoSave";
 import { useDynamicList } from "@/hooks/useDynamicList";
@@ -17,7 +20,8 @@ export default function ProjectsScreen() {
   const updateFormData = useResumeStore((state) => state.updateFormData);
 
   const createEmptyProject = useCallback(
-    (): Omit<ProjectEntry, "id"> => ({
+    (): ProjectEntry => ({
+      id: Crypto.randomUUID(),
       title: "",
       techStack: [],
       details: [],
@@ -27,15 +31,18 @@ export default function ProjectsScreen() {
     []
   );
 
-  const {
-    items: projects,
-    updateItem,
-    setItems,
-  } = useDynamicList(formData.projects || [], createEmptyProject);
+  const { items: projects, setItems } = useDynamicList(
+    formData.projects || [],
+    createEmptyProject
+  );
 
-  const { save } = useAutoSave((projects: ProjectEntry[]) => {
-    updateFormData("projects", projects);
-  });
+  const { save, isSaving } = useAutoSave(
+    (projects: ProjectEntry[]) => {
+      updateFormData("projects", projects);
+    },
+    1000,
+    true
+  );
 
   const handleProjectsChange = useCallback(
     (newProjects: ProjectEntry[]) => {
@@ -48,7 +55,7 @@ export default function ProjectsScreen() {
   const renderProject = useCallback(
     (
       project: ProjectEntry,
-      index: number,
+      _index: number,
       onUpdate: (updates: Partial<ProjectEntry>) => void
     ) => (
       <VStack key={project.id}>
@@ -100,7 +107,7 @@ export default function ProjectsScreen() {
   );
 
   return (
-    <VStack className="pb-4 pt-2 px-5 flex-1 bg-background-500 justify-between">
+    <VStack className="pt-2 px-5 flex-1 bg-background-500 justify-between">
       <KeyboardAwareScrollView
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
@@ -119,6 +126,13 @@ export default function ProjectsScreen() {
       </KeyboardAwareScrollView>
 
       <VStack className="mb-6">
+        <Box className="items-center p-0">
+          {isSaving ? (
+            <Text className="text-blue-500">Saving...</Text>
+          ) : (
+            <Text className="text-green-500">Saved</Text>
+          )}
+        </Box>
         <Button
           size="xl"
           onPress={() => router.back()}

@@ -190,8 +190,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       set({ isLoading: true });
       const provider = get().session?.user.app_metadata.provider;
       if (provider === "google") {
-        await GoogleSignin.revokeAccess();
-        await GoogleSignin.signOut();
+        if (GoogleSignin.hasPreviousSignIn()) {
+          await GoogleSignin.revokeAccess();
+          await GoogleSignin.signOut();
+        }
       }
       const { error } = await supabase.auth.signOut();
       if (error) {

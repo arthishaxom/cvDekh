@@ -80,7 +80,7 @@ const getParseResumeStatus = asyncHandler(
           200,
           {
             status: "completed",
-            data: returnValue,
+            resume: returnValue,
             progress: typeof progress === "number" ? progress : 100,
           },
           "Resume parsing completed"

@@ -13,10 +13,11 @@ const initialFormData: ResumeFormData = {
   education: [],
   projects: [],
   experience: [],
+  certificates: [],
 };
 
 export const useResumeStore = create<ResumeStoreState>()(
-  immer((set, get) => ({
+  immer((set, _get) => ({
     // State only
     formData: initialFormData,
     originalData: null,
@@ -70,56 +71,16 @@ export const useResumeStore = create<ResumeStoreState>()(
       });
     },
 
-    addListItem: (section, item) => {
-      set((state) => {
-        const list = state.formData[section] as any[] | undefined;
-        if (list) {
-          list.push({ ...item, id: item.id || Crypto.randomUUID() });
-        } else {
-          state.formData[section] = [
-            { ...item, id: item.id || Crypto.randomUUID() },
-          ];
-        }
-        state.hasChanges = true;
-      });
-    },
-
-    updateListItem: (section, itemId, updatedItem) => {
-      set((state) => {
-        const list = state.formData[section] as any[] | undefined;
-        if (list) {
-          const itemIndex = list.findIndex((item) => item.id === itemId);
-          if (itemIndex !== -1) {
-            Object.assign(list[itemIndex], updatedItem);
-            state.hasChanges = true;
-          }
-        }
-      });
-    },
-
-    removeListItem: (section, itemId) => {
-      set((state) => {
-        const list = state.formData[section] as any[] | undefined;
-        if (list) {
-          const itemIndex = list.findIndex((item) => item.id === itemId);
-          if (itemIndex !== -1) {
-            list.splice(itemIndex, 1);
-            state.hasChanges = true;
-          }
-        }
-      });
-    },
-
     // Resume collection operations
     setAllResumes: (resumes) => {
       set((state) => {
         state.allResumes = resumes.map((resumeEntry) => ({
           ...initialFormData,
-          ...resumeEntry.data,
+          ...resumeEntry,
           id: resumeEntry.id,
-          education: ensureListItemsHaveIds(resumeEntry.data.education),
-          projects: ensureListItemsHaveIds(resumeEntry.data.projects),
-          experience: ensureListItemsHaveIds(resumeEntry.data.experience),
+          education: ensureListItemsHaveIds(resumeEntry.education),
+          projects: ensureListItemsHaveIds(resumeEntry.projects),
+          experience: ensureListItemsHaveIds(resumeEntry.experience),
           job_desc: resumeEntry.job_desc,
         }));
       });

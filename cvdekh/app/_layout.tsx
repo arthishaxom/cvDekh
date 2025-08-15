@@ -143,11 +143,7 @@ export default function RootLayout() {
 
       // console.log(`Linked to app with data: ${JSON.stringify(queryParams)}`);
 
-      if (
-        queryParams &&
-        queryParams.access_token &&
-        queryParams.refresh_token
-      ) {
+      if (queryParams?.access_token && queryParams.refresh_token) {
         handleDeepLink({
           access_token: queryParams.access_token as string,
           refresh_token: queryParams.refresh_token as string,

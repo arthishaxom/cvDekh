@@ -12,6 +12,7 @@ import {
 import { Text } from "@/components/ui/text";
 import { Textarea, TextareaInput } from "@/components/ui/textarea";
 import { VStack } from "@/components/ui/vstack";
+import { useAutoSave } from "@/hooks/useAutoSave";
 import { useResumeStore } from "../../../store/resume/resumeStore";
 
 export default function ProfileSummaryScreen() {
@@ -22,18 +23,18 @@ export default function ProfileSummaryScreen() {
   const [isSaving, setIsSaving] = useState(false);
   const [localSummary, setLocalSummary] = useState(formData.summary || "");
 
-  const debouncedUpdateStore = useDebouncedCallback((value: string) => {
-    updateFormData("summary", value);
+  const { save } = useAutoSave((summary: string) => {
+    updateFormData("summary", summary);
     setIsSaving(false);
-  }, 1000); // 1-second debounce
+  });
 
-  const handleInputChange = useCallback(
-    (text: string) => {
-      setLocalSummary(text);
+  const handleSummaryChange = useCallback(
+    (summary: string) => {
+      setLocalSummary(summary);
       setIsSaving(true);
-      debouncedUpdateStore(text);
+      save(summary);
     },
-    [debouncedUpdateStore]
+    [save]
   );
   const [inputHeight, setInputHeight] = useState(64);
 
@@ -66,7 +67,7 @@ export default function ProfileSummaryScreen() {
                     Math.max(64, e.nativeEvent.contentSize.height)
                   );
                 }}
-                onChangeText={handleInputChange}
+                onChangeText={handleSummaryChange}
                 placeholder="Write a concise summary of your professional experience and skills."
                 style={{ textAlignVertical: "top" }}
               />

@@ -51,7 +51,7 @@ export default function Tab() {
       router.replace("/");
       return;
     }
-    console.log(session);
+    // console.log(session);
 
     fetchAllResumes();
   }, [session, fetchAllResumes]);

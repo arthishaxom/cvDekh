@@ -108,6 +108,20 @@ function formatSkills(skills: ResumeData["skills"]): string {
   )`;
 }
 
+function formatCertificates(certificates: ResumeData["certificates"]): string {
+  if (!certificates || certificates.length === 0) return "()";
+
+  const formattedCertificates = certificates.map((cert) => {
+    return `(
+      name: ${escapeTypstString(cert.name)},
+      company: ${escapeTypstString(cert.company)},
+      issueDate: ${escapeTypstString(cert.issueDate)},
+    )`;
+  });
+
+  return `(${formattedCertificates.join(", ")},)`;
+}
+
 // Generate Typst data file content
 function generateTypstData(resumeData: ResumeData): string {
   const typstContent = `#import "${TEMPLATE_PATH}": resume_template
@@ -118,6 +132,7 @@ function generateTypstData(resumeData: ResumeData): string {
   summary: ${escapeTypstString(resumeData.summary)},
   education: ${formatEducation(resumeData.education)},
   experience: ${formatExperience(resumeData.experience)},
+  certificates: ${formatCertificates(resumeData.certificates)},
   projects: ${formatProjects(resumeData.projects)},
   skills: ${formatSkills(resumeData.skills)}
 )
