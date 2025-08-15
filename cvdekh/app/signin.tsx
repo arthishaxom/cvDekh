@@ -1,16 +1,15 @@
-import React, { useState, useEffect } from "react";
-import { router, useNavigation } from "expo-router";
-import { Box } from "@/components/ui/box";
-import { Text } from "@/components/ui/text";
-import { Input, InputField, InputSlot } from "@/components/ui/input";
-import { Eye, EyeOff, Lock, Mail, User } from "lucide-react-native";
-import { Button, ButtonText } from "@/components/ui/button";
 import AntDesign from "@expo/vector-icons/AntDesign";
-import { supabase } from "@/lib/api"; // Added for Supabase client
-import { useAuthStore } from "@/store/auth";
-import { TouchableOpacity, AppState, Pressable } from "react-native";
-import { VStack } from "@/components/ui/vstack";
+import { router, useNavigation } from "expo-router";
+import { Eye, EyeOff, Lock, Mail, User } from "lucide-react-native";
+import React, { useEffect, useState } from "react";
+import { AppState, Pressable, TouchableOpacity } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
+import { Box } from "@/components/ui/box";
+import { Button, ButtonText } from "@/components/ui/button";
+import { Heading } from "@/components/ui/heading";
+import { CloseIcon, Icon } from "@/components/ui/icon";
+import { Input, InputField, InputSlot } from "@/components/ui/input";
 import {
   Modal,
   ModalBackdrop,
@@ -20,9 +19,10 @@ import {
   ModalFooter,
   ModalHeader,
 } from "@/components/ui/modal";
-import { CloseIcon, Icon } from "@/components/ui/icon";
-import { Heading } from "@/components/ui/heading";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { Text } from "@/components/ui/text";
+import { VStack } from "@/components/ui/vstack";
+import { supabase } from "@/config/supabase.config"; // Added for Supabase client
+import { useAuthStore } from "@/store/auth";
 
 AppState.addEventListener("change", (state) => {
   if (state === "active") {
@@ -231,8 +231,8 @@ export default function Signin() {
                 ? "Creating Account..."
                 : "Signing In..."
               : isSignUp
-                ? "Create Account"
-                : "Login"}
+              ? "Create Account"
+              : "Login"}
           </Text>
         </Button>
 
@@ -305,8 +305,9 @@ export default function Signin() {
             <ModalFooter>
               <VStack className="w-full">
                 <Button
-                  className={`w-full h-12 rounded-lg ${isLoading ? "opacity-50" : ""
-                    } ${isLoading ? "bg-background-500" : ""}`}
+                  className={`w-full h-12 rounded-lg ${
+                    isLoading ? "opacity-50" : ""
+                  } ${isLoading ? "bg-background-500" : ""}`}
                   onPress={handleResetPassword} // Updated onPress handler
                   disabled={isLoading}
                 >

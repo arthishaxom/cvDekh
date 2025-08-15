@@ -1,4 +1,5 @@
 import z from "zod";
+import { type CertificateEntry, CertificateSchema } from "./certificate.model";
 import { type EducationEntry, EducationSchema } from "./education.model";
 import { type ExperienceEntry, ExperienceSchema } from "./experience.model";
 import { type ProjectEntry, ProjectSchema } from "./project.model";
@@ -18,6 +19,7 @@ export interface ResumeData {
     frameworks: string[];
     others: string[];
   };
+  certificates: CertificateEntry[];
   education: EducationEntry[];
   projects: ProjectEntry[];
   experience: ExperienceEntry[];
@@ -37,6 +39,7 @@ export const ResumeDataSchema = z.object({
     frameworks: z.array(z.string()),
     others: z.array(z.string()),
   }),
+  certicates: z.array(CertificateSchema),
   education: z.array(EducationSchema),
   projects: z.array(ProjectSchema),
   experience: z.array(ExperienceSchema),

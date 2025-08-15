@@ -1,7 +1,7 @@
 import type { Job } from "bullmq";
 import type { Response } from "express";
 import { logger } from "..";
-import { resumeQueue } from "../config/bullmq-config";
+import { pdfQueue, resumeQueue } from "../config/bullmq.config";
 import type { JobDesc } from "../models/job.model";
 import type { ResumeData } from "../models/resume.model";
 import { aiService } from "../services/ai.service";
@@ -10,7 +10,6 @@ import type { AuthenticatedRequest } from "../types/auth.type";
 import { ApiError } from "../utils/apiError";
 import { ApiResponse } from "../utils/apiResponse";
 import { asyncHandler } from "../utils/asyncHandler";
-import { generateResumePdfUtil } from "../utils/pdfGenerator";
 
 const parseResume = asyncHandler(
   async (req: AuthenticatedRequest, res: Response) => {
@@ -106,6 +105,7 @@ const getParseResumeStatus = asyncHandler(
   }
 );
 
+// ✅ UPDATED: Use PDF worker strategy instead of direct generation
 const generateResumePdf = asyncHandler(
   async (req: AuthenticatedRequest, res: Response) => {
     if (!req.user || !req.supabaseClient) {
@@ -115,118 +115,106 @@ const generateResumePdf = asyncHandler(
       );
     }
 
-    let resumeData: ResumeData | null;
-    const { resumeId } = req.body; // Only expect resumeId or nothing for original
+    const { resumeId } = req.params;
     const userId = req.user.id;
 
-    if (resumeId) {
-      resumeData = await resumeService.getResumeById(
-        req.supabaseClient,
-        resumeId,
-        userId
-      );
-    } else {
-      resumeData = await resumeService.getOriginalResume(
-        req.supabaseClient,
-        userId
-      );
-    }
+    // ✅ Validate resume exists before adding to queue
+    const resumeData: ResumeData | null = resumeId
+      ? await resumeService.getResumeById(req.supabaseClient, resumeId, userId)
+      : await resumeService.getOriginalResume(req.supabaseClient, userId);
 
     if (!resumeData) {
       throw new ApiError(404, "No resume data found");
     }
 
-    await resumeService.cleanupUserFiles(
-      req.supabaseClient,
-      userId,
-      "generated-resumes"
-    );
-
-    // Generate PDF (assuming generateResumePdf returns a stream that can be converted to buffer)
-    const pdfBuffer = await new Promise<Buffer>((resolve, reject) => {
-      try {
-        // generateResumePdf returns a PDFKit document from pdfmake
-        const pdfDoc = generateResumePdfUtil(resumeData);
-        const chunks: Buffer[] = [];
-
-        // Listen for data chunks
-        pdfDoc.on("data", (chunk: Buffer) => {
-          chunks.push(chunk);
-        });
-
-        // When the document is finished
-        pdfDoc.on("end", () => {
-          const finalBuffer = Buffer.concat(chunks);
-          resolve(finalBuffer);
-        });
-
-        // Handle errors
-        pdfDoc.on("error", (error: Error) => {
-          logger.error("PDF generation error:", error);
-          reject(new ApiError(500, "PDF generation error", [error.message]));
-        });
-
-        // CRITICAL: End the document to start the generation process
-        pdfDoc.end();
-      } catch (error: unknown) {
-        logger.error("Error setting up PDF generation:", error);
-        if (error instanceof Error) {
-          reject(
-            new ApiError(500, "Error setting up PDF generation", [
-              error.message,
-            ])
-          );
-        } else {
-          reject(
-            new ApiError(500, "Error setting up PDF generation", [
-              "Unknown error",
-            ])
-          );
-        }
-      }
-    });
-
-    const safeName = resumeData.name
-      ? resumeData.name.replace(/[^a-zA-Z0-9]/g, "")
-      : "resume";
-    // Use user-specific folder for better organization and security
-    const fileName = `${userId}/${safeName}_${Date.now()}.pdf`;
-    const bucketName = "generated-resumes";
-
-    // Upload to Supabase Storage
-    const { error: uploadError } = await req.supabaseClient.storage
-      .from(bucketName)
-      .upload(fileName, pdfBuffer, {
-        contentType: "application/pdf",
-        // upsert: true, // Overwrite if file with same name exists
+    // ✅ Add PDF generation job to queue instead of direct processing
+    let job: Job;
+    try {
+      job = await pdfQueue.add("generate-pdf", {
+        userId: userId,
+        resumeId: resumeId || null, // null for original resume
+        // Pass the JWT token for the worker to create its own Supabase client
+        userToken:
+          typeof req.headers.authorization === "string"
+            ? req.headers.authorization.split(" ")[1]
+            : undefined,
       });
 
-    if (uploadError) {
-      logger.error("Supabase storage upload error:", uploadError);
-      throw new ApiError(500, "Error uploading PDF to storage", [
-        uploadError.message,
-      ]);
+      logger.info(
+        `PDF generation job ${job.id} added to queue for user ${userId}`
+      );
+    } catch (error) {
+      logger.error("Error adding PDF generation job to queue:", error);
+      throw new ApiError(
+        500,
+        "Internal server error while adding PDF generation job to queue",
+        [error instanceof Error ? error.message : "Unknown error"]
+      );
     }
 
-    // Get public URL (or signed URL for more security)
-    const { data: urlData } = req.supabaseClient.storage
-      .from(bucketName)
-      .getPublicUrl(fileName);
-
-    if (!urlData || !urlData.publicUrl) {
-      logger.error("Error getting public URL from Supabase storage");
-      throw new ApiError(500, "Error retrieving PDF URL");
-    }
-
+    // ✅ Return job ID immediately - don't wait for processing
     res
-      .status(200)
+      .status(202)
       .json(
+        new ApiResponse(202, { jobId: job.id }, "PDF generation job accepted")
+      );
+  }
+);
+
+// ✅ NEW: Get PDF generation status endpoint
+const getPdfGenerationStatus = asyncHandler(
+  async (req: AuthenticatedRequest, res: Response) => {
+    const { jobId } = req.params;
+
+    if (!req.user) {
+      throw new ApiError(401, "Authentication required");
+    }
+
+    const job = await pdfQueue.getJob(jobId);
+
+    if (!job) {
+      throw new ApiError(404, "PDF generation job not found");
+    }
+
+    // ✅ Security check: ensure user can only access their own jobs
+    if (job.data.userId !== req.user.id) {
+      throw new ApiError(403, "Access denied to this job");
+    }
+
+    const state = await job.getState();
+    const progress = job.progress;
+    const returnValue = job.returnvalue;
+    const failedReason = job.failedReason;
+
+    if (state === "completed") {
+      res.json(
         new ApiResponse(
           200,
-          { pdfUrl: urlData.publicUrl },
-          "Resume PDF generated"
+          {
+            status: "completed",
+            data: returnValue,
+            progress: typeof progress === "number" ? progress : 100,
+          },
+          "PDF generation completed"
         )
       );
+    } else if (state === "failed") {
+      logger.error(`PDF generation job ${jobId} failed:`, failedReason);
+      throw new ApiError(500, "PDF generation failed", [
+        typeof failedReason === "string" ? failedReason : "Unknown error",
+      ]);
+    } else {
+      res.json(
+        new ApiResponse(
+          200,
+          {
+            status: state,
+            progress: typeof progress === "number" ? progress : 0,
+          },
+          "PDF generation in progress"
+        )
+      );
+    }
   }
 );
 
@@ -406,6 +394,7 @@ export {
   parseResume,
   getParseResumeStatus,
   generateResumePdf,
+  getPdfGenerationStatus, // ✅ NEW: Export the new status endpoint
   getResume,
   improveResume,
   saveResume,

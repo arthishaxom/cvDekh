@@ -1,23 +1,28 @@
 import "dotenv/config";
 import { Logtail } from "@logtail/node";
-import { LogtailTransport } from "@logtail/winston";
 import winston from "winston";
 import app from "./app";
-import { closeResumeQueue } from "./config/bullmq-config";
-import { closeRedis, initializeRedis } from "./config/redisClient";
+import { closeResumeQueue } from "./config/bullmq.config";
+import { closeRedis, initializeRedis } from "./config/redis.config";
 import { closeResumeWorker } from "./workers/parser.worker";
+import "./workers/pdf.worker";
 
-const { combine, timestamp, errors, json } = winston.format;
+const { combine, timestamp, errors, json, prettyPrint } = winston.format;
 
 // biome-ignore lint/style/noNonNullAssertion: ENV TOKEN
 const logtail = new Logtail(process.env.BS_TOKEN!, {
   endpoint: process.env.BS_ENDPOINT,
 });
 
+// export const logger = winston.createLogger({
+//   level: "info",
+//   format: combine(timestamp(), errors({ stack: true }), json()),
+//   transports: [new LogtailTransport(logtail)],
+// });
 export const logger = winston.createLogger({
   level: "info",
-  format: combine(timestamp(), errors({ stack: true }), json()),
-  transports: [new LogtailTransport(logtail)],
+  format: combine(timestamp(), errors({ stack: true }), prettyPrint()),
+  transports: [new winston.transports.Console()],
 });
 
 const port = process.env.PORT || 8000;

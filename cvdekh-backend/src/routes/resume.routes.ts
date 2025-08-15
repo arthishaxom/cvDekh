@@ -3,6 +3,7 @@ import {
   deleteResume,
   generateResumePdf,
   getParseResumeStatus,
+  getPdfGenerationStatus,
   getResume,
   getResumes,
   improveResume,
@@ -26,9 +27,12 @@ router
 router.route("/parse/:jobId").get(getParseResumeStatus);
 
 //! Endpoint to generate PDF of resume
-router.route("/generate").post(express.json(), generateResumePdf);
+router.route("/pdf{/:resumeId}").get(generateResumePdf);
 
-//! Endpoint to get a resume
+//! Endpoint to check pdf status
+router.route("/pdf/status/:jobId").get(getPdfGenerationStatus);
+
+//! Endpoint to get original resume
 router.route("/original").get(getResume);
 
 //! Endpoint to improve a resume

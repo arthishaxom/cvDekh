@@ -1,4 +1,4 @@
-import { Session } from "@supabase/supabase-js";
+import type { Session } from "@supabase/supabase-js";
 
 export interface ContactInfo {
   linkedin?: string;
@@ -64,23 +64,24 @@ export interface ResumeFormData {
   // Add any other sections you might have
 }
 
+// Simplified store state - only pure state management
 export interface ResumeStoreState {
+  // State
   formData: ResumeFormData;
   originalData: ResumeFormData | null;
+  job_desc: JobDetails | null;
   allResumes: ResumeFormData[]; // To hold all resumes fetched from the backend
-  isLoading: boolean; // For initial data fetch
-  isSaving: boolean; // For auto-save indicator
-  isInitialDataFetched: boolean; // For initial data fetch
   hasChanges: boolean; // For auto-save indicator
+  isInitialDataFetched: boolean; // For initial data fetch
   error: string | null;
-  progress: number;
 
-  // Actions
+  // Pure state actions only (no async operations)
   setData: (data: ResumeFormData) => void;
-  fetchAllResume: (session: Session) => Promise<void>; // Fetches initial data
+  setOriginalData: (data: ResumeFormData) => void;
+  setJobDesc: (data: JobDetails) => void;
   updateFormData: <K extends keyof ResumeFormData>(
     section: K,
-    data: Partial<ResumeFormData[K]>,
+    data: Partial<ResumeFormData[K]>
   ) => void;
   addListItem: <K extends "education" | "projects" | "experience">(
     section: K,
@@ -88,7 +89,7 @@ export interface ResumeStoreState {
       ? EducationEntry
       : K extends "projects"
       ? ProjectEntry
-      : ExperienceEntry,
+      : ExperienceEntry
   ) => void;
   updateListItem: <K extends "education" | "projects" | "experience">(
     section: K,
@@ -99,31 +100,94 @@ export interface ResumeStoreState {
         : K extends "projects"
         ? ProjectEntry
         : ExperienceEntry
-    >,
+    >
   ) => void;
   removeListItem: <K extends "education" | "projects" | "experience">(
     section: K,
-    itemId: string,
+    itemId: string
   ) => void;
-  fetchResumeData: (session: Session) => Promise<void>; // Fetches initial data
-  saveResume: (session: Session, resumeId: string | null) => Promise<void>; // Submits all data
-  deleteResume: (
-    resumeId: string,
-    session: Session,
-  ) => Promise<{ success: boolean }>; // Deletes the resume
-  improveResumeWithJobDescription: (
-    jobDescription: string,
-    session: Session,
-    onComplete: () => void,
-  ) => Promise<void>;
-  downloadGeneratedResume: (
-    resumeId: string | null, // Pass null to download the original resume
-    session: Session,
-  ) => Promise<void>;
-  parseResumeFromPDF: (
-    selectedFile: any,
-    session: Session,
-    onComplete: () => void,
-  ) => Promise<{ success: boolean }>;
+
+  // Resume collection operations
+  setAllResumes: (resumes: any[]) => void;
+  addToAllResumes: (resumeData: ResumeFormData) => void;
+  removeFromAllResumes: (resumeId: string) => void;
+
+  // Reset
   resetStore: () => void;
+}
+
+// Hook return types for the new architecture
+export interface UseResumeOperationsReturn {
+  isLoading: boolean;
+  progress: number;
+  saveResume: (
+    session: Session,
+    resumeId: string | null,
+    formData: ResumeFormData
+  ) => Promise<void>;
+  improveResume: (
+    session: Session,
+    jobDescription: string,
+    onComplete?: () => void
+  ) => Promise<void>;
+  deleteResume: (
+    session: Session,
+    resumeId: string
+  ) => Promise<{ success: boolean }>;
+  downloadResume: (session: Session, resumeId?: string) => Promise<void>;
+}
+
+export interface UseResumeParserReturn {
+  isLoading: boolean;
+  progress: number;
+  parseResume: (
+    session: Session,
+    selectedFile: any,
+    onComplete?: () => void
+  ) => Promise<{ success: boolean }>;
+}
+
+export interface UseResumeDataReturn {
+  isLoading: boolean;
+  error: string | null;
+  fetchOriginalResume: () => Promise<void>;
+  fetchAllResumes: () => Promise<void>;
+  refetch: () => void;
+}
+
+// API layer types
+export interface SaveResumePayload {
+  resumeData: ResumeFormData;
+  resumeId: string | null;
+  isOriginal: boolean;
+}
+
+export interface ApiResponse<T = any> {
+  success: boolean;
+  data?: T;
+  message?: string;
+  error?: string;
+}
+
+export interface ParseResumeResponse {
+  jobId: string;
+  message: string;
+}
+
+export interface JobStatusResponse {
+  status: "waiting" | "active" | "completed" | "failed" | "delayed";
+  data?: ResumeFormData;
+  progress?: number;
+  error?: string;
+}
+
+export interface ImproveResumeResponse {
+  id: string;
+  data: ResumeFormData;
+  job_desc: JobDetails;
+}
+
+export interface GeneratePDFResponse {
+  pdfUrl: string;
+  message: string;
 }

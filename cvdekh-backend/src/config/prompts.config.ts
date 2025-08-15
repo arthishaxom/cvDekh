@@ -9,10 +9,11 @@ Specifics:
 2. For missing field of study in the education section, default to "Computer Science and Engineering".
 3. Categorize skills into 3 buckets: languages, frameworks, and others. Example - "React", "Next.js", "Node.js", "Express.js" should be in the "frameworks" bucket. Example - "JavaScript", "TypeScript", "Python" should be in the "languages" bucket. Example - "Git", "Docker", "Kubernetes" should be in the "others" bucket. Try to extract languages from the "frameworks" mentioned in the text, for example if 'React.js'/'React,'Express' are mentioned then put 'Javascript', 'Typescript' in "languages" bucket.
 4. For any missing information, return 'null' in its place.
-5. Make the contact links as short form. Example - "Example - "URL_ADDRESS.linkedin.com/in/yourname" should be converted to "linkedin.com/in/yourname".
-6. Write all dates in short form. Example - "01/01/2021" should be converted to "Jan 2021" OR "Janurary 2022" should be written as "Jan 2022".
+5. Make the contact links as short form. Example - "URL_ADDRESS.linkedin.com/in/yourname" should be converted to "linkedin.com/in/yourname".
+6. Extract Certification's name, issue company, and issue date.
 7. Rewrite the resume in a professional manner. Keep it short within 2-5 sentences.
-8. In case of experience section, if details or company are not found return the whole section as 'null'.`,
+8. In case of experience section, if details or company are not found return the whole section as 'null'.
+9. Write all dates in short form. Example - "01/01/2021" should be converted to "Jan 2021" OR "Janurary 2022" should be written as "Jan 2022".`,
 
   "resume-improver": `
 You are a professional resume editor. 

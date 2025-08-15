@@ -1,10 +1,10 @@
-import { create } from "zustand";
-import { supabase } from "@/lib/api";
 import {
   GoogleSignin,
   statusCodes,
 } from "@react-native-google-signin/google-signin";
-import { Session } from "@supabase/supabase-js";
+import type { Session } from "@supabase/supabase-js";
+import { create } from "zustand";
+import { supabase } from "@/config/supabase.config";
 import { useResumeStore } from "./resume/resumeStore";
 
 // Configure Google Sign-In globally when this module is loaded
@@ -37,7 +37,7 @@ type AuthState = {
   signUpWithEmail: (
     email: string,
     password: string,
-    displayName: string,
+    displayName: string
   ) => Promise<boolean>;
   signInWithGoogle: () => Promise<boolean>;
   signOut: () => Promise<void>;
@@ -97,7 +97,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   signUpWithEmail: async (
     email: string,
     password: string,
-    displayName: string,
+    displayName: string
   ) => {
     set({ isLoading: true, error: null });
 

@@ -1,18 +1,18 @@
-import React, { useCallback, useState } from "react";
 import { useRouter } from "expo-router";
+import { useCallback, useState } from "react";
+import { ScrollView } from "react-native";
+import { useDebouncedCallback } from "use-debounce";
+import { Box } from "@/components/ui/box";
+import { Button, ButtonText } from "@/components/ui/button";
 import {
   FormControl,
   FormControlLabel,
   FormControlLabelText,
 } from "@/components/ui/form-control";
-import { VStack } from "@/components/ui/vstack";
-import { Box } from "@/components/ui/box";
 import { Text } from "@/components/ui/text";
-import { Button, ButtonText } from "@/components/ui/button";
-import { useDebouncedCallback } from "use-debounce";
-import { useResumeStore } from "../../../store/resume/resumeStore";
 import { Textarea, TextareaInput } from "@/components/ui/textarea";
-import { ScrollView } from "react-native";
+import { VStack } from "@/components/ui/vstack";
+import { useResumeStore } from "../../../store/resume/resumeStore";
 
 export default function ProfileSummaryScreen() {
   const router = useRouter();
@@ -33,13 +33,17 @@ export default function ProfileSummaryScreen() {
       setIsSaving(true);
       debouncedUpdateStore(text);
     },
-    [debouncedUpdateStore],
+    [debouncedUpdateStore]
   );
   const [inputHeight, setInputHeight] = useState(64);
 
   return (
     <VStack className="pb-4 pt-2 px-5 flex-1 bg-background-500 justify-between">
-      <ScrollView className="flex-1" showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+      <ScrollView
+        className="flex-1"
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
         <VStack>
           <FormControl className="mb-4">
             <FormControlLabel>
@@ -58,7 +62,9 @@ export default function ProfileSummaryScreen() {
                 multiline
                 value={localSummary}
                 onContentSizeChange={(e) => {
-                  setInputHeight(Math.max(64, e.nativeEvent.contentSize.height));
+                  setInputHeight(
+                    Math.max(64, e.nativeEvent.contentSize.height)
+                  );
                 }}
                 onChangeText={handleInputChange}
                 placeholder="Write a concise summary of your professional experience and skills."

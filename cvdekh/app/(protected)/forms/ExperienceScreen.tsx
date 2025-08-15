@@ -1,24 +1,24 @@
-import React, { useState, useCallback } from "react";
-import { useResumeStore } from "../../../store/resume/resumeStore";
+import * as Crypto from "expo-crypto";
 import { useRouter } from "expo-router";
+import { produce } from "immer";
+import { Trash2 } from "lucide-react-native";
+import { useCallback, useState } from "react";
+import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
+import { useDebouncedCallback } from "use-debounce";
+import { Box } from "@/components/ui/box";
+import { Button, ButtonText } from "@/components/ui/button";
 import {
   FormControl,
   FormControlLabel,
   FormControlLabelText,
 } from "@/components/ui/form-control";
-import { VStack } from "@/components/ui/vstack";
 import { HStack } from "@/components/ui/hstack";
 import { Input, InputField } from "@/components/ui/input";
-import { Textarea, TextareaInput } from "@/components/ui/textarea";
-import { Box } from "@/components/ui/box";
 import { Text } from "@/components/ui/text";
-import { Button, ButtonText } from "@/components/ui/button";
-import { useDebouncedCallback } from "use-debounce";
-import { produce } from "immer";
-import * as Crypto from "expo-crypto";
-import { ExperienceEntry } from "@/store/resume/types";
-import { Trash2 } from "lucide-react-native";
-import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
+import { Textarea, TextareaInput } from "@/components/ui/textarea";
+import { VStack } from "@/components/ui/vstack";
+import type { ExperienceEntry } from "@/store/resume/types";
+import { useResumeStore } from "../../../store/resume/resumeStore";
 // import { Divider } from "@/components/ui/divider";
 
 export default function ExperienceScreen() {
@@ -30,7 +30,7 @@ export default function ExperienceScreen() {
 
   const [isSaving, setIsSaving] = useState(false);
   const [localExperience, setLocalExperience] = useState<ExperienceEntry[]>(
-    formData.experience || [],
+    formData.experience || []
   );
 
   const debouncedUpdateStore = useDebouncedCallback(
@@ -59,7 +59,7 @@ export default function ExperienceScreen() {
           cleanedItem.details?.length
         ) {
           const existingItem = currentExperience.find(
-            (existing) => cleanedItem.id === existing.id,
+            (existing) => cleanedItem.id === existing.id
           );
 
           if (existingItem) {
@@ -72,7 +72,7 @@ export default function ExperienceScreen() {
 
       setIsSaving(false);
     },
-    1000,
+    1000
   );
 
   const handleExperienceChange = useCallback(
@@ -92,7 +92,7 @@ export default function ExperienceScreen() {
       setIsSaving(true);
       debouncedUpdateStore(updatedExperience);
     },
-    [localExperience, debouncedUpdateStore],
+    [localExperience, debouncedUpdateStore]
   );
 
   const addExperienceEntry = () => {
@@ -116,7 +116,7 @@ export default function ExperienceScreen() {
       const storeExperience =
         useResumeStore.getState().formData.experience || [];
       const existsInStore = storeExperience.some(
-        (item) => item.id === itemToRemove.id,
+        (item) => item.id === itemToRemove.id
       );
 
       if (existsInStore) {
@@ -130,7 +130,8 @@ export default function ExperienceScreen() {
 
   return (
     <VStack className="pb-4 pt-2 px-5 flex-1 bg-background-500 justify-between">
-      <KeyboardAwareScrollView showsVerticalScrollIndicator={false}
+      <KeyboardAwareScrollView
+        showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
         bottomOffset={12}
         extraKeyboardSpace={-100}
@@ -251,7 +252,6 @@ export default function ExperienceScreen() {
               </FormControl>
             </Box>
           ))}
-
         </VStack>
         <Button
           action="secondary"
@@ -261,7 +261,6 @@ export default function ExperienceScreen() {
           <ButtonText>Add Experience</ButtonText>
         </Button>
       </KeyboardAwareScrollView>
-
 
       <VStack className="mb-6">
         <Box className="items-center p-0">

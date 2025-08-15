@@ -1,272 +1,237 @@
-import pdfPrinter from "pdfmake";
-import type {
-  Content,
-  ContentCanvas,
-  TDocumentDefinitions,
-} from "pdfmake/interfaces";
+import { exec } from "node:child_process";
+import { promises as fs } from "node:fs";
+import path from "node:path";
+import { promisify } from "node:util";
 import type { ResumeData } from "../models/resume.model";
 
-var fonts = {
-  Roboto: {
-    normal: "fonts/cmun-Regular.ttf",
-    bold: "fonts/cmun-Medium.ttf",
-    italics: "fonts/cmun-Italic.ttf",
-    bolditalics: "fonts/cmun-MediumItalic.ttf",
-  },
-};
+const execAsync = promisify(exec);
 
-var pdfMake = new pdfPrinter(fonts);
+// ✅ FIXED: Use relative path for Typst template import
+const TEMPLATE_PATH = "./resume_template.typ";
+const TEMPLATE_SOURCE_PATH = path.join(
+  __dirname,
+  "../config/resume_template.typ"
+);
+const TEMP_DIR = path.join(__dirname, "../../temp");
 
-export const hr = ({
-  color = "black",
-  lineWidth = 0.5,
-}: {
-  color?: string;
-  lineWidth: number;
-}): ContentCanvas => ({
-  canvas: [
-    {
-      type: "line",
-      x1: 0,
-      y1: 0,
-      x2: 595 - 2 * 40,
-      y2: 0,
-      lineWidth,
-      lineColor: color,
-    },
-  ],
-});
-
-export function generateResumePdfUtil(resumeData: ResumeData) {
-  const content: Content[] = [
-    {
-      text: resumeData.name,
-      style: "header",
-      alignment: "center",
-      fontSize: 20,
-      bold: true,
-      margin: [0, 0, 0, 0],
-    },
-    {
-      stack: (() => {
-        const contacts = [
-          resumeData.contactInfo.phone !== "null"
-            ? resumeData.contactInfo.phone
-            : null,
-          resumeData.contactInfo.gmail !== "null"
-            ? resumeData.contactInfo.gmail
-            : null,
-          resumeData.contactInfo.linkedin !== "null"
-            ? resumeData.contactInfo.linkedin
-            : null,
-          resumeData.contactInfo.github !== "null"
-            ? resumeData.contactInfo.github
-            : null,
-        ].filter(Boolean);
-
-        return [
-          {
-            text: contacts.join(" | "),
-            alignment: "center",
-          },
-        ];
-      })(),
-      margin: [0, 0, 0, 0],
-    },
-    {
-      text: "SUMMARY",
-      style: "sectionHeader",
-    } as Content,
-    hr({ color: "black", lineWidth: 0.5 }),
-    {
-      text: resumeData.summary,
-      margin: [0, 5, 0, 0],
-    } as Content,
-    {
-      text: "EDUCATION",
-      style: "sectionHeader",
-    } as Content,
-    hr({ color: "black", lineWidth: 0.5 }),
-  ];
-
-  // Add education entries
-  const educationEntries: Content[] = resumeData.education.map(
-    (edu) =>
-      ({
-        columns: [
-          {
-            width: "70%",
-            stack: [
-              { text: edu.institution, bold: true },
-              { text: `${edu.field}`, italics: true },
-            ],
-          },
-          {
-            width: "30%",
-            stack: [
-              {
-                text: `${edu.startDate} - ${edu.endDate}`,
-                alignment: "right",
-              },
-              {
-                text: edu.cgpa !== "null" ? `CGPA: ${edu.cgpa}` : "",
-                alignment: "right",
-              },
-            ],
-          },
-        ],
-        margin: [0, 5, 0, 0],
-      } as Content)
-  );
-
-  content.push(...educationEntries);
-
-  // Add experience section if there are experiences
-  if (resumeData.experience.length > 0) {
-    content.push(
-      {
-        text: "EXPERIENCE",
-        style: "sectionHeader",
-      } as Content,
-      hr({ color: "black", lineWidth: 0.5 })
-    );
-
-    const experienceEntries: Content[] = resumeData.experience.map(
-      (exp) =>
-        ({
-          stack: [
-            {
-              columns: [
-                {
-                  width: "70%",
-                  stack: [
-                    { text: exp.jobTitle, bold: true, style: "titleStyle" },
-                    { text: exp.company, italics: true },
-                  ],
-                },
-                {
-                  width: "30%",
-                  text:
-                    exp.startDate &&
-                    exp.endDate &&
-                    exp.startDate !== "null" &&
-                    exp.endDate !== "null"
-                      ? `${exp.startDate} - ${exp.endDate}`
-                      : "",
-                  alignment: "right",
-                },
-              ],
-              margin: [0, 5, 0, 5],
-            },
-            {
-              ul: exp.details,
-              margin: [0, 0, 0, 0],
-            },
-          ],
-        } as Content)
-    );
-
-    content.push(...experienceEntries);
+// Ensure temp directory exists
+async function ensureTempDir() {
+  try {
+    await fs.access(TEMP_DIR);
+  } catch {
+    await fs.mkdir(TEMP_DIR, { recursive: true });
   }
+}
 
-  // Add projects section
-  content.push(
-    {
-      text: "PROJECTS",
-      style: "sectionHeader",
-    } as Content,
-    hr({ color: "black", lineWidth: 0.5 })
-  );
+// Helper function to escape strings for Typst
+function escapeTypstString(str: string): string {
+  if (!str || str === "null") return '""';
+  return `"${str.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`;
+}
 
-  const projectEntries: Content[] = resumeData.projects.map(
-    (project) =>
-      ({
-        stack: [
-          {
-            columns: [
-              {
-                width: "70%",
-                text: [
-                  { text: project.title, bold: true },
-                  {
-                    text: " | ",
-                  },
-                  {
-                    text: project.techStack.join(", "),
-                    italics: true,
-                  },
-                ],
-                style: "titleStyle",
-              },
-              {
-                width: "30%",
-                text:
-                  project.startDate &&
-                  project.endDate &&
-                  project.startDate !== "null" &&
-                  project.endDate !== "null"
-                    ? `${project.startDate} - ${project.endDate}`
-                    : "",
-                alignment: "right",
-              },
-            ],
-            margin: [0, 5, 0, 0],
-          },
-          {
-            ul: project.details,
-            margin: [0, 0, 0, 0],
-          },
-        ],
-      } as Content)
-  );
+// Helper function to format array for Typst
+function formatTypstArray(arr: string[]): string {
+  if (!arr || arr.length === 0) return "()";
+  const escapedItems = arr
+    .filter((item) => item && item !== "null" && item.trim() !== "")
+    .map((item) => escapeTypstString(item));
+  return `(${escapedItems.join(", ")})`;
+}
 
-  content.push(...projectEntries);
+// Helper function to format education for Typst
+function formatEducation(education: ResumeData["education"]): string {
+  if (!education || education.length === 0) return "()";
 
-  // Add skills section
-  content.push(
-    {
-      text: "SKILLS",
-      style: "sectionHeader",
-    } as Content,
-    hr({ color: "black", lineWidth: 0.5 }),
-    {
-      text: [
-        { text: "Languages: ", bold: true },
-        { text: resumeData.skills.languages.join(", ") },
-      ],
-      margin: [0, 4, 0, 5],
-    } as Content,
-    {
-      text: [
-        { text: "Frameworks: ", bold: true },
-        { text: resumeData.skills.frameworks.join(", ") },
-      ],
-      margin: [0, 0, 0, 5],
-    } as Content,
-    {
-      text: [
-        { text: "Others: ", bold: true },
-        { text: resumeData.skills.others.join(", ") },
-      ],
-      margin: [0, 0, 0, 5],
-    } as Content
-  );
+  const formattedEducation = education.map((edu) => {
+    return `(
+      institution: ${escapeTypstString(edu.institution)},
+      field: ${escapeTypstString(edu.field)},
+      startDate: ${escapeTypstString(edu.startDate)},
+      endDate: ${escapeTypstString(edu.endDate)},
+      cgpa: ${escapeTypstString(edu.cgpa)}
+    )`;
+  });
 
-  const docDefinition: TDocumentDefinitions = {
-    pageSize: "A4",
-    pageMargins: [40, 40, 40, 40],
-    content,
-    styles: {
-      sectionHeader: {
-        fontSize: 10.5,
-        bold: true,
-        margin: [0, 8, 0, 0],
-      },
-      titleStyle: {
-        fontSize: 10.5,
-      },
-    },
-  };
+  return `(${formattedEducation.join(", ")},)`;
+}
 
-  return pdfMake.createPdfKitDocument(docDefinition);
+// Helper function to format experience for Typst
+function formatExperience(experience: ResumeData["experience"]): string {
+  if (!experience || experience.length === 0) return "()";
+
+  const formattedExperience = experience.map((exp) => {
+    return `(
+      jobTitle: ${escapeTypstString(exp.jobTitle)},
+      company: ${escapeTypstString(exp.company)},
+      startDate: ${escapeTypstString(exp.startDate)},
+      endDate: ${escapeTypstString(exp.endDate)},
+      details: ${formatTypstArray(exp.details || [])}
+    )`;
+  });
+
+  return `(${formattedExperience.join(", ")},)`;
+}
+
+// Helper function to format projects for Typst
+function formatProjects(projects: ResumeData["projects"]): string {
+  if (!projects || projects.length === 0) return "()";
+
+  const formattedProjects = projects.map((project) => {
+    return `(
+      title: ${escapeTypstString(project.title)},
+      techStack: ${formatTypstArray(project.techStack || [])},
+      startDate: ${escapeTypstString(project.startDate)},
+      endDate: ${escapeTypstString(project.endDate)},
+      details: ${formatTypstArray(project.details || [])}
+    )`;
+  });
+
+  return `(${formattedProjects.join(", ")},)`;
+}
+
+// Helper function to format contact info for Typst
+function formatContactInfo(contactInfo: ResumeData["contactInfo"]): string {
+  return `(
+    phone: ${escapeTypstString(contactInfo?.phone || "")},
+    gmail: ${escapeTypstString(contactInfo?.gmail || "")},
+    linkedin: ${escapeTypstString(contactInfo?.linkedin || "")},
+    github: ${escapeTypstString(contactInfo?.github || "")}
+  )`;
+}
+
+// Helper function to format skills for Typst
+function formatSkills(skills: ResumeData["skills"]): string {
+  return `(
+    languages: ${formatTypstArray(skills?.languages || [])},
+    frameworks: ${formatTypstArray(skills?.frameworks || [])},
+    others: ${formatTypstArray(skills?.others || [])}
+  )`;
+}
+
+// Generate Typst data file content
+function generateTypstData(resumeData: ResumeData): string {
+  const typstContent = `#import "${TEMPLATE_PATH}": resume_template
+
+#let resume_data = (
+  name: ${escapeTypstString(resumeData.name)},
+  contactInfo: ${formatContactInfo(resumeData.contactInfo)},
+  summary: ${escapeTypstString(resumeData.summary)},
+  education: ${formatEducation(resumeData.education)},
+  experience: ${formatExperience(resumeData.experience)},
+  projects: ${formatProjects(resumeData.projects)},
+  skills: ${formatSkills(resumeData.skills)}
+)
+
+#resume_template(resume_data)`;
+
+  // ✅ ADD THIS DEBUG LOG
+  console.log("Generated Typst content:");
+  console.log(typstContent);
+
+  return typstContent;
+}
+
+// Main function to generate PDF using Typst
+export async function generateResumePdfUtil(
+  resumeData: ResumeData
+): Promise<Buffer> {
+  await ensureTempDir();
+
+  const timestamp = Date.now();
+  const tempTypstFile = path.join(TEMP_DIR, `resume_${timestamp}.typ`);
+  const tempPdfFile = path.join(TEMP_DIR, `resume_${timestamp}.pdf`);
+  const tempTemplateFile = path.join(TEMP_DIR, "resume_template.typ");
+
+  try {
+    // ✅ FIXED: Copy template to temp directory so relative import works
+    await fs.copyFile(TEMPLATE_SOURCE_PATH, tempTemplateFile);
+
+    // Generate Typst content
+    const typstContent = generateTypstData(resumeData);
+
+    // Write Typst file
+    await fs.writeFile(tempTypstFile, typstContent, "utf8");
+
+    // Compile with Typst CLI
+    const typstCommand = `typst compile "${tempTypstFile}" "${tempPdfFile}"`;
+
+    console.log(`Executing: ${typstCommand}`);
+
+    const { stdout, stderr } = await execAsync(typstCommand, {
+      timeout: 30000, // 30 second timeout
+    });
+
+    if (stderr) {
+      console.warn("Typst stderr:", stderr);
+    }
+
+    if (stdout) {
+      console.log("Typst stdout:", stdout);
+    }
+
+    // Check if PDF was created
+    try {
+      await fs.access(tempPdfFile);
+    } catch {
+      throw new Error("PDF file was not created by Typst");
+    }
+
+    // Read the generated PDF
+    const pdfBuffer = await fs.readFile(tempPdfFile);
+
+    // Clean up temporary files
+    await cleanup(tempTypstFile, tempPdfFile, tempTemplateFile);
+
+    return pdfBuffer;
+  } catch (error) {
+    // Clean up on error
+    await cleanup(tempTypstFile, tempPdfFile, tempTemplateFile);
+
+    if (error instanceof Error) {
+      console.error("Error generating PDF with Typst:", error.message);
+      throw new Error(`PDF generation failed: ${error.message}`);
+    }
+
+    throw new Error("Unknown error occurred during PDF generation");
+  }
+}
+
+// ✅ FIXED: Updated cleanup function to include template file
+async function cleanup(
+  typstFile: string,
+  pdfFile: string,
+  templateFile?: string
+) {
+  try {
+    await fs.unlink(typstFile).catch(() => {});
+    await fs.unlink(pdfFile).catch(() => {});
+    if (templateFile) {
+      await fs.unlink(templateFile).catch(() => {});
+    }
+  } catch (error) {
+    console.warn("Error cleaning up temporary files:", error);
+  }
+}
+
+// Alternative function that returns a readable stream (for direct response streaming)
+export async function generateResumePdfStream(
+  resumeData: ResumeData
+): Promise<NodeJS.ReadableStream> {
+  const pdfBuffer = await generateResumePdfUtil(resumeData);
+
+  const { Readable } = await import("node:stream");
+
+  return Readable.from(pdfBuffer);
+}
+
+// Function to validate Typst installation
+export async function validateTypstInstallation(): Promise<boolean> {
+  try {
+    const { stdout } = await execAsync("typst --version");
+    console.log("Typst version:", stdout.trim());
+    return true;
+  } catch (error) {
+    console.error("Typst is not installed or not in PATH:", error);
+    return false;
+  }
 }

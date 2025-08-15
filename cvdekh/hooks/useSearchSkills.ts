@@ -1,7 +1,7 @@
-import { useAuthStore } from "@/store/auth";
 import axios, { isAxiosError } from "axios";
-import { useState, useCallback, useRef } from "react";
+import { useCallback, useRef, useState } from "react";
 import { useDebouncedCallback } from "use-debounce";
+import { useAuthStore } from "@/store/auth";
 
 const searchCache = new Map();
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
@@ -60,7 +60,7 @@ export const useSkillsAutocomplete = () => {
         });
 
         const response = await axios.get(
-          `${process.env.EXPO_PUBLIC_API_URL}/api/resume/skills/?${params}`,
+          `${process.env.EXPO_PUBLIC_API_URL}/api/v1/skills/?${params}`,
           {
             headers: {
               Authorization: `Bearer ${session.access_token}`,
@@ -73,14 +73,14 @@ export const useSkillsAutocomplete = () => {
             //     "Content-Type": "application/json",
             //   },
             signal: controller.signal,
-          },
+          }
         );
 
         if (response.status !== 200) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
 
-        const result = await response.data;
+        const result = await response.data.data;
 
         // Extract just the skill names for the autocomplete
         const skillNames =
@@ -117,7 +117,7 @@ export const useSkillsAutocomplete = () => {
         currentRequestRef.current = null;
       }
     },
-    [session],
+    [session]
   );
 
   // Debounce the API calls to avoid too many requests while user is typing

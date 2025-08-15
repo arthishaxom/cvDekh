@@ -5,6 +5,7 @@
   },
   "build": {
     "development": {
+      "bun": "1.2.19",
       "developmentClient": true,
       "distribution": "internal",
       "env": {
@@ -18,6 +19,7 @@
       }
     },
     "production": {
+      "bun": "1.2.19",
       "autoIncrement": false
     }
   },

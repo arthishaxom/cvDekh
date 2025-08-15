@@ -1,12 +1,4 @@
-import { Box } from "@/components/ui/box";
-import { WithLocalSvg } from "react-native-svg/css";
-import { Text } from "@/components/ui/text";
-import { useState, useRef, useEffect } from "react"; // Added useRef
-import { useResumeStore } from "@/store/resume/resumeStore";
-import { useAuthStore } from "@/store/auth";
-import { FlatList, Pressable } from "react-native"; // Import Pressable
-import { VStack } from "@/components/ui/vstack";
-import { HStack } from "@/components/ui/hstack";
+import { router } from "expo-router";
 import {
   BriefcaseBusiness,
   CircleCheck,
@@ -14,47 +6,56 @@ import {
   MapPin,
   Plus,
 } from "lucide-react-native";
-import { Fab } from "@/components/ui/fab";
-import { Button, ButtonText } from "@/components/ui/button";
-import {
-  Modal,
-  ModalBackdrop,
-  ModalContent,
-  ModalCloseButton,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-} from "@/components/ui/modal";
-import { Icon, CloseIcon } from "@/components/ui/icon";
-import { Heading } from "@/components/ui/heading";
-import { Textarea, TextareaInput } from "@/components/ui/textarea"; // Import Textarea
-import { router } from "expo-router";
+import { useEffect, useRef, useState } from "react"; // Added useRef
+import { FlatList, Pressable } from "react-native"; // Import Pressable
+import { WithLocalSvg } from "react-native-svg/css";
+import Toast from "react-native-toast-message";
 import {
   ANIMATION_DIRECTION,
   ANIMATION_TYPE,
   SkeletonLoader,
-} from "@/components/skeleton";
-import Toast from "react-native-toast-message";
+} from "@/components/Skeleton";
+import { Box } from "@/components/ui/box";
+import { Button, ButtonText } from "@/components/ui/button";
+import { Fab } from "@/components/ui/fab";
+import { Heading } from "@/components/ui/heading";
+import { HStack } from "@/components/ui/hstack";
+import { CloseIcon, Icon } from "@/components/ui/icon";
+import {
+  Modal,
+  ModalBackdrop,
+  ModalBody,
+  ModalCloseButton,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+} from "@/components/ui/modal";
 import { Spinner } from "@/components/ui/spinner";
+import { Text } from "@/components/ui/text";
+import { Textarea, TextareaInput } from "@/components/ui/textarea"; // Import Textarea
+import { VStack } from "@/components/ui/vstack";
+import { useResumeData } from "@/hooks/useResumeData";
+import { useResumeOperations } from "@/hooks/useResumeOperations";
+import { useAuthStore } from "@/store/auth";
+import { useResumeStore } from "@/store/resume/resumeStore";
 
 export default function Tab() {
   const allResumes = useResumeStore((state) => state.allResumes);
-  const improveResumeWithJobDescription = useResumeStore(
-    (state) => state.improveResumeWithJobDescription,
-  );
-  const isLoading = useResumeStore((state) => state.isLoading);
   const session = useAuthStore((state) => state.session);
+
+  const { isLoading, fetchAllResumes } = useResumeData(session);
+  const { improveResume, progress } = useResumeOperations();
 
   useEffect(() => {
     if (!session) {
-      // Handle unauthenticated state appropriately
       router.replace("/");
       return;
     }
-    useResumeStore.getState().fetchAllResume(session);
     console.log(session);
-  }, [session]);
-  const progress = useResumeStore((state) => state.progress);
+
+    fetchAllResumes();
+  }, [session, fetchAllResumes]);
+
   const [dotText, setDotText] = useState("Extracting");
 
   const [showImproveModal, setShowImproveModal] = useState(false);
@@ -104,14 +105,10 @@ export default function Tab() {
       return;
     }
     if (session) {
-      await improveResumeWithJobDescription(
-        jobDescriptionInput,
-        session,
-        () => {
-          setShowImproveModal(false);
-          setJobDescriptionInput("");
-        },
-      );
+      await improveResume(session, jobDescriptionInput, () => {
+        setShowImproveModal(false);
+        setJobDescriptionInput("");
+      });
     } else {
       Toast.show({
         type: "eToast",
@@ -144,7 +141,7 @@ export default function Tab() {
           <Box className="flex-1 bg-background-500 items-center p-4">
             {[...Array(3)].map((_, index) => (
               <VStack
-                key={index}
+                key={`box_${index + 100}`}
                 className="p-4 bg-background-400/30 border border-white/15 rounded-lg w-full mb-3 gap-2"
               >
                 <HStack className="justify-between">
@@ -247,16 +244,17 @@ export default function Tab() {
                                     Score
                                   </Text>
                                   <Text
-                                    className={`text-xl font-semibold ${item.job_desc.matchScore &&
+                                    className={`text-xl font-semibold ${
+                                      item.job_desc.matchScore &&
                                       !isNaN(Number(item.job_desc.matchScore))
-                                      ? Number(item.job_desc.matchScore) >= 75
-                                        ? "text-green-500"
-                                        : Number(item.job_desc.matchScore) >=
-                                          50
+                                        ? Number(item.job_desc.matchScore) >= 75
+                                          ? "text-green-500"
+                                          : Number(item.job_desc.matchScore) >=
+                                            50
                                           ? "text-orange-500"
                                           : "text-red-500"
-                                      : "text-primary-500"
-                                      }`}
+                                        : "text-primary-500"
+                                    }`}
                                   >
                                     {item.job_desc.matchScore || "N/A"}
                                   </Text>
@@ -371,8 +369,9 @@ export default function Tab() {
                 <ButtonText>Cancel</ButtonText>
               </Button> */}
               <Button
-                className={`flex-1 rounded-lg h-12 ${progress === 100 || isLoading ? "bg-background-500" : ""
-                  }`}
+                className={`flex-1 rounded-lg h-12 ${
+                  progress === 100 || isLoading ? "bg-background-500" : ""
+                }`}
                 onPress={handleImproveResume}
                 isDisabled={isLoading}
               >

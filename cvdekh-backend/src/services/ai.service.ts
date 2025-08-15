@@ -2,7 +2,7 @@ import { google } from "@ai-sdk/google";
 import { generateObject } from "ai";
 import pdfParse from "pdf-parse";
 import { logger } from "..";
-import SYSTEM_INSTRUCTIONS from "../config/prompts";
+import SYSTEM_INSTRUCTIONS from "../config/prompts.config";
 import {
   type ImprovedResumeResponse,
   ImprovedResumeResponseSchema,

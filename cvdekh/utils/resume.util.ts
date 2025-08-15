@@ -1,11 +1,12 @@
+import * as Crypto from "expo-crypto";
+import * as DocumentPicker from "expo-document-picker";
 import * as FileSystem from "expo-file-system";
 import { Platform } from "react-native";
-import * as Crypto from "expo-crypto";
 import Toast from "react-native-toast-message";
 
 export const downloadPDFToDevice = async (
   pdfUrl: string,
-  fileName: string = "resume.pdf",
+  fileName: string = "resume.pdf"
 ) => {
   try {
     // For Android, use Storage Access Framework
@@ -26,21 +27,21 @@ export const downloadPDFToDevice = async (
       // Download the file to memory first
       const downloadResult = await FileSystem.downloadAsync(
         pdfUrl,
-        FileSystem.cacheDirectory + fileName,
+        FileSystem.cacheDirectory + fileName
       );
 
       if (downloadResult.status === 200) {
         // Read the downloaded file as a string (base64)
         const fileContent = await FileSystem.readAsStringAsync(
           downloadResult.uri,
-          { encoding: FileSystem.EncodingType.Base64 },
+          { encoding: FileSystem.EncodingType.Base64 }
         );
 
         // Create the file in the selected directory using SAF
         await FileSystem.StorageAccessFramework.createFileAsync(
           permissions.directoryUri,
           fileName,
-          "application/pdf",
+          "application/pdf"
         )
           .then(async (uri) => {
             // Write the content to the new file
@@ -58,7 +59,7 @@ export const downloadPDFToDevice = async (
           });
       } else {
         throw new Error(
-          `Download failed with status: ${downloadResult.status}`,
+          `Download failed with status: ${downloadResult.status}`
         );
       }
     } else {
@@ -74,7 +75,7 @@ export const downloadPDFToDevice = async (
         });
       } else {
         throw new Error(
-          `Download failed with status: ${downloadResult.status}`,
+          `Download failed with status: ${downloadResult.status}`
         );
       }
     }
@@ -89,7 +90,7 @@ export const downloadPDFToDevice = async (
 };
 
 export const ensureListItemsHaveIds = <T extends { id?: string }>(
-  items: T[] | undefined,
+  items: T[] | undefined
 ): T[] => {
   if (!items || !Array.isArray(items)) return [];
 
@@ -98,3 +99,20 @@ export const ensureListItemsHaveIds = <T extends { id?: string }>(
     id: item.id || Crypto.randomUUID(),
   }));
 };
+
+export async function handleBrowse() {
+  try {
+    const result = await DocumentPicker.getDocumentAsync({
+      multiple: true,
+      copyToCacheDirectory: false,
+      type: ["application/pdf"],
+    });
+    if (!result.canceled) {
+      return result.assets[0];
+    }
+  } catch (err) {
+    // Handle error
+    console.error(err);
+    return null;
+  }
+}

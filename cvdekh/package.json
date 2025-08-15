@@ -30,7 +30,7 @@
     "@gluestack-ui/textarea": "^0.1.25",
     "@gluestack-ui/toast": "^1.0.9",
     "@legendapp/motion": "^2.4.0",
-    "@react-native-async-storage/async-storage": "^2.1.2",
+    "@react-native-async-storage/async-storage": "2.1.2",
     "@react-native-google-signin/google-signin": "^14.0.1",
     "@react-native-masked-view/masked-view": "0.3.2",
     "@react-navigation/bottom-tabs": "^7.3.10",
@@ -40,7 +40,7 @@
     "@supabase/supabase-js": "^2.49.5-next.5",
     "aes-js": "^3.1.2",
     "axios": "^1.9.0",
-    "expo": "53.0.12",
+    "expo": "53.0.20",
     "expo-blur": "~14.1.5",
     "expo-constants": "~17.1.6",
     "expo-crypto": "~14.1.5",
@@ -49,9 +49,10 @@
     "expo-file-system": "~18.1.10",
     "expo-font": "~13.3.1",
     "expo-haptics": "~14.1.4",
-    "expo-image": "~2.3.0",
+    "expo-image": "~2.4.0",
     "expo-linear-gradient": "~14.1.5",
     "expo-linking": "~7.1.5",
+    "expo-navigation-bar": "~4.2.6",
     "expo-router": "~5.1.0",
     "expo-secure-store": "~14.2.3",
     "expo-sharing": "~13.1.5",
@@ -61,18 +62,19 @@
     "expo-system-ui": "~5.0.9",
     "expo-web-browser": "~14.2.0",
     "immer": "^10.1.1",
+    "lightningcss": "^1.30.1",
     "lucide-react-native": "^0.511.0",
     "nativewind": "^4.1.23",
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "react-hook-form": "^7.56.4",
-    "react-native": "0.79.4",
+    "react-native": "0.79.5",
     "react-native-css-interop": "^0.1.22",
     "react-native-gesture-handler": "~2.24.0",
     "react-native-get-random-values": "^1.11.0",
     "react-native-keyboard-controller": "^1.17.5",
     "react-native-reanimated": "~3.17.4",
-    "react-native-safe-area-context": "^5.4.0",
+    "react-native-safe-area-context": "5.4.0",
     "react-native-screens": "~4.11.1",
     "react-native-svg": "15.11.2",
     "react-native-toast-message": "^2.3.0",
@@ -80,8 +82,8 @@
     "react-native-webview": "13.13.5",
     "tailwindcss": "^3.4.17",
     "use-debounce": "^10.0.4",
-    "zustand": "^5.0.4",
-    "expo-navigation-bar": "~4.2.6"
+    "zod": "^4.0.17",
+    "zustand": "^5.0.4"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
@@ -92,5 +94,8 @@
     "jscodeshift": "^0.15.2",
     "typescript": "~5.8.3"
   },
-  "private": true
+  "private": true,
+  "trustedDependencies": [
+    "unrs-resolver"
+  ]
 }

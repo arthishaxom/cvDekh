@@ -1,21 +1,20 @@
-import React, { useCallback, useState } from "react";
-
-import { useResumeStore } from "../../../store/resume/resumeStore";
 import { useRouter } from "expo-router";
+import { produce } from "immer";
+import { useCallback, useState } from "react";
+import { ScrollView } from "react-native";
+import { useDebouncedCallback } from "use-debounce";
+import { Box } from "@/components/ui/box";
+import { Button, ButtonText } from "@/components/ui/button";
 import {
   FormControl,
   FormControlLabel,
   FormControlLabelText,
 } from "@/components/ui/form-control";
-import { VStack } from "@/components/ui/vstack";
 import { Input, InputField } from "@/components/ui/input";
-import { Box } from "@/components/ui/box";
 import { Text } from "@/components/ui/text";
-import { Button, ButtonText } from "@/components/ui/button";
-import { useDebouncedCallback } from "use-debounce";
-import { produce } from "immer";
-import { ContactInfo } from "@/store/resume/types";
-import { ScrollView } from "react-native";
+import { VStack } from "@/components/ui/vstack";
+import type { ContactInfo } from "@/store/resume/types";
+import { useResumeStore } from "../../../store/resume/resumeStore";
 
 export default function GeneralInfoScreen() {
   const router = useRouter();
@@ -32,7 +31,7 @@ export default function GeneralInfoScreen() {
       }
       setIsSaving(false);
     },
-    1000, // 1-second debounce
+    1000 // 1-second debounce
   );
 
   const handleInputChange = useCallback(
@@ -44,13 +43,13 @@ export default function GeneralInfoScreen() {
           } else {
             draft.contactInfo[field] = value;
           }
-        }),
+        })
       );
 
       setIsSaving(true);
       debouncedUpdateStore(field, value);
     },
-    [debouncedUpdateStore],
+    [debouncedUpdateStore]
   );
 
   const [localFormData, setLocalFormData] = useState({
@@ -65,8 +64,11 @@ export default function GeneralInfoScreen() {
 
   return (
     <VStack className="pb-4 pt-2 px-5 flex-1 bg-background-500 justify-between">
-      <ScrollView className="flex-1" showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
-
+      <ScrollView
+        className="flex-1"
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
         <VStack>
           <FormControl className="mb-4">
             <FormControlLabel>

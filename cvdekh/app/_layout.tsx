@@ -1,18 +1,21 @@
 import { router, SplashScreen, Stack } from "expo-router";
 import "../global.css";
-import { useAuthStore } from "@/store/auth";
-import { JSX, useEffect, useState } from "react";
-import { GluestackUIProvider } from "@/components/ui/gluestack-ui-provider";
-import { SafeAreaProvider } from "react-native-safe-area-context";
-import Toast, { BaseToast, BaseToastProps } from "react-native-toast-message";
-import { Box } from "@/components/ui/box";
-import { Check, CircleAlert, CircleCheck, CircleX } from "lucide-react-native";
-import { Text } from "@/components/ui/text";
-import { HStack } from "@/components/ui/hstack";
-import { VStack } from "@/components/ui/vstack";
 import * as Linking from "expo-linking";
-import { supabase } from "@/lib/api";
+import { Check, CircleAlert, CircleCheck, CircleX } from "lucide-react-native";
+import { type JSX, useEffect, useState } from "react";
 import { KeyboardProvider } from "react-native-keyboard-controller";
+import { SafeAreaProvider } from "react-native-safe-area-context";
+import Toast, {
+  BaseToast,
+  type BaseToastProps,
+} from "react-native-toast-message";
+import { Box } from "@/components/ui/box";
+import { GluestackUIProvider } from "@/components/ui/gluestack-ui-provider";
+import { HStack } from "@/components/ui/hstack";
+import { Text } from "@/components/ui/text";
+import { VStack } from "@/components/ui/vstack";
+import { supabase } from "@/config/supabase.config";
+import { useAuthStore } from "@/store/auth";
 
 const toastConfig = {
   success: (props: JSX.IntrinsicAttributes & BaseToastProps) => (

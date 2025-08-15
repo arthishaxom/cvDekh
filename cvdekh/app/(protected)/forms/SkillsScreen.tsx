@@ -1,28 +1,29 @@
-import React, { useState, useCallback, useEffect } from "react";
-import { useResumeStore } from "../../../store/resume/resumeStore";
-import { useRouter, useLocalSearchParams } from "expo-router";
-import { useSkillsAutocomplete } from "@/hooks/skillAC";
-import {
-  FormControl,
-  FormControlLabel,
-  FormControlLabelText,
-} from "@/components/ui/form-control";
-import { VStack } from "@/components/ui/vstack";
-import { Input, InputField } from "@/components/ui/input";
-import { Box } from "@/components/ui/box";
-import { Text } from "@/components/ui/text";
-import { Button, ButtonText } from "@/components/ui/button";
-import { Badge, BadgeText } from "@/components/ui/badge";
-import { useDebouncedCallback } from "use-debounce";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { produce } from "immer";
+import { Check, X } from "lucide-react-native";
+import { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
   ScrollView,
   TouchableOpacity,
 } from "react-native";
+import { useDebouncedCallback } from "use-debounce";
+import { Badge, BadgeText } from "@/components/ui/badge";
+import { Box } from "@/components/ui/box";
+import { Button, ButtonText } from "@/components/ui/button";
+import {
+  FormControl,
+  FormControlLabel,
+  FormControlLabelText,
+} from "@/components/ui/form-control";
 import { HStack } from "@/components/ui/hstack";
-import { Check, X } from "lucide-react-native";
+import { Input, InputField } from "@/components/ui/input";
+import { Text } from "@/components/ui/text";
+import { VStack } from "@/components/ui/vstack";
+import { useSkillsAutocomplete } from "@/hooks/useSearchSkills";
+import { useResumeStore } from "../../../store/resume/resumeStore";
+
 // import { SkillsData } from "@/store/resume/types";
 
 // Define category configuration for better type safety and maintainability
@@ -118,7 +119,7 @@ export default function GenericSkillsEditScreen() {
         clearSuggestions();
       }
     },
-    [category, searchSkills, clearSuggestions],
+    [category, searchSkills, clearSuggestions]
   );
 
   // Add a skill to the local state
@@ -137,20 +138,20 @@ export default function GenericSkillsEditScreen() {
         clearSuggestions();
       }
     },
-    [localSkills, debouncedSaveToStore, clearSuggestions],
+    [localSkills, debouncedSaveToStore, clearSuggestions]
   );
 
   // Remove a skill from the local state
   const removeSkill = useCallback(
     (skillToRemove: string) => {
       const updatedSkills = localSkills.filter(
-        (skill) => skill !== skillToRemove,
+        (skill) => skill !== skillToRemove
       );
       setLocalSkills(updatedSkills);
       setIsSaving(true);
       debouncedSaveToStore(updatedSkills);
     },
-    [localSkills, debouncedSaveToStore],
+    [localSkills, debouncedSaveToStore]
   );
 
   // Handle manual skill addition via search input
@@ -162,7 +163,7 @@ export default function GenericSkillsEditScreen() {
 
   // Filter suggestions to exclude already selected skills
   const filteredSuggestions = suggestions.filter(
-    (suggestion) => !localSkills.includes(suggestion),
+    (suggestion) => !localSkills.includes(suggestion)
   );
 
   // Sync local state when component mounts or category changes
@@ -174,7 +175,11 @@ export default function GenericSkillsEditScreen() {
     <VStack className="flex-1 bg-background-500">
       {/* Header */}
 
-      <ScrollView className="flex-1" showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+      <ScrollView
+        className="flex-1"
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
         <VStack className="px-5">
           {/* Search Input */}
           <FormControl className="mb-4">
@@ -250,7 +255,10 @@ export default function GenericSkillsEditScreen() {
                       </Text>
                     </HStack>
                   ) : (
-                    <ScrollView className="max-h-64" keyboardShouldPersistTaps="handled">
+                    <ScrollView
+                      className="max-h-64"
+                      keyboardShouldPersistTaps="handled"
+                    >
                       {filteredSuggestions.map((suggestion) => (
                         <SuggestionItem
                           key={suggestion}
@@ -263,7 +271,7 @@ export default function GenericSkillsEditScreen() {
                       {/* Show already selected suggestions with different styling */}
                       {suggestions
                         .filter((suggestion) =>
-                          localSkills.includes(suggestion),
+                          localSkills.includes(suggestion)
                         )
                         .map((suggestion) => (
                           <SuggestionItem

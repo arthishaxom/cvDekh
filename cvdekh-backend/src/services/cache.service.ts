@@ -1,5 +1,5 @@
 import { logger } from "..";
-import redisClient from "../config/redisClient";
+import redisClient from "../config/redis.config";
 
 class CacheService {
   async get<T>(key: string): Promise<T | null> {

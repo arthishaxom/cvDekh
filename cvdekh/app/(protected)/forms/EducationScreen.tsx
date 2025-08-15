@@ -1,23 +1,23 @@
-import React, { useState, useCallback, useEffect } from "react";
-import { useResumeStore } from "../../../store/resume/resumeStore";
+import * as Crypto from "expo-crypto";
 import { useRouter } from "expo-router";
+import { produce } from "immer";
+import { Trash2 } from "lucide-react-native";
+import { useCallback, useEffect, useState } from "react";
+import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
+import { useDebouncedCallback } from "use-debounce";
+import { Box } from "@/components/ui/box";
+import { Button, ButtonText } from "@/components/ui/button";
 import {
   FormControl,
   FormControlLabel,
   FormControlLabelText,
 } from "@/components/ui/form-control";
-import { VStack } from "@/components/ui/vstack";
 import { HStack } from "@/components/ui/hstack";
 import { Input, InputField } from "@/components/ui/input";
-import { Box } from "@/components/ui/box";
 import { Text } from "@/components/ui/text";
-import { Button, ButtonText } from "@/components/ui/button";
-import { useDebouncedCallback } from "use-debounce";
-import { produce } from "immer";
-import * as Crypto from "expo-crypto";
-import { EducationEntry } from "@/store/resume/types";
-import { Trash2 } from "lucide-react-native";
-import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
+import { VStack } from "@/components/ui/vstack";
+import type { EducationEntry } from "@/store/resume/types";
+import { useResumeStore } from "../../../store/resume/resumeStore";
 // import { Divider } from "@/components/ui/divider";
 
 export default function EducationScreen() {
@@ -29,7 +29,7 @@ export default function EducationScreen() {
 
   const [isSaving, setIsSaving] = useState(false);
   const [localEducation, setLocalEducation] = useState<EducationEntry[]>(
-    formData.education || [],
+    formData.education || []
   );
 
   // Sync local state with store when formData changes
@@ -62,7 +62,7 @@ export default function EducationScreen() {
           item.cgpa
         ) {
           const existingItem = currentEducation.find(
-            (existing) => existing.id === item.id,
+            (existing) => existing.id === item.id
           );
 
           if (existingItem) {
@@ -76,7 +76,7 @@ export default function EducationScreen() {
       });
       setIsSaving(false);
     },
-    1000,
+    1000
   );
 
   const handleEducationChange = useCallback(
@@ -92,7 +92,7 @@ export default function EducationScreen() {
       setIsSaving(true);
       debouncedUpdateStore(updatedEducation);
     },
-    [localEducation, debouncedUpdateStore],
+    [localEducation, debouncedUpdateStore]
   );
 
   const addEducationEntry = () => {
@@ -118,7 +118,7 @@ export default function EducationScreen() {
     if (itemToRemove.id) {
       const storeEducation = useResumeStore.getState().formData.education || [];
       const existsInStore = storeEducation.some(
-        (item) => item.id === itemToRemove.id,
+        (item) => item.id === itemToRemove.id
       );
 
       if (existsInStore) {
@@ -132,7 +132,8 @@ export default function EducationScreen() {
 
   return (
     <VStack className="pb-4 pt-2 px-5 flex-1 bg-background-500 justify-between">
-      <KeyboardAwareScrollView showsVerticalScrollIndicator={false}
+      <KeyboardAwareScrollView
+        showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
         bottomOffset={12}
         extraKeyboardSpace={-100}
@@ -251,7 +252,6 @@ export default function EducationScreen() {
               )} */}
             </Box>
           ))}
-
         </VStack>
         <Button
           action="secondary"
