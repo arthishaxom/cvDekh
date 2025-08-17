@@ -35,7 +35,7 @@ function formatTypstArray(arr: string[]): string {
   const escapedItems = arr
     .filter((item) => item && item !== "null" && item.trim() !== "")
     .map((item) => escapeTypstString(item));
-  return `(${escapedItems.join(", ")})`;
+  return `(${escapedItems.join(", ")},)`;
 }
 
 // Helper function to format education for Typst
@@ -140,8 +140,8 @@ function generateTypstData(resumeData: ResumeData): string {
 #resume_template(resume_data)`;
 
   // ✅ ADD THIS DEBUG LOG
-  console.log("Generated Typst content:");
-  console.log(typstContent);
+  // console.log("Generated Typst content:");
+  // console.log(typstContent);
 
   return typstContent;
 }

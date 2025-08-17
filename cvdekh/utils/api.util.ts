@@ -20,7 +20,7 @@ export const resumeApi = {
         "Content-Type": "application/json",
       },
     });
-    return data.data;
+    return data;
   },
 
   getAllResumes: async (session: Session) => {
@@ -28,7 +28,7 @@ export const resumeApi = {
       headers: createHeaders(session),
     });
 
-    return data.data.resumes;
+    return data;
   },
 
   saveResume: async (

@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  backend:
+    build: 
+      context: .
+      target: development  # Use base stage for development
+    ports:
+      - "8080:8080"
+    volumes:
+      # Mount your code for hot reloading during development
+      - .:/app
+      - /app/node_modules  # Prevent node_modules from being overwritten
+      - /app/dist  # Prevent dist from being overwritten
+    environment:
+      - NODE_ENV=development
+      # - REDIS_HOST=host.docker.internal  # Use container name
+      # - REDIS_PORT=6379
+      - PORT=8080
+    
+    # Override the CMD to use dev script with nodemon
+    command: npm run dev
+    restart: unless-stopped
+    # Optional: Add database or other services here
+    # depends_on:
+    #   - database
+  
+  # Example: Add database if needed
+  # database:
+  #   image: postgres:13
+  #   environment:
+  #     POSTGRES_DB: mydb
+  #     POSTGRES_USER: user
+  #     POSTGRES_PASSWORD: password
+  #   ports:
+  #     - "5432:5432"
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
+
+# volumes:
+#   postgres_data:

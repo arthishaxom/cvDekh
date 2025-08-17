@@ -73,7 +73,7 @@ export const useResumePDF = () => {
     maxWaitTimeMs = 180000 // 3 minutes timeout (PDF generation can take longer)
   ): Promise<{ success: boolean; pdfUrl?: string }> => {
     const startTime = Date.now();
-    const pollInterval = 2000; // 2 seconds between polls
+    const pollInterval = 1500; // 1.5 seconds between polls
 
     while (true) {
       // Check if we've exceeded our maximum wait time

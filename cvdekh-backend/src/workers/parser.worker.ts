@@ -2,8 +2,8 @@ import fs from "node:fs/promises";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { type Job, Worker } from "bullmq";
 import IORedis from "ioredis";
-import { logger } from "..";
 import { resumeQueue } from "../config/bullmq.config";
+import logger from "../config/logger.config";
 import { aiService } from "../services/ai.service";
 import { resumeService } from "../services/resume.service";
 

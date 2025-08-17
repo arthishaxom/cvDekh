@@ -1,10 +1,9 @@
-import * as Crypto from "expo-crypto";
 import { create } from "zustand";
 import { immer } from "zustand/middleware/immer";
 import { ensureListItemsHaveIds } from "../../utils/resume.util";
 import type { ResumeFormData, ResumeStoreState } from "./types";
 
-const initialFormData: ResumeFormData = {
+export const initialFormData: ResumeFormData = {
   id: "",
   name: "",
   summary: "",
@@ -59,7 +58,7 @@ export const useResumeStore = create<ResumeStoreState>()(
         ) {
           Object.assign(sectionData, data);
         } else {
-          state.formData[section] = data as any;
+          state.formData[section] = data as ResumeFormData[typeof section];
         }
         state.hasChanges = true;
       });
@@ -74,28 +73,13 @@ export const useResumeStore = create<ResumeStoreState>()(
     // Resume collection operations
     setAllResumes: (resumes) => {
       set((state) => {
-        state.allResumes = resumes.map((resumeEntry) => ({
-          ...initialFormData,
-          ...resumeEntry,
-          id: resumeEntry.id,
-          education: ensureListItemsHaveIds(resumeEntry.education),
-          projects: ensureListItemsHaveIds(resumeEntry.projects),
-          experience: ensureListItemsHaveIds(resumeEntry.experience),
-          job_desc: resumeEntry.job_desc,
-        }));
+        state.allResumes = resumes;
       });
     },
 
-    addToAllResumes: (resumeData) => {
+    addToAllResumes: (resume) => {
       set((state) => {
-        const newResume = {
-          ...initialFormData,
-          ...resumeData,
-          education: ensureListItemsHaveIds(resumeData.education || []),
-          projects: ensureListItemsHaveIds(resumeData.projects || []),
-          experience: ensureListItemsHaveIds(resumeData.experience || []),
-        };
-        state.allResumes.unshift(newResume);
+        state.allResumes.unshift(resume);
       });
     },
 

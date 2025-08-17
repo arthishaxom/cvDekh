@@ -1,3 +1,4 @@
+import * as Crypto from "expo-crypto";
 import { router, Stack, useLocalSearchParams } from "expo-router";
 import {
   Download,
@@ -6,7 +7,7 @@ import {
   Save,
   Trash2,
 } from "lucide-react-native";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback } from "react";
 import { Pressable, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
@@ -22,48 +23,34 @@ import { Spinner } from "@/components/ui/spinner";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
 import { useResumeOperations } from "@/hooks/useResumeOperations";
+import { useResumePDF } from "@/hooks/useResumePDF";
 import { useAuthStore } from "@/store/auth";
 import { useResumeStore } from "@/store/resume/resumeStore";
 
 export default function ResumeDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const [isLoading, setIsLoading] = useState(false);
 
-  // ✅ FIXED: Get data from correct store sources
-  const allResumes = useResumeStore((state) => state.allResumes);
   const session = useAuthStore((state) => state.session);
-  const updateFormData = useResumeStore((state) => state.updateFormData);
+  const hasChanges = useResumeStore((state) => state.hasChanges);
+  const { setData } = useResumeStore();
 
-  // ✅ FIXED: Use hooks for operations
+  // Hooks
   const {
     isLoading: isOperationLoading,
     saveResume,
     deleteResume,
-    downloadResume,
   } = useResumeOperations();
 
-  // ✅ FIXED: Find the specific resume from allResumes
-  const resume = allResumes.find((r) => r.id === id);
+  const { isLoading: isDownloading, generatePDF } = useResumePDF();
 
-  // ✅ FIXED: Get job_desc from the specific resume, not global state
-  const jobDesc = resume?.job_desc;
+  // Find the specific resume
+  const resume = useResumeStore((state) => state.formData);
+  const jobDesc = useResumeStore((state) => state.job_desc);
 
-  // ✅ FIXED: Track local changes for this specific resume
-  const [hasLocalChanges, setHasLocalChanges] = useState(false);
-  const [localResumeData, setLocalResumeData] = useState(resume);
-
-  // ✅ FIXED: Update local data when resume changes
-  useEffect(() => {
-    if (resume) {
-      setLocalResumeData(resume);
-      setHasLocalChanges(false);
-    }
-  }, [resume]);
-
-  // ✅ FIXED: Helper function to display values safely
+  // Helper function to display values safely
   const displayValue = useCallback(
     (value: string | undefined | null, fallback = "--") => {
-      if (!value || value === "null" || value === "") {
+      if (!value || value === "null" || value.trim() === "") {
         return fallback;
       }
       return value;
@@ -71,51 +58,52 @@ export default function ResumeDetailScreen() {
     []
   );
 
-  // ✅ FIXED: Handle download with proper error handling
-  const handleDownload = useCallback(async () => {
+  // Handle download
+  const handleDownload = async () => {
     if (!session) {
       Toast.show({
         type: "eToast",
         text1: "Authentication Error",
-        text2: "Please log in to continue",
+        text2: "Session expired. Please log in again.",
       });
       return;
     }
 
     try {
-      await downloadResume(session, id);
+      await generatePDF(session, undefined);
     } catch (error) {
       console.error("Download failed:", error);
     }
-  }, [session, id, downloadResume]);
+  };
 
-  // ✅ FIXED: Handle save with proper state management
-  const handleSave = useCallback(async () => {
-    if (!session || !localResumeData) {
+  const handleSave = async () => {
+    if (!session) {
       Toast.show({
         type: "eToast",
-        text1: "Save Failed",
-        text2: "Missing session or resume data",
+        text1: "Authentication Error",
+        text2: "Please log in to save your resume.",
+      });
+      return;
+    }
+    if (!resume) {
+      Toast.show({
+        type: "eToast",
+        text1: "Resume Error",
+        text2: "Resume data not found.",
       });
       return;
     }
 
     try {
-      await saveResume(session, id, localResumeData);
-
-      // ✅ Update the store with the saved data
-      const updatedResumes = allResumes.map((r) =>
-        r.id === id ? { ...r, ...localResumeData } : r
-      );
-      useResumeStore.setState({ allResumes: updatedResumes });
-
-      setHasLocalChanges(false);
+      await saveResume(session, id, resume);
+      setData(resume);
     } catch (error) {
+      // Error is already handled in the hook
       console.error("Save failed:", error);
     }
-  }, [session, id, localResumeData, saveResume, allResumes]);
+  };
 
-  // ✅ FIXED: Handle delete with navigation
+  // Handle delete with navigation
   const handleDelete = useCallback(async () => {
     if (!session) {
       Toast.show({
@@ -136,7 +124,7 @@ export default function ResumeDetailScreen() {
     }
   }, [session, id, deleteResume]);
 
-  // ✅ FIXED: Helper to render detail lists
+  // Helper to render detail lists
   const renderDetailList = useCallback(
     (title: string, items: string[] | undefined) => {
       if (!items || items.length === 0) return null;
@@ -162,59 +150,45 @@ export default function ResumeDetailScreen() {
     []
   );
 
-  // ✅ FIXED: Better loading state
-  const loading = isLoading || isOperationLoading;
+  // Loading state
+  const loading = isOperationLoading || isDownloading;
 
-  // ✅ FIXED: Handle case when resume is not found
+  // Handle case when resume is not found
   if (!resume) {
     return (
-      <VStack className="flex-1 justify-center items-center bg-background-500">
+      <Box className="flex-1 justify-center items-center bg-background-500">
         <Stack.Screen options={{ title: "Not Found" }} />
         <Text className="text-white text-center mb-4">Resume not found.</Text>
         <Button onPress={() => router.back()}>
           <ButtonText>Go Back</ButtonText>
         </Button>
-      </VStack>
-    );
-  }
-
-  // ✅ FIXED: Handle loading state
-  if (loading && !localResumeData) {
-    return (
-      <VStack className="flex-1 justify-center items-center bg-background-500">
-        <Stack.Screen options={{ title: "Loading..." }} />
-        <Spinner size="large" color="white" />
-        <Text className="text-white mt-4">Loading resume details...</Text>
-      </VStack>
+      </Box>
     );
   }
 
   return (
     <SafeAreaView className="flex-1 bg-background-500">
-      <VStack className="flex-1 bg-background-500">
+      {hasChanges && (
+        <Fab
+          size="md"
+          placement="bottom right"
+          isHovered={false}
+          isDisabled={loading}
+          isPressed={false}
+          className="hover:bg-background-700 active:bg-background-700 rounded-lg bg-background-400 backdrop-blur-lg border border-white/15 shadow-none"
+          onPress={handleSave}
+        >
+          {loading ? (
+            <Spinner color="white" accessibilityLabel="Saving..." />
+          ) : (
+            <Save color={"#9DFF41"} size={20} />
+          )}
+        </Fab>
+      )}
+      <Box className="flex-1 bg-background-500">
         <Stack.Screen
           options={{ title: jobDesc?.jobTitle || "Resume Details" }}
         />
-
-        {/* ✅ FIXED: Show fab only when there are local changes */}
-        {hasLocalChanges && (
-          <Fab
-            style={{ bottom: 28 }}
-            size="md"
-            placement="bottom right"
-            isHovered={false}
-            isDisabled={loading}
-            isPressed={false}
-            className="rounded-lg bg-background-400 border border-white/15 shadow-none"
-            onPress={handleSave}
-          >
-            {loading ? (
-              <Spinner color="white" accessibilityLabel="Saving..." />
-            ) : (
-              <Save color={"#9DFF41"} size={20} />
-            )}
-          </Fab>
-        )}
 
         <ScrollView className="flex-1 bg-background-500 p-4">
           <Heading
@@ -224,38 +198,36 @@ export default function ResumeDetailScreen() {
             Job Details
           </Heading>
 
-          {/* ✅ FIXED: Job Details Section using jobDesc */}
+          {/* Job Details Section */}
           {jobDesc ? (
-            <VStack className="items-center gap-2 mb-6">
-              <Text className="text-white/80 text-lg">
-                {displayValue(jobDesc.company)}
-              </Text>
+            <VStack className="items-center gap-2 mb-2">
+              <Text className="text-white/80 text-lg">{jobDesc.company}</Text>
               <Text className="text-white/80 text-center text-2xl font-bold">
-                {displayValue(jobDesc.jobTitle)}
+                {jobDesc.jobTitle ? jobDesc.jobTitle : "N/A"}
               </Text>
               <HStack className="items-center gap-1 mb-2">
                 <MapPin color={"white"} opacity={0.8} size={16} />
                 <Text className="text-white/80">
-                  {displayValue(jobDesc.location)}
+                  {jobDesc.location ? jobDesc.location : "N/A"}
                 </Text>
               </HStack>
               <HStack className="gap-4">
                 <VStack className="items-start gap-1 border border-white/15 rounded-lg px-4 py-2 flex-1">
                   <Text className="text-white/70 text-md">Job Type</Text>
                   <Text className="text-lg font-semibold">
-                    {displayValue(jobDesc.type)}
+                    {jobDesc.type ? jobDesc.type : "N/A"}
                   </Text>
                 </VStack>
                 <VStack className="items-start gap-1 border border-white/15 rounded-lg px-4 py-2 flex-1">
                   <Text className="text-white/70 text-md">Stipend</Text>
                   <Text className="text-lg font-semibold">
-                    {displayValue(jobDesc.stipend)}
+                    {jobDesc.stipend ? jobDesc.stipend : "N/A"}
                   </Text>
                 </VStack>
                 <VStack className="items-start gap-1 border border-white/15 rounded-lg px-4 py-2 flex-1">
                   <Text className="text-white/70 text-md">Score</Text>
                   <Text className="text-lg font-semibold">
-                    {displayValue(jobDesc.matchScore)}
+                    {jobDesc.matchScore ? jobDesc.matchScore : "N/A"}
                   </Text>
                 </VStack>
               </HStack>
@@ -269,20 +241,17 @@ export default function ResumeDetailScreen() {
             </VStack>
           )}
 
-          {/* ✅ FIXED: Improvements Section */}
+          {/* Improvements Section */}
           {jobDesc?.improvementsORSuggestions &&
             jobDesc.improvementsORSuggestions.length > 0 && (
-              <Box className="py-3 mb-4">
-                <Heading size="lg" className="mb-3 font-bold text-white/80">
+              <Box className="mb-4">
+                <Text size="lg" className="mb-3 font-bold text-white/80">
                   Improvements & Suggestions
-                </Heading>
+                </Text>
                 <VStack className="space-y-2">
                   {jobDesc.improvementsORSuggestions.map(
-                    (suggestion, index) => (
-                      <HStack
-                        key={`suggestion-${index}`}
-                        className="items-start"
-                      >
+                    (suggestion, _index) => (
+                      <HStack key={Crypto.randomUUID()} className="items-start">
                         <Text className="text-primary-500 mr-2">•</Text>
                         <Text className="text-white/80 flex-1">
                           {suggestion.trim()}
@@ -294,7 +263,7 @@ export default function ResumeDetailScreen() {
               </Box>
             )}
 
-          {/* ✅ FIXED: Action Buttons */}
+          {/* Action Buttons */}
           <HStack className="w-full gap-2 mb-4">
             <Button
               action="secondary"
@@ -324,8 +293,8 @@ export default function ResumeDetailScreen() {
             </Button>
           </HStack>
 
-          {/* ✅ FIXED: Resume Sections */}
-          <VStack className="pb-20 gap-4">
+          {/* Resume Sections */}
+          <VStack className="pb-6 gap-4">
             {/* Summary Section */}
             {loading ? (
               <VStack className="gap-2 p-4 bg-background-400/40 border border-white/30 rounded-lg w-full">
@@ -365,10 +334,8 @@ export default function ResumeDetailScreen() {
                     <PencilLine color={"white"} size={16} />
                   </HStack>
                   <VStack className="opacity-90 items-start gap-1">
-                    {localResumeData?.summary ? (
-                      <Text className="font-semibold">
-                        {localResumeData.summary}
-                      </Text>
+                    {resume?.summary ? (
+                      <Text className="font-semibold">{resume.summary}</Text>
                     ) : (
                       <Text className="font-semibold opacity-70">
                         No Summary added.
@@ -396,7 +363,7 @@ export default function ResumeDetailScreen() {
                 </HStack>
                 {[...Array(2)].map((_, i) => (
                   <VStack
-                    key={`project-skeleton-${i}`}
+                    key={Crypto.randomUUID()}
                     className="gap-1 mb-2 w-full"
                   >
                     <SkeletonLoader
@@ -432,7 +399,7 @@ export default function ResumeDetailScreen() {
                     <Heading>Projects</Heading>
                     <PencilLine color={"white"} size={16} />
                   </HStack>
-                  {localResumeData?.projects?.map((pro, index) => (
+                  {resume?.projects?.map((pro, index) => (
                     <VStack
                       key={pro.id || `project-${index}`}
                       className="opacity-90 items-start gap-1"
@@ -441,20 +408,19 @@ export default function ResumeDetailScreen() {
                         {displayValue(pro.title, "N/A")}
                       </Text>
                       <Text className="italic">
-                        {pro.techStack?.length
-                          ? pro.techStack.join(", ")
-                          : "N/A"}
+                        {typeof pro.techStack === "string"
+                          ? pro.techStack
+                          : pro.techStack?.join(", ") || "--"}
                       </Text>
                       {pro.startDate && pro.endDate && (
                         <Text>{`${pro.startDate} - ${pro.endDate}`}</Text>
                       )}
-                      {index < (localResumeData?.projects?.length || 0) - 1 && (
+                      {index < (resume?.projects?.length || 0) - 1 && (
                         <Divider className="my-2" />
                       )}
                     </VStack>
                   ))}
-                  {(localResumeData?.projects?.length === 0 ||
-                    !localResumeData?.projects) && (
+                  {(resume?.projects?.length === 0 || !resume?.projects) && (
                     <Text className="opacity-70">No project entries yet.</Text>
                   )}
                 </VStack>
@@ -484,7 +450,7 @@ export default function ResumeDetailScreen() {
                 <HStack className="gap-2 flex-wrap mb-2">
                   {[...Array(3)].map((_, i) => (
                     <SkeletonLoader
-                      key={`skill-skeleton-${i}`}
+                      key={Crypto.randomUUID()}
                       width={70 + i * 10}
                       height={28}
                       className="bg-background-300/50 rounded-lg"
@@ -499,7 +465,7 @@ export default function ResumeDetailScreen() {
                 <HStack className="gap-2 flex-wrap mb-2">
                   {[...Array(2)].map((_, i) => (
                     <SkeletonLoader
-                      key={`framework-skeleton-${i}`}
+                      key={Crypto.randomUUID()}
                       width={80 + i * 20}
                       height={28}
                       className="bg-background-300/50 rounded-lg"
@@ -540,21 +506,17 @@ export default function ResumeDetailScreen() {
                       </HStack>
 
                       <HStack className="gap-2 flex-wrap">
-                        {localResumeData?.skills?.languages?.map(
-                          (lang, index) => (
-                            <Badge
-                              key={`language-${index}-${lang}`}
-                              variant="outline"
-                              className="rounded-lg bg-background-400/50"
-                            >
-                              <BadgeText className="text-white">
-                                {lang}
-                              </BadgeText>
-                            </Badge>
-                          )
-                        )}
-                        {(localResumeData?.skills?.languages?.length === 0 ||
-                          !localResumeData?.skills?.languages) && (
+                        {resume?.skills?.languages?.map((lang, index) => (
+                          <Badge
+                            key={`language-${index}-${lang}`}
+                            variant="outline"
+                            className="rounded-lg bg-background-400/50"
+                          >
+                            <BadgeText className="text-white">{lang}</BadgeText>
+                          </Badge>
+                        ))}
+                        {(resume?.skills?.languages?.length === 0 ||
+                          !resume?.skills?.languages) && (
                           <Text className="opacity-70">
                             No languages listed.
                           </Text>
@@ -577,21 +539,19 @@ export default function ResumeDetailScreen() {
                       </HStack>
 
                       <HStack className="gap-2 flex-wrap">
-                        {localResumeData?.skills?.frameworks?.map(
-                          (framework, index) => (
-                            <Badge
-                              key={`framework-${index}-${framework}`}
-                              variant="outline"
-                              className="rounded-lg bg-background-400/50"
-                            >
-                              <BadgeText className="text-white">
-                                {framework}
-                              </BadgeText>
-                            </Badge>
-                          )
-                        )}
-                        {(localResumeData?.skills?.frameworks?.length === 0 ||
-                          !localResumeData?.skills?.frameworks) && (
+                        {resume?.skills?.frameworks?.map((framework, index) => (
+                          <Badge
+                            key={`framework-${index}-${framework}`}
+                            variant="outline"
+                            className="rounded-lg bg-background-400/50"
+                          >
+                            <BadgeText className="text-white">
+                              {framework}
+                            </BadgeText>
+                          </Badge>
+                        ))}
+                        {(resume?.skills?.frameworks?.length === 0 ||
+                          !resume?.skills?.frameworks) && (
                           <Text className="opacity-70">
                             No frameworks listed.
                           </Text>
@@ -614,21 +574,19 @@ export default function ResumeDetailScreen() {
                       </HStack>
 
                       <HStack className="gap-2 flex-wrap">
-                        {localResumeData?.skills?.others?.map(
-                          (other, index) => (
-                            <Badge
-                              key={`other-${index}-${other}`}
-                              variant="outline"
-                              className="rounded-lg bg-background-400/50"
-                            >
-                              <BadgeText className="text-white">
-                                {other}
-                              </BadgeText>
-                            </Badge>
-                          )
-                        )}
-                        {(localResumeData?.skills?.others?.length === 0 ||
-                          !localResumeData?.skills?.others) && (
+                        {resume?.skills?.others?.map((other, index) => (
+                          <Badge
+                            key={`other-${index}-${other}`}
+                            variant="outline"
+                            className="rounded-lg bg-background-400/50"
+                          >
+                            <BadgeText className="text-white">
+                              {other}
+                            </BadgeText>
+                          </Badge>
+                        ))}
+                        {(resume?.skills?.others?.length === 0 ||
+                          !resume?.skills?.others) && (
                           <Text className="opacity-70">
                             No other skills listed.
                           </Text>
@@ -641,7 +599,7 @@ export default function ResumeDetailScreen() {
             )}
           </VStack>
         </ScrollView>
-      </VStack>
+      </Box>
     </SafeAreaView>
   );
 }

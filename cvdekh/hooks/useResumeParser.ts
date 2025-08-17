@@ -1,6 +1,7 @@
 // hooks/useResumeParser.ts
 
 import type { Session } from "@supabase/supabase-js";
+import type { DocumentPickerAsset } from "expo-document-picker";
 import { useState } from "react";
 import Toast from "react-native-toast-message";
 import { useResumeStore } from "@/store/resume/resumeStore";
@@ -15,7 +16,7 @@ export const useResumeParser = () => {
 
   const parseResume = async (
     session: Session,
-    selectedFile: any,
+    selectedFile: DocumentPickerAsset,
     onComplete?: () => void
   ) => {
     if (!selectedFile) {
@@ -36,6 +37,7 @@ export const useResumeParser = () => {
         uri: selectedFile.uri,
         name: selectedFile.name,
         type: selectedFile.mimeType || "application/pdf",
+        // biome-ignore lint/suspicious/noExplicitAny: file upload
       } as any);
 
       const response = await resumeApi.parseResume(session, formData);
@@ -56,12 +58,12 @@ export const useResumeParser = () => {
           setTimeout(() => {
             onComplete?.();
             setProgress(0);
-          }, 1500);
+          }, 500);
         }
 
         return result;
       }
-    } catch (error) {
+    } catch (_error) {
       Toast.show({
         type: "eToast",
         text1: "Parse Failed",

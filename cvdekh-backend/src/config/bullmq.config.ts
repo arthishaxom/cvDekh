@@ -1,6 +1,6 @@
 import { Queue, type QueueOptions } from "bullmq"; // Removed Worker as it's not used here
 import IORedis from "ioredis";
-import { logger } from "..";
+import logger from "../config/logger.config";
 
 const redisConnection = new IORedis({
   host: process.env.REDIS_HOST || "localhost",

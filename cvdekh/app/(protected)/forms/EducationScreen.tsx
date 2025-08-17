@@ -84,7 +84,7 @@ export default function EducationScreen() {
             label="Start Date"
             value={edu.startDate || ""}
             onChangeText={(text) => onUpdate({ startDate: text })}
-            placeholder="MMM YYYY"
+            placeholder="Jun 2025"
             required
             className="flex-1 mr-2"
             type="date"
@@ -93,7 +93,7 @@ export default function EducationScreen() {
             label="End Date"
             value={edu.endDate || ""}
             onChangeText={(text) => onUpdate({ endDate: text })}
-            placeholder="MMM YYYY or Present"
+            placeholder="Jul 2026 or Present"
             required
             className="flex-1 ml-2"
             type="date"

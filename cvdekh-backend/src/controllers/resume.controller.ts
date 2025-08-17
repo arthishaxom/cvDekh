@@ -1,7 +1,7 @@
 import type { Job } from "bullmq";
 import type { Response } from "express";
-import { logger } from "..";
 import { pdfQueue, resumeQueue } from "../config/bullmq.config";
+import logger from "../config/logger.config";
 import type { JobDesc } from "../models/job.model";
 import type { ResumeData } from "../models/resume.model";
 import { aiService } from "../services/ai.service";

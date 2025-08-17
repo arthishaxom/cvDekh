@@ -27,14 +27,14 @@ export const DateRangeFields: React.FC<DateRangeFieldsProps> = ({
         label={startLabel}
         value={startDate}
         onChangeText={onStartDateChange}
-        placeholder="MM/YYYY"
+        placeholder="Jun 2025"
         className="flex-1 mr-2"
       />
       <FormField
         label={endLabel}
         value={endDate}
         onChangeText={onEndDateChange}
-        placeholder={allowPresent ? "MM/YYYY or Present" : "MM/YYYY"}
+        placeholder={allowPresent ? "Jul 2026 or Present" : "Jul 2026"}
         className="flex-1 ml-2"
       />
     </HStack>

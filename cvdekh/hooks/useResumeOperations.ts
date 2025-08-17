@@ -4,6 +4,7 @@ import type { Session } from "@supabase/supabase-js";
 import { useState } from "react";
 import Toast from "react-native-toast-message";
 import { useResumeStore } from "@/store/resume/resumeStore";
+import type { ResumeFormData } from "@/store/resume/types";
 import { resumeApi } from "@/utils/api.util";
 
 export const useResumeOperations = () => {
@@ -15,7 +16,7 @@ export const useResumeOperations = () => {
   const saveResume = async (
     session: Session,
     resumeId: string | null,
-    formData: any
+    formData: ResumeFormData
   ) => {
     setIsLoading(true);
     try {
@@ -32,7 +33,7 @@ export const useResumeOperations = () => {
         text1: "Success",
         text2: "Resume has been saved successfully.",
       });
-    } catch (error) {
+    } catch (_error) {
       Toast.show({
         type: "eToast",
         text1: "Save Failed",
@@ -54,12 +55,8 @@ export const useResumeOperations = () => {
     try {
       const response = await resumeApi.improveResume(session, jobDescription);
 
-      if (response?.id && response?.data) {
-        addToAllResumes({
-          ...response.data,
-          id: response.id,
-          job_desc: response.job_desc,
-        });
+      if (response?.success && response?.data) {
+        addToAllResumes(response.data);
 
         setProgress(100);
 
@@ -72,13 +69,13 @@ export const useResumeOperations = () => {
         setTimeout(() => {
           onComplete?.();
           setProgress(0);
-        }, 1500);
+        }, 500);
       }
     } catch (error) {
       Toast.show({
         type: "eToast",
         text1: "Improvement Failed",
-        text2: "Failed to improve resume. Please try again.",
+        text2: `Failed to improve resume. Please try again. ${error}`,
       });
     } finally {
       setIsLoading(false);
@@ -98,7 +95,7 @@ export const useResumeOperations = () => {
       });
 
       return { success: true };
-    } catch (error) {
+    } catch (_error) {
       Toast.show({
         type: "eToast",
         text1: "Delete Failed",

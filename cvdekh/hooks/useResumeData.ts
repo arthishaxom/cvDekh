@@ -2,7 +2,8 @@
 
 import type { Session } from "@supabase/supabase-js";
 import { useCallback, useEffect, useState } from "react";
-import { useResumeStore } from "@/store/resume/resumeStore";
+import { initialFormData, useResumeStore } from "@/store/resume/resumeStore";
+import { ResumeFormData } from "@/store/resume/types";
 import { resumeApi } from "@/utils/api.util";
 
 export const useResumeData = (session: Session | null) => {
@@ -31,15 +32,28 @@ export const useResumeData = (session: Session | null) => {
     }
 
     try {
-      const data = await resumeApi.getOriginalResume(session);
+      const response = await resumeApi.getOriginalResume(session);
 
-      if (data) {
-        setData(data);
-        setOriginalData(data);
+      if (response.data) {
+        setData(response.data);
+        setOriginalData(response);
         useResumeStore.setState({ isInitialDataFetched: true });
       }
-    } catch (err) {
-      setError("Failed to load resume data");
+    } catch (err: any) {
+      if (
+        err.response?.status === 404 ||
+        err.message?.includes("No resume data found")
+      ) {
+        setData(initialFormData);
+        setOriginalData(initialFormData);
+        useResumeStore.setState({ isInitialDataFetched: true });
+      } else {
+        setError(
+          `Failed to load resume data: ${
+            err instanceof Error ? err.message : String(err)
+          }`
+        );
+      }
     } finally {
       setIsLoading(false);
     }
@@ -51,9 +65,10 @@ export const useResumeData = (session: Session | null) => {
     setError(null);
 
     try {
-      const resumes = await resumeApi.getAllResumes(session);
-      setAllResumes(resumes);
-    } catch (err) {
+      const response = await resumeApi.getAllResumes(session);
+
+      setAllResumes(response.data.resumes);
+    } catch (_err) {
       setError("Failed to fetch resumes");
     } finally {
       setIsLoading(false);

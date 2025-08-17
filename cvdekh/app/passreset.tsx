@@ -1,15 +1,15 @@
-import React, { useState, useEffect } from "react";
 import { router, useNavigation } from "expo-router";
-import { Box } from "@/components/ui/box";
-import { Text } from "@/components/ui/text";
-import { Input, InputField, InputSlot } from "@/components/ui/input";
 import { Eye, EyeOff, Lock } from "lucide-react-native";
-import { Button } from "@/components/ui/button";
-import { useAuthStore } from "@/store/auth";
+import { useEffect, useState } from "react";
 import { TouchableOpacity } from "react-native";
-import { VStack } from "@/components/ui/vstack";
-import Toast from "react-native-toast-message";
 import { SafeAreaView } from "react-native-safe-area-context";
+import Toast from "react-native-toast-message";
+import { Box } from "@/components/ui/box";
+import { Button } from "@/components/ui/button";
+import { Input, InputField, InputSlot } from "@/components/ui/input";
+import { Text } from "@/components/ui/text";
+import { VStack } from "@/components/ui/vstack";
+import { useAuthStore } from "@/store/auth";
 
 export default function PassReset() {
   // const url = Linking.useURL();
@@ -115,7 +115,6 @@ export default function PassReset() {
 
   return (
     <SafeAreaView className="flex-1 bg-background-500">
-
       <VStack className="flex-1 bg-background-500 px-6 justify-center">
         <Box className="mb-6">
           <Text className="text-white text-4xl font-bold mb-2">
@@ -190,6 +189,5 @@ export default function PassReset() {
         </Button>
       </VStack>
     </SafeAreaView>
-
   );
 }

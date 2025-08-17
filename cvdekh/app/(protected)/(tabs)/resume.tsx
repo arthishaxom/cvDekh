@@ -693,7 +693,9 @@ export default function Tab() {
                           {displayValue(pro.title, "N/A")}
                         </Text>
                         <Text className="italic">
-                          {pro.techStack?.join(", ") || "N/A"}
+                          {typeof pro.techStack === "string"
+                            ? pro.techStack
+                            : pro.techStack?.join(", ") || "--"}
                         </Text>
                         {pro.startDate && pro.endDate && (
                           <Text>{`${pro.startDate} - ${pro.endDate}`}</Text>

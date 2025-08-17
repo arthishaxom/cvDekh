@@ -1,6 +1,6 @@
 import type { FileObject } from "@supabase/storage-js";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { logger } from "..";
+import logger from "../config/logger.config";
 import type { JobDesc } from "../models/job.model";
 import type { ResumeData } from "../models/resume.model";
 import type { Database, Json, Tables } from "../types/database.type";

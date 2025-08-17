@@ -41,17 +41,27 @@ import { useResumeStore } from "@/store/resume/resumeStore";
 
 export default function Tab() {
   const allResumes = useResumeStore((state) => state.allResumes);
+  const { setData, setJobDesc } = useResumeStore();
   const session = useAuthStore((state) => state.session);
 
-  const { isLoading, fetchAllResumes } = useResumeData(session);
-  const { improveResume, progress } = useResumeOperations();
+  const { fetchAllResumes, isLoading: isInitialFetching } =
+    useResumeData(session);
+  const {
+    improveResume,
+    progress,
+    isLoading: isOperating,
+  } = useResumeOperations();
+
+  const isLoading = isOperating || isInitialFetching;
 
   useEffect(() => {
     if (!session) {
       router.replace("/");
       return;
     }
-    // console.log(session);
+    if (process.env.EXPO_PUBLIC_NODE_ENV === "development") {
+      console.log(session);
+    }
 
     fetchAllResumes();
   }, [session, fetchAllResumes]);
@@ -208,7 +218,6 @@ export default function Tab() {
           </Box>
         ) : (
           <Box className="flex-1 bg-background-500 items-center justify-center">
-            {/* <Text>Hello</Text> */}
             {allResumes.length > 0 ? (
               <Box className="w-full flex-1 p-4">
                 <FlatList
@@ -218,9 +227,10 @@ export default function Tab() {
                       <Pressable
                         onPress={() => {
                           useResumeStore.setState({
-                            formData: item,
                             isInitialDataFetched: false,
                           });
+                          setData(item.data);
+                          setJobDesc(item.job_desc);
                           router.push(`/resume-details/${item.id}`);
                         }}
                       >
@@ -246,7 +256,9 @@ export default function Tab() {
                                   <Text
                                     className={`text-xl font-semibold ${
                                       item.job_desc.matchScore &&
-                                      !isNaN(Number(item.job_desc.matchScore))
+                                      !Number.isNaN(
+                                        Number(item.job_desc.matchScore)
+                                      )
                                         ? Number(item.job_desc.matchScore) >= 75
                                           ? "text-green-500"
                                           : Number(item.job_desc.matchScore) >=
@@ -299,7 +311,7 @@ export default function Tab() {
                       </Pressable>
                     );
                   }}
-                  keyExtractor={(item) => item.id!}
+                  keyExtractor={(item) => item.id}
                 />
               </Box>
             ) : (

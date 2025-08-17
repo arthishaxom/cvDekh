@@ -1,4 +1,5 @@
 import type { Session } from "@supabase/supabase-js";
+import type { DocumentPickerAsset } from "expo-document-picker";
 
 export interface ContactInfo {
   linkedin?: string;
@@ -25,8 +26,8 @@ export interface EducationEntry {
 export interface ProjectEntry {
   id?: string; // For list key
   title?: string;
-  techStack?: string[];
-  details?: string[];
+  techStack?: string[] | string;
+  details?: string[] | string;
   startDate?: string;
   endDate?: string;
 }
@@ -37,7 +38,7 @@ export interface ExperienceEntry {
   company?: string;
   startDate?: string;
   endDate?: string;
-  details?: string[];
+  details?: string[] | string;
 }
 
 export interface JobDetails {
@@ -68,17 +69,24 @@ export interface ResumeFormData {
   projects?: ProjectEntry[];
   experience?: ExperienceEntry[];
   certificates?: CertificateEntry[];
-  job_desc?: JobDetails;
-  // Add any other sections you might have
 }
 
-// Simplified store state - only pure state management
+export interface ResumeEntry {
+  id: string;
+  data: ResumeFormData;
+  is_original: boolean;
+  created_at: string;
+  updated_at: string;
+  user_id: string;
+  job_desc: JobDetails;
+}
+
 export interface ResumeStoreState {
   // State
   formData: ResumeFormData;
   originalData: ResumeFormData | null;
   job_desc: JobDetails | null;
-  allResumes: ResumeFormData[]; // To hold all resumes fetched from the backend
+  allResumes: ResumeEntry[]; // To hold all resumes fetched from the backend
   hasChanges: boolean; // For auto-save indicator
   isInitialDataFetched: boolean; // For initial data fetch
   error: string | null;
@@ -91,8 +99,8 @@ export interface ResumeStoreState {
     section: K,
     data: Partial<ResumeFormData[K]>
   ) => void;
-  setAllResumes: (resumes: ResumeFormData[]) => void;
-  addToAllResumes: (resumeData: ResumeFormData) => void;
+  setAllResumes: (resumes: ResumeEntry[]) => void;
+  addToAllResumes: (resumeData: ResumeEntry) => void;
   removeFromAllResumes: (resumeId: string) => void;
 
   // Reset
@@ -125,7 +133,7 @@ export interface UseResumeParserReturn {
   progress: number;
   parseResume: (
     session: Session,
-    selectedFile: any,
+    selectedFile: DocumentPickerAsset,
     onComplete?: () => void
   ) => Promise<{ success: boolean }>;
 }

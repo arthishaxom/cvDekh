@@ -1,4 +1,4 @@
-import { logger } from "..";
+import logger from "../config/logger.config";
 import redisClient from "../config/redis.config";
 
 class CacheService {

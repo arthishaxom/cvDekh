@@ -80,7 +80,7 @@ export default function CertificateScreen() {
           label="Issue Date"
           value={cert.issueDate}
           onChangeText={(text) => onUpdate({ issueDate: text })}
-          placeholder="MMM YYYY"
+          placeholder="Jun 2025"
           required
           type="date"
           className="mb-2"

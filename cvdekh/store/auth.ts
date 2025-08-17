@@ -117,6 +117,15 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         return false;
       }
 
+      // Check if user already exists with another provider
+      if ((data.user?.identities?.length ?? 0) < 1) {
+        set({
+          error: "User already exists.",
+          isLoading: false,
+        });
+        return false;
+      }
+
       // Check if email confirmation is required
       if (data.user && !data.session) {
         set({

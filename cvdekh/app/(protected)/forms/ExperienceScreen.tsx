@@ -37,7 +37,17 @@ export default function ExperienceScreen() {
 
   const { save, isSaving } = useAutoSave(
     (experience: ExperienceEntry[]) => {
-      updateFormData("experience", experience);
+      const processedExperience = experience.map((exp) => ({
+        ...exp,
+        details:
+          typeof exp.details === "string"
+            ? exp.details
+                .split("\n")
+                .map((s) => s.trim())
+                .filter((s) => s.length > 0)
+            : exp.details,
+      }));
+      updateFormData("experience", processedExperience);
     },
     1000,
     true
@@ -82,7 +92,7 @@ export default function ExperienceScreen() {
             label="Start Date"
             value={exp.startDate || ""}
             onChangeText={(text) => onUpdate({ startDate: text })}
-            placeholder="MM/YYYY"
+            placeholder="Jun 2025"
             className="flex-1 mr-2"
             type="date"
             required
@@ -91,7 +101,7 @@ export default function ExperienceScreen() {
             label="End Date"
             value={exp.endDate || ""}
             onChangeText={(text) => onUpdate({ endDate: text })}
-            placeholder="MM/YYYY or Present"
+            placeholder="Jul 2026 or Present"
             className="flex-1 ml-2"
             type="date"
             required
@@ -101,10 +111,14 @@ export default function ExperienceScreen() {
         {/* Job Responsibilities */}
         <FormField
           label="Job Responsibilities (one per line)"
-          value={exp.details?.join("\n") || ""}
+          value={
+            typeof exp.details === "string"
+              ? exp.details
+              : exp.details?.join("\n") || ""
+          }
           onChangeText={(text) =>
             onUpdate({
-              details: text.split("\n").filter((s) => s.trim()),
+              details: text,
             })
           }
           placeholder={`• Developed and maintained web applications\n• Collaborated with cross-functional teams\n• Improved system performance by 30%`}

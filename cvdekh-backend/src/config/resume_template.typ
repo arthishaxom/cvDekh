@@ -7,7 +7,7 @@
 
   // Set text properties
   set text(
-    font: "Times New Roman",
+    // font: "Times New Roman",
     size: 10.5pt,
   )
 

@@ -1,6 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import type { NextFunction, Response } from "express";
-import { logger } from "..";
+import logger from "../config/logger.config";
 import { supabase } from "../db";
 import type { AuthenticatedRequest } from "../types/auth.type";
 import { ApiError } from "../utils/apiError";

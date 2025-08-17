@@ -1,7 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import multer from "multer";
-import { logger } from "..";
+import logger from "../config/logger.config";
 import { ApiError } from "../utils/apiError";
 
 const tempUploadsDir = path.join(process.cwd(), "temp-uploads");

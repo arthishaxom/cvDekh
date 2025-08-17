@@ -1,6 +1,6 @@
 import { createClient } from "redis";
 import "dotenv/config";
-import { logger } from "..";
+import logger from "../config/logger.config";
 
 const redisClient = createClient({
   username: process.env.REDIS_USERNAME || "default",

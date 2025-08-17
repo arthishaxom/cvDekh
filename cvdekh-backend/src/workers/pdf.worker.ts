@@ -1,8 +1,8 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { type Job, Worker } from "bullmq";
 import IORedis from "ioredis";
-import { logger } from "..";
 import { pdfQueue } from "../config/bullmq.config";
+import logger from "../config/logger.config";
 import type { ResumeData } from "../models/resume.model";
 import { resumeService } from "../services/resume.service";
 import {

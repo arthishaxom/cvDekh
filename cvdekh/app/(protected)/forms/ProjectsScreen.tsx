@@ -38,7 +38,21 @@ export default function ProjectsScreen() {
 
   const { save, isSaving } = useAutoSave(
     (projects: ProjectEntry[]) => {
-      updateFormData("projects", projects);
+      const processedProjects = projects.map((project) => ({
+        ...project,
+        techStack:
+          typeof project.techStack === "string"
+            ? project.techStack
+                .split(",")
+                .map((s) => s.trim())
+                .filter((s) => s.length > 0)
+            : project.techStack,
+        details:
+          typeof project.details === "string"
+            ? project.details.split("\n")
+            : project.details,
+      }));
+      updateFormData("projects", processedProjects);
     },
     1000,
     true
@@ -69,13 +83,14 @@ export default function ProjectsScreen() {
 
         <FormField
           label="Tech Stack (comma-separated)"
-          value={project.techStack?.join(", ") || ""}
+          value={
+            typeof project.techStack === "string"
+              ? project.techStack
+              : project.techStack?.join(", ") || ""
+          }
           onChangeText={(text) =>
             onUpdate({
-              techStack: text
-                .split(",")
-                .map((s) => s.trim())
-                .filter((s) => s),
+              techStack: text,
             })
           }
           placeholder="React, Node.js, MongoDB"
@@ -91,10 +106,14 @@ export default function ProjectsScreen() {
 
         <FormField
           label="Project Details (one per line)"
-          value={project.details?.join("\n") || ""}
+          value={
+            typeof project.details === "string"
+              ? project.details
+              : project.details?.join("\n") || ""
+          }
           onChangeText={(text) =>
             onUpdate({
-              details: text.split("\n").filter((s) => s.trim()),
+              details: text,
             })
           }
           placeholder="• Developed a web application&#10;• Implemented user authentication&#10;• Deployed on AWS"

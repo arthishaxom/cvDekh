@@ -1,0 +1,11 @@
+node_modules
+*.log
+.git
+temp
+temp-uploads
+uploads
+*.zip
+*.tar
+*.gz
+dist
+coverage

@@ -4,7 +4,7 @@ import type {
   Request,
   Response,
 } from "express";
-import { logger } from "../index";
+import logger from "../config/logger.config";
 import { ApiError } from "../utils/apiError";
 import { ApiResponse } from "../utils/apiResponse";
 

@@ -81,7 +81,7 @@ export default function GeneralInfoScreen() {
             label="LinkedIn Profile URL"
             value={localFormData.contactInfo.linkedin || ""}
             onChangeText={(text) => handleInfoChange("linkedin", text)}
-            placeholder="https://linkedin.com/in/yourprofile"
+            placeholder="linkedin.com/in/yourprofile"
             className="mb-4"
           />
 
@@ -89,7 +89,7 @@ export default function GeneralInfoScreen() {
             label="GitHub Profile URL"
             value={localFormData.contactInfo.github || ""}
             onChangeText={(text) => handleInfoChange("github", text)}
-            placeholder="https://github.com/yourusername"
+            placeholder="github.com/yourusername"
             className="mb-4"
           />
 
